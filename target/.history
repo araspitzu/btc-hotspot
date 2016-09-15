@@ -1,0 +1,28 @@
+re-start
+exit
+greet
+reload
+greet
+reload
+greet
+reload
+greet
+inspect greet
+inspect greet:full-classpath
+ls
+exit
+compile
+re-start
+re-stop
+run
+exit
+run
+console
+clean
+compile
+clean
+console
+coonsole
+console
+reload
+console

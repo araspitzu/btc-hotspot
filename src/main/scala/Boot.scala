@@ -1,15 +1,14 @@
 import akka.actor.{Actor, Props, ActorSystem}
 import akka.http.scaladsl.Http
+import commons.RestInterface
 import scala.concurrent.duration._
 import akka.stream.ActorMaterializer
 import akka.util.Timeout
-
-import com.typesafe.config.ConfigFactory
 import com.typesafe.scalalogging.slf4j.LazyLogging
+import commons.Configuration._
 
 object Boot extends App with RestInterface with LazyLogging {
 
-  val config = ConfigFactory.load()
   val host = config.getString("http.host")
   val port = config.getInt("http.port")
 
@@ -22,8 +21,8 @@ object Boot extends App with RestInterface with LazyLogging {
   val api = routes
 
   Http().bindAndHandle(handler = api, interface = host, port = port) map { binding =>
-    println(s"Interface bound to ${binding.localAddress}") } recover { case ex =>
-    println(s"Interface could not bind to $host:$port", ex.getMessage)
+    logger.info(s"Interface bound to ${binding.localAddress}") } recover { case ex =>
+    logger.info(s"Interface could not bind to $host:$port", ex.getMessage)
   }
 
 }
