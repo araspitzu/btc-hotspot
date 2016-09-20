@@ -1,6 +1,7 @@
 import akka.actor.{Actor, Props, ActorSystem}
 import akka.http.scaladsl.Http
 import commons.RestInterface
+import ipc.{SharedStruct, SharedMemoryService}
 import scala.concurrent.duration._
 import akka.stream.ActorMaterializer
 import akka.util.Timeout
@@ -12,11 +13,12 @@ object Boot extends App with RestInterface with LazyLogging {
   val host = config.getString("http.host")
   val port = config.getInt("http.port")
 
-  implicit val system = ActorSystem("traffic-auth-system")
+  implicit val actorSystem = ActorSystem("traffic-auth-actorSystem")
   implicit val materializer = ActorMaterializer()
 
-  implicit val executionContext = system.dispatcher
-  //implicit val timeout = Timeout(10 seconds)
+  implicit val executionContext = actorSystem.dispatcher
+
+  val theActor = actorSystem.actorOf(Props[SharedMemoryService], "sharedMemoryActor")
 
   val api = routes
 

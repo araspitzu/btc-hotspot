@@ -7,9 +7,6 @@
   </appender>
 
   <logger name="ch.qos.logback" level="WARN"/>
-  <!-- logger name="com.mongodb" level="INFO"/>
-  <logger name="ecedo" level="INFO"/ -->
-
   <root level="INFO">
     <appender-ref ref="STDOUT"/>
   </root>

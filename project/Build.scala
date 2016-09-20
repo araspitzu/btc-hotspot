@@ -49,17 +49,7 @@ object Dependencies {
     "com.typesafe.scala-logging" %% "scala-logging-slf4j" % "2.1.2"
   )
 
-  val testing = Seq(
-    "org.specs2" %% "specs2" % "2.3.12" % "test",
-    "org.specs2" %% "specs2-mock" % "2.3.12" % "test",
-    "org.specs2" %% "specs2-matcher-extra" % "2.3.12" % "test",
-    "org.mockito" % "mockito-core" % "1.9.5" % "test"
-  )
-
-
-
-
-  val dependencies = akka ++ json4s ++ logging ++ testing
+  val dependencies = akka ++ json4s ++ logging
 }
 
 /**
@@ -74,7 +64,7 @@ object ThisBuild extends Build {
   import Resolvers._
 
   val name = "traffic-authenticator"
-  lazy val api = Project(
+  lazy val trafficAuthenticator = Project(
     name, file("."),
     settings = buildSettings
       ++ Seq(resolvers := repositories, libraryDependencies ++= dependencies)

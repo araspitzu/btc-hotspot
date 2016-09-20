@@ -14,9 +14,13 @@ import encoding.EnrichedTypes._
   *
   */
 case class SharedStruct(source_mac:Array[Byte], expire_time: Long) extends ByteWritable {
-  require(source_mac.length == 6, s"Found source_mac of length ${source_mac.length} instead of 6")
+  import SharedStruct._
+  require(source_mac.length == SOURCE_MAC_LENGTH, s"Found source_mac of length ${source_mac.length} instead of $SOURCE_MAC_LENGTH")
 
-  override def byteFormat: Array[Byte] = source_mac ++ uint32ByteFormatBE(expire_time)
+  override def byteFormat: Array[Byte] =
+      source_mac ++
+      Array.fill(PADDING_SIZE)(0x00.toByte)  ++
+      int64ByteFormatLE(expire_time)
 
   override def toString:String =
    s"""
@@ -33,18 +37,22 @@ case class SharedStruct(source_mac:Array[Byte], expire_time: Long) extends ByteW
 object SharedStruct {
 
   val SOURCE_MAC_LENGTH = 6
-  val STRUCT_SIZE = SOURCE_MAC_LENGTH + 4
+  val PADDING_SIZE = 2
+  val LONG_SIZE = 8
+
+  val STRUCT_SIZE = SOURCE_MAC_LENGTH + PADDING_SIZE + LONG_SIZE
 
 
   implicit val sharedStructByteReadable = new {} with ByteReadable[SharedStruct] {
 
     override def read(bytes: Array[Byte], offset: Int): ParseResult[SharedStruct] = {
         for {
-          source_mac <- parseBytes(bytes, offset, SOURCE_MAC_LENGTH)
-          expire_time <- parse[Long](bytes, offset + SOURCE_MAC_LENGTH)
+          sourceMac <- parseBytes(bytes, offset, SOURCE_MAC_LENGTH)
+          paddingBytes <- parseBytes(bytes, offset + SOURCE_MAC_LENGTH, PADDING_SIZE)
+          expireTime <- parse[Long](bytes, offset + SOURCE_MAC_LENGTH + PADDING_SIZE)
         } yield SharedStruct(
-          source_mac = source_mac,
-          expire_time = expire_time
+          source_mac = sourceMac,
+          expire_time = expireTime
         )
     }
 

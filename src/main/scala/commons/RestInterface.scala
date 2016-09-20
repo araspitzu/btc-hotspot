@@ -1,13 +1,13 @@
 package commons
 
 import akka.http.scaladsl.server.Route
-import resources.CounterResource
+import resources.{SharedMemoryResource, CounterResource}
 
 /**
   * Created by andrea on 09/09/16.
   */
-trait RestInterface extends CounterResource {
+trait RestInterface extends CounterResource with SharedMemoryResource {
 
-  val routes: Route = counterRoute // ~ otherRoute
+  val routes: Route = counterRoute ~ route
 
 }

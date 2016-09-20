@@ -84,7 +84,7 @@ object CommonByteConverters {
     )
   }
 
-  implicit val uint32ByteReaderBE = new {} with ByteReadable[Long] {
+  val uint32ByteReaderBE = new {} with ByteReadable[Long] {
     override def read(bytes: Array[Byte], offset:Int):ParseResult[Long] = ParseSuccess(
       result =
         (bytes(offset + 0) & 0xffL) << 24 |
@@ -95,7 +95,7 @@ object CommonByteConverters {
     )
   }
 
-  val int64ByteReaderLE = new {} with ByteReadable[Long] {
+  implicit val int64ByteReaderLE = new {} with ByteReadable[Long] {
     override def read(bytes: Array[Byte], offset:Int):ParseResult[Long] = ParseSuccess(
       result = java.lang.Long.parseLong(bytes.slice(offset,offset + 8).reverse.bytes2hex,16),
       bytesUsed = 8

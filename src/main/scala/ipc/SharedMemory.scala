@@ -1,6 +1,6 @@
 package ipc
 
-import java.io.{IOException, RandomAccessFile, File}
+import java.io.{IOException, RandomAccessFile}
 import java.nio.MappedByteBuffer
 import encoding.EnrichedTypes._
 import encoding.Parsing._
@@ -15,8 +15,10 @@ import scala.util.{Success, Failure, Try}
   *
   * List-like interface to add and remove elems of type SharedStruct to the
   * shared memory.
+  *
+  * TODO padding
   */
-class MemoryMapperService private (final val buffer:MappedByteBuffer) extends LazyLogging {
+final class SharedMemory(buffer:MappedByteBuffer) extends LazyLogging {
 
   var numEntries = 0
 
@@ -24,29 +26,33 @@ class MemoryMapperService private (final val buffer:MappedByteBuffer) extends La
 
   def size:Int = buffer.capacity
 
+  def maxEntries = size / STRUCT_SIZE
 
   def addEntry(struct:SharedStruct):Unit = {
     if(position + STRUCT_SIZE > size)
       throw new IOException("Exceeding buffer capacity (buffer overflow)")
 
+    logger.info("Adding a new entry!")
+
     buffer.put(struct.byteFormat)
     numEntries = numEntries + 1
   }
 
-  def printEntries:Unit = {
+  def printEntries:String = {
 
     val oldPos = position
 
     buffer.position(0)
     val temp = new Array[Byte](STRUCT_SIZE)
 
+    val stringBuilder = new StringBuilder
 
     while(buffer.position < STRUCT_SIZE * numEntries){
 
       buffer.get(temp)
 
       parse[SharedStruct](temp) match {
-        case ParseSuccess(struct, used) => logger.info(struct.toString)
+        case ParseSuccess(struct, used) => stringBuilder.append(struct.toString)
         case ParseFailure(err, optEx) => logger.error(err)
       }
 
@@ -54,6 +60,9 @@ class MemoryMapperService private (final val buffer:MappedByteBuffer) extends La
 
     buffer.position(oldPos)
 
+    val result = stringBuilder.toString
+    logger.info(result)
+    result
   }
 
   def printRawBuffer:Unit = {
@@ -71,9 +80,9 @@ class MemoryMapperService private (final val buffer:MappedByteBuffer) extends La
 
 }
 
-object MemoryMapperService {
+object SharedMemory {
 
-  def apply():MemoryMapperService = {
+  def apply():SharedMemory = {
 
     val filePath = config.getString("sharedMemory.filePath")
     val maxEntries = config.getInt("sharedMemory.maxEntries")
@@ -101,7 +110,7 @@ object MemoryMapperService {
 
       mappedBuffer
     } match {
-      case Success(buffer) => new MemoryMapperService(buffer)
+      case Success(buffer) => new SharedMemory(buffer)
       case Failure(thr) => throw new IOException(
         s"Unable to initialize shared memory for path: ${filePath} and size:$fileSize",thr
       )
