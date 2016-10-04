@@ -18,8 +18,6 @@ object Boot extends App with RestInterface with LazyLogging {
 
   implicit val executionContext = actorSystem.dispatcher
 
-  val theActor = actorSystem.actorOf(Props[SharedMemoryService], "sharedMemoryActor")
-
   val api = routes
 
   Http().bindAndHandle(handler = api, interface = host, port = port) map { binding =>

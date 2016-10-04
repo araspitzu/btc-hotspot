@@ -13,29 +13,37 @@ import scala.concurrent.duration._
   */
 trait SharedMemoryResource extends CommonResource with GenericMarshallers {
 
-  lazy val sharedMemoryServiceActor = actorSystem.actorSelection("user/sharedMemoryActor")
-
   implicit val timeout = Timeout(10 seconds)
 
   def route: Route = {
-    post {
-      path("shmem" / "add"){
+    get {
+      path(""){
         complete {
-          sharedMemoryServiceActor ! SharedStruct.aStruct
-
-          "Yo\n"
-        }
-
-      }
-    } ~ get {
-      path("shmem" / "list"){
-        complete{
-          sharedMemoryServiceActor.ask(READ_MEM).map(_.asInstanceOf[String])
-
-          "Yo\n"
+          greetingPage
         }
       }
     }
   }
+
+  val greetingPage =
+    """
+      |<HTML>
+      |<HEAD>
+      |<TITLE> Welcome :)</TITLE>
+      |</HEAD>
+      |<BODY BGCOLOR="FFFFFF">
+      |
+      |<HR>
+      |<H1>This is a Header</H1>
+      |<H2>This is a Medium Header</H2>
+      |Send me mail at <a href="mailto:support@yourcompany.com">
+      |support@yourcompany.com</a>.
+      |<P> This is a new paragraph!
+      |<P> <B>This is a new paragraph!</B>
+      |<BR> <B><I>This is a new sentence without a paragraph break, in bold italics.</I></B>
+      |<HR>
+      |</BODY>
+      |</HTML>
+    """.stripMargin
 
 }
