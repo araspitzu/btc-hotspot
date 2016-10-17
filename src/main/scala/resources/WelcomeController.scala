@@ -11,13 +11,13 @@ import scala.concurrent.duration._
 /**
   * Created by andrea on 15/09/16.
   */
-trait SharedMemoryResource extends CommonResource with GenericMarshallers {
+trait WelcomeController extends CommonResource with GenericMarshallers {
 
   implicit val timeout = Timeout(10 seconds)
 
   def route: Route = {
     get {
-      path(""){
+      path("welcome"){
         complete {
           greetingPage
         }

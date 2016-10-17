@@ -1,47 +1,83 @@
-import com.typesafe.sbt.SbtStartScript
+import com.typesafe.sbt.packager.archetypes._
+import com.typesafe.sbt.packager.archetypes.systemloader.SystemdPlugin
+import com.typesafe.sbt.packager.debian.DebianPlugin
+import com.typesafe.sbt.packager.universal.UniversalPlugin
+import com.typesafe.sbt.packager.universal.UniversalPlugin.autoImport._
+
 import sbt.Keys._
 import sbt._
-import sbtassembly.Plugin.AssemblyKeys._
-import sbtassembly.Plugin._
-import spray.revolver.RevolverPlugin._
+import sbtassembly.AssemblyPlugin.autoImport._
 
-object BuildSettings {
+object ThisBuild extends Build {
+
+  import Dependencies._
+  import Resolvers._
+
   val buildOrganization = "paypercom"
   val buildVersion = "0.0.1"
   val buildScalaVersion = "2.11.8"
 
-  val buildSettings = Defaults.defaultSettings ++ Seq(
+  val name = "paypercom-hotspot"
+  val jarName = s"$name.jar"
+
+
+  val buildSettings = Seq(
     organization := buildOrganization,
     version := buildVersion,
     scalaVersion := buildScalaVersion,
     scalacOptions ++= Seq("-unchecked", "-deprecation", "-encoding", "utf8"),
-    javaOptions += "-Xmx1G",
-    shellPrompt := ShellPrompt.buildShellPrompt
+    shellPrompt := ShellPrompt.buildShellPrompt,
+    resolvers := repositories,
+    libraryDependencies := dependencies
   )
+
+
+  lazy val paypercomHotspot = Project(
+    name, file("."),
+    settings = buildSettings
+   ).enablePlugins(JavaAppPackaging, SystemdPlugin, DebianPlugin, UniversalPlugin)
+    .settings(net.virtualvoid.sbt.graph.Plugin.graphSettings: _*)
+    .settings(parallelExecution in Compile := true)
+    .settings(parallelExecution in Test := false)
+    .settings(sources in (Compile, doc) := Seq.empty)
+    .settings(mainClass in (Compile, assembly) := Some("Boot"))
+    .settings(assemblyJarName in assembly := jarName)
+    .settings(mappings in Universal <<= (mappings in Universal, assembly in Compile) map { (mappings, fatJar) =>
+      val filtered = mappings filter { case (file, name) =>  ! name.endsWith(".jar") }
+      filtered :+ (fatJar -> ("lib/" + fatJar.getName))
+    })
+
+
+  def currentGitBranch = {
+    "git rev-parse --abbrev-ref HEAD".lines_!.mkString.replaceAll("/", "-").replaceAll("heads-", "")
+  }
+
 }
 
 object Resolvers {
   val typesafe = "Typesafe Releases" at "http://repo.typesafe.com/typesafe/releases"
-  val repositories = Seq(typesafe)
+
+  //Mantainer of akka-http-json
+  val hseeberger = Resolver.bintrayRepo("hseeberger", "maven")
+
+  val repositories = Seq(typesafe, hseeberger)
 }
 
 
 object Dependencies {
-  val akkaVersion = "2.4.10"
-  val json4sVersion = "3.3.0"
+  val akkaVersion = "2.4.+"
+  val json4sVersion = "3.+"
 
   val akka = Seq(
     "com.typesafe.akka" %% "akka-actor" % akkaVersion,
     "com.typesafe.akka" %% "akka-slf4j" % akkaVersion,
-    "com.typesafe.akka" %% "akka-http-experimental" % akkaVersion,
-    "com.typesafe.akka" %% "akka-http-spray-json-experimental" % akkaVersion,
     "com.typesafe.akka" %% "akka-http-testkit" % akkaVersion
   )
 
   val json4s= Seq(
     "org.json4s" %% "json4s-native" % json4sVersion,
     "org.json4s" %% "json4s-ext" % json4sVersion,
-    "de.heikoseeberger" %% "akka-http-json4s" % "1.4.2"
+    "de.heikoseeberger" %% "akka-http-json4s" % "1.+"
   )
 
   val logging = Seq(
@@ -50,45 +86,6 @@ object Dependencies {
   )
 
   val dependencies = akka ++ json4s ++ logging
-}
-
-/**
- * Revolver.settings: (https://github.com/spray/sbt-revolver) Allows for hot reloading when JRebel is configured.
- * Integration tests should end with 'IT'. Run it:test to run integration tests only.
- * Unit tests must end with 'Spec' or 'Test'
- */
-object ThisBuild extends Build {
-
-  import BuildSettings._
-  import Dependencies._
-  import Resolvers._
-
-  val name = "traffic-authenticator"
-  lazy val trafficAuthenticator = Project(
-    name, file("."),
-    settings = buildSettings
-      ++ Seq(resolvers := repositories, libraryDependencies ++= dependencies)
-      ++ SbtStartScript.startScriptForClassesSettings
-      ++ Revolver.settings
-      ++ assemblySettings
-      ++ Seq(jarName := name + "-" + currentGitBranch + ".jar")
-  ).configs(IntegrationTest)
-    .settings(net.virtualvoid.sbt.graph.Plugin.graphSettings: _*)
-    .settings(Defaults.itSettings: _*)
-    .settings(parallelExecution in Compile := true)
-    .settings(parallelExecution in Test := false)
-    .settings(scalaSource in IntegrationTest <<= baseDirectory / "src/test/scala")
-    .settings(resourceDirectory in IntegrationTest <<= baseDirectory / "src/test/resources")
-    .settings(sources in (Compile, doc) := Seq.empty)
-
-
-  def currentGitBranch = {
-    "git rev-parse --abbrev-ref HEAD".lines_!.mkString.replaceAll("/", "-").replaceAll("heads-", "")
-  }
-
-  def itFilter(name: String): Boolean = name endsWith "IT"
-
-  def unitFilter(name: String): Boolean = !itFilter(name)
 }
 
 // Shell prompt which show the current project,
@@ -112,7 +109,7 @@ object ShellPrompt {
     (state: State) => {
       val currProject = Project.extract(state).currentProject.id
       "%s:%s:%s> ".format(
-        currProject, currBranch, BuildSettings.buildVersion
+        currProject, currBranch, ThisBuild.buildVersion
       )
     }
   }
