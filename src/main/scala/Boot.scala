@@ -4,6 +4,7 @@ import commons.RestInterface
 import akka.stream.ActorMaterializer
 import com.typesafe.scalalogging.slf4j.LazyLogging
 import commons.Configuration._
+import wallet.WalletSupervisorService
 
 object Boot extends App with RestInterface with LazyLogging {
 
@@ -21,5 +22,9 @@ object Boot extends App with RestInterface with LazyLogging {
     logger.info(s"Interface bound to ${binding.localAddress}") } recover { case ex =>
     logger.info(s"Interface could not bind to $host:$port", ex.getMessage)
   }
+
+  val walletServiceActor = actorSystem.actorOf(Props[WalletSupervisorService],"WalletSupervisorService")
+
+
 
 }
