@@ -85,7 +85,11 @@ object Dependencies {
     "com.typesafe.scala-logging" %% "scala-logging-slf4j" % "2.1.2"
   )
 
-  val dependencies = akka ++ json4s ++ logging
+  val  bitcoinj = Seq(
+    "org.bitcoinj" % "bitcoinj-core" % "0.14.3"
+  )
+
+  val dependencies = akka ++ json4s ++ logging ++ bitcoinj
 }
 
 // Shell prompt which show the current project,
