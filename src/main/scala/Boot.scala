@@ -1,10 +1,7 @@
 import akka.actor.{Actor, Props, ActorSystem}
 import akka.http.scaladsl.Http
 import commons.RestInterface
-import ipc.{SharedStruct, SharedMemoryService}
-import scala.concurrent.duration._
 import akka.stream.ActorMaterializer
-import akka.util.Timeout
 import com.typesafe.scalalogging.slf4j.LazyLogging
 import commons.Configuration._
 

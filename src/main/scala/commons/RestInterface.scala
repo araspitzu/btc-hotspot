@@ -1,13 +1,13 @@
 package commons
 
 import akka.http.scaladsl.server.Route
-import resources.{WelcomeController, CounterResource}
+import resources.WelcomeController
 
 /**
   * Created by andrea on 09/09/16.
   */
-trait RestInterface extends CounterResource with WelcomeController {
+trait RestInterface extends WelcomeController {
 
-  val routes: Route = counterRoute ~ route
+  val routes: Route = route
 
 }

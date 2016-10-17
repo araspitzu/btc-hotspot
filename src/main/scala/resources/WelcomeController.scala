@@ -1,17 +1,16 @@
 package resources
 
-import akka.http.scaladsl.marshalling.GenericMarshallers
+import akka.http.scaladsl.marshalling.PredefinedToEntityMarshallers._
+import akka.http.scaladsl.model.HttpEntity
 import akka.http.scaladsl.server._
-import akka.pattern.ask
 import akka.util.Timeout
-import ipc.{READ_MEM, SharedStruct}
-import scala.concurrent.{ExecutionContext}
 import scala.concurrent.duration._
+import akka.http.scaladsl.model.ContentTypes.`text/html(UTF-8)`
 
 /**
   * Created by andrea on 15/09/16.
   */
-trait WelcomeController extends CommonResource with GenericMarshallers {
+trait WelcomeController extends CommonResource {
 
   implicit val timeout = Timeout(10 seconds)
 
@@ -19,7 +18,7 @@ trait WelcomeController extends CommonResource with GenericMarshallers {
     get {
       path("welcome"){
         complete {
-          greetingPage
+          HttpEntity(`text/html(UTF-8)`,  greetingPage)
         }
       }
     }
