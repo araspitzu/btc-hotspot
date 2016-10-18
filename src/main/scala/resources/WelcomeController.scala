@@ -3,10 +3,12 @@ package resources
 import akka.http.scaladsl.model.HttpEntity
 import akka.http.scaladsl.server._
 import akka.util.Timeout
+import wallet.WalletSupervisorService
 import wallet.WalletSupervisorService.GET_RECEIVING_ADDRESS
 import scala.concurrent.duration._
 import akka.pattern.ask
 import akka.http.scaladsl.model.ContentTypes.`text/html(UTF-8)`
+import commons.Configuration._
 
 /**
   * Created by andrea on 15/09/16.
@@ -15,7 +17,10 @@ trait WelcomeController extends CommonResource {
 
   implicit val timeout = Timeout(10 seconds)
 
-  def route: Route = {
+  def walletActorPath = s"${config.getString("akka.actorSystem")}/user/${WalletSupervisorService.getClass.getSimpleName}"
+  lazy val walletServiceActor = actorSystem.actorSelection(s"akka://$walletActorPath")
+
+  def welcomeRoute: Route = {
     get {
       path("welcome"){
         complete {
@@ -23,10 +28,7 @@ trait WelcomeController extends CommonResource {
         }
       } ~ path("address") {
         complete {
-          ask(
-            actorSystem.actorSelection("akka://traffic-auth-actorSystem/user/WalletSupervisorService"),
-            GET_RECEIVING_ADDRESS
-          ).mapTo[String]
+          (walletServiceActor ? GET_RECEIVING_ADDRESS).mapTo[String]
         }
       }
     }

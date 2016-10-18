@@ -10,7 +10,7 @@ import scala.concurrent.ExecutionContext
 /**
   * Created by andrea on 09/09/16.
   */
-trait CommonResource extends Directives with Json4sSupport  {
+trait CommonResource extends Directives with Json4sSupport {
 
   implicit def actorSystem: ActorSystem
 
@@ -20,8 +20,4 @@ trait CommonResource extends Directives with Json4sSupport  {
 object CommonMarshallers extends GenericMarshallers
   with PredefinedToEntityMarshallers
   with PredefinedToResponseMarshallers
-  with PredefinedToRequestMarshallers  {
-
-
-
-}
+  with PredefinedToRequestMarshallers  { }

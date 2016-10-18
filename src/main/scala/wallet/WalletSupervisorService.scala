@@ -23,14 +23,14 @@ class WalletSupervisorService extends Actor with LazyLogging {
   def wallet = kit.wallet()
 
   override def preStart():Unit = {
-    kit.startAsync()
+ //   kit.startAsync()
   }
 
   def receive = {
     case GET_RECEIVING_ADDRESS =>
       sender() ! bytes2hex( wallet.currentReceiveAddress.getHash160 )
 
-    case something => logger.info(s"Yo i got $something")
+    case something => logger.warn(s"Yo i got $something")
   }
 
   def bytes2hex(bytes:Array[Byte]):String = bytes.map("%02x".format(_)).mkString
