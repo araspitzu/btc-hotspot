@@ -7,7 +7,7 @@ import wallet.WalletSupervisorService
 import wallet.WalletSupervisorService.GET_RECEIVING_ADDRESS
 import scala.concurrent.duration._
 import akka.pattern.ask
-import akka.http.scaladsl.model.ContentTypes.`text/html(UTF-8)`
+import akka.http.scaladsl.model.ContentTypes._
 import commons.Configuration._
 
 /**
@@ -28,6 +28,7 @@ trait WelcomeController extends CommonResource {
         }
       } ~ path("address") {
         complete {
+
           (walletServiceActor ? GET_RECEIVING_ADDRESS).mapTo[String]
         }
       }

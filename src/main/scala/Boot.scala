@@ -1,16 +1,15 @@
-import aaa.AAAController
-import akka.actor.{Actor, Props, ActorSystem}
+import akka.actor.{ Props, ActorSystem }
 import akka.http.scaladsl.Http
 import akka.http.scaladsl.server.Route
 import akka.stream.ActorMaterializer
 import com.typesafe.scalalogging.slf4j.LazyLogging
 import commons.Configuration._
-import resources.MiniPortal
+import resources.{StaticFiles, MiniPortal}
 import wallet.WalletSupervisorService
 
 object Boot extends App
   with MiniPortal
-  with AAAController
+  with StaticFiles
   with LazyLogging {
 
   implicit val actorSystem = ActorSystem(config.getString("akka.actorSystem"))
@@ -21,11 +20,7 @@ object Boot extends App
 
   val miniportalHost = config.getString("miniportal.host")
   val miniportalPort = config.getInt("miniportal.port")
-  bindOrFail(miniportalRoute, miniportalHost, miniportalPort, "MiniPortal")
-
-  val aaaHost = config.getString("aaa.host")
-  val aaaPort = config.getInt("aaa.port")
-  bindOrFail(aaaRoute, aaaHost, aaaPort, "AAA")
+  bindOrFail(miniportalRoute ~ staticFilesRoute, miniportalHost, miniportalPort, "MiniPortal")
 
   //Spawn wallet service actor
   actorSystem.actorOf(Props[WalletSupervisorService],WalletSupervisorService.getClass.getSimpleName)

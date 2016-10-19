@@ -3,7 +3,6 @@ import com.typesafe.sbt.packager.archetypes.systemloader.SystemdPlugin
 import com.typesafe.sbt.packager.debian.DebianPlugin
 import com.typesafe.sbt.packager.universal.UniversalPlugin
 import com.typesafe.sbt.packager.universal.UniversalPlugin.autoImport._
-
 import sbt.Keys._
 import sbt._
 import sbtassembly.AssemblyPlugin.autoImport._
@@ -36,7 +35,6 @@ object ThisBuild extends Build {
     name, file("."),
     settings = buildSettings
    ).enablePlugins(JavaAppPackaging, SystemdPlugin, DebianPlugin, UniversalPlugin)
-    .settings(net.virtualvoid.sbt.graph.Plugin.graphSettings: _*)
     .settings(parallelExecution in Compile := true)
     .settings(parallelExecution in Test := false)
     .settings(sources in (Compile, doc) := Seq.empty)
