@@ -3,37 +3,60 @@ package wallet
 import java.io.File
 import akka.actor.Actor
 import com.typesafe.scalalogging.slf4j.LazyLogging
-import org.bitcoinj.core.{NetworkParameters, ECKey}
+import org.bitcoinj.core.{Coin, NetworkParameters, ECKey}
 import org.bitcoinj.kits.WalletAppKit
 import commons.Configuration.config
-import wallet.WalletSupervisorService.GET_RECEIVING_ADDRESS
+import org.bitcoinj.protocols.payments.PaymentProtocol
+import wallet.WalletSupervisorService.{PAYMENT_REQUEST, GET_RECEIVING_ADDRESS}
 
 /**
   * Created by andrea on 17/10/16.
   */
 class WalletSupervisorService extends Actor with LazyLogging {
 
-  val networkParams = NetworkParameters.fromID(config.getString("wallet.net"))
+  val network = NetworkParameters.fromID(config.getString("wallet.net"))
   val walletFileName = config.getString("wallet.walletFile")
 
-  val kit = new WalletAppKit(networkParams, new File("."), walletFileName) {
+  val kit = new WalletAppKit(network, new File("."), walletFileName) {
     override def onSetupCompleted() { wallet.importKey(new ECKey) }
   }
 
-  def wallet = kit.wallet()
+  def networkParams = kit.params
+  def wallet = kit.wallet
 
   override def preStart():Unit = {
- //   kit.startAsync()
+    kit.startAsync()
   }
+
+
 
   def receive = {
     case GET_RECEIVING_ADDRESS =>
       sender() ! bytes2hex( wallet.currentReceiveAddress.getHash160 )
 
+    // Spawn new actor to handle payment request?
+    case PAYMENT_REQUEST(sessionId) => {
+
+      val paymentRequest = PaymentProtocol.createPaymentRequest(
+        networkParams,
+        Coin.valueOf(1,50),
+        wallet.currentReceiveAddress,
+        s"Please pay 0.002 for using session $sessionId",
+        s"http://127.0.0.1:8081/pay/$sessionId",
+        Array.emptyByteArray
+      ).build()
+
+      logger.info(s"Issuing payment request for session $sessionId")
+      logger.info(bytes2hex(paymentRequest.toByteArray))
+
+      sender() ! paymentRequest
+
+    }
+
     case something => logger.warn(s"Yo i got $something")
   }
 
-  def bytes2hex(bytes:Array[Byte]):String = bytes.map("%02x".format(_)).mkString
+  def bytes2hex(bytes:Array[Byte]):String = bytes.map("%02x ".format(_)).mkString
 
 }
 
@@ -41,5 +64,6 @@ object WalletSupervisorService {
 
   sealed trait MESSAGES
   case object GET_RECEIVING_ADDRESS extends MESSAGES
+  case class PAYMENT_REQUEST(sessionId:String) extends MESSAGES
 
 }

@@ -2,6 +2,8 @@ package resources
 
 import akka.actor.ActorSystem
 import akka.http.scaladsl.marshalling.{PredefinedToRequestMarshallers, PredefinedToResponseMarshallers, PredefinedToEntityMarshallers, GenericMarshallers}
+import akka.http.scaladsl.model.HttpHeader
+import akka.http.scaladsl.model.HttpHeader.ParsingResult.Ok
 import akka.http.scaladsl.server.Directives
 import com.typesafe.scalalogging.slf4j.LazyLogging
 import de.heikoseeberger.akkahttpjson4s.Json4sSupport
@@ -22,3 +24,14 @@ object CommonMarshallers extends GenericMarshallers
   with PredefinedToEntityMarshallers
   with PredefinedToResponseMarshallers
   with PredefinedToRequestMarshallers  { }
+
+object ExtraHttpHeaders {
+
+  val bitcoinPaymentRequest:HttpHeader = {
+    HttpHeader.parse("Accept","application/bitcoin-paymentrequest") match {
+      case Ok( header, errors ) => header
+      case _ => throw new RuntimeException("Unable to parse payment request header")
+    }
+  }
+
+}
