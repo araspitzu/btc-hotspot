@@ -9,7 +9,6 @@ import wallet.WalletSupervisorService
 
 object Boot extends App
   with MiniPortal
-  with StaticFiles
   with LazyLogging {
 
   implicit val actorSystem = ActorSystem(config.getString("akka.actorSystem"))
@@ -20,7 +19,7 @@ object Boot extends App
 
   val miniportalHost = config.getString("miniportal.host")
   val miniportalPort = config.getInt("miniportal.port")
-  bindOrFail(miniportalRoute ~ staticFilesRoute, miniportalHost, miniportalPort, "MiniPortal")
+  bindOrFail(miniportalRoute, miniportalHost, miniportalPort, "MiniPortal")
 
   //Spawn wallet service actor
   actorSystem.actorOf(Props[WalletSupervisorService],WalletSupervisorService.getClass.getSimpleName)

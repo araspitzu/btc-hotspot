@@ -37,19 +37,16 @@ class WalletSupervisorService extends Actor with LazyLogging {
     // Spawn new actor to handle payment request?
     case PAYMENT_REQUEST(sessionId) => {
 
-      val paymentRequest = PaymentProtocol.createPaymentRequest(
+      logger.info(s"Issuing payment request for session $sessionId")
+
+      sender() ! PaymentProtocol.createPaymentRequest(
         networkParams,
-        Coin.valueOf(1,50),
+        Coin.valueOf(35000),
         wallet.currentReceiveAddress,
         s"Please pay 0.002 for using session $sessionId",
         s"http://127.0.0.1:8081/pay/$sessionId",
         Array.emptyByteArray
       ).build()
-
-      logger.info(s"Issuing payment request for session $sessionId")
-      logger.info(bytes2hex(paymentRequest.toByteArray))
-
-      sender() ! paymentRequest
 
     }
 
