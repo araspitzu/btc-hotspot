@@ -5,6 +5,7 @@ import akka.http.scaladsl.marshalling.{PredefinedToRequestMarshallers, Predefine
 import akka.http.scaladsl.model.{ContentType, HttpHeader}
 import akka.http.scaladsl.model.HttpHeader.ParsingResult.Ok
 import akka.http.scaladsl.server.Directives
+import akka.stream.ActorMaterializer
 import com.typesafe.scalalogging.slf4j.LazyLogging
 import de.heikoseeberger.akkahttpjson4s.Json4sSupport
 
@@ -15,9 +16,11 @@ import scala.concurrent.ExecutionContext
   */
 trait CommonResource extends Directives with Json4sSupport with LazyLogging {
 
-  implicit def actorSystem: ActorSystem
+  implicit val actorSystem: ActorSystem
 
   implicit val executionContext:ExecutionContext
+
+  implicit val materializer:ActorMaterializer
 }
 
 object CommonMarshallers extends GenericMarshallers
@@ -27,25 +30,12 @@ object CommonMarshallers extends GenericMarshallers
 
 object ExtraHttpHeaders {
 
-  private val paymentRequestType = "application/bitcoin-paymentrequest"
+  val paymentRequestContentType = contentTypeFor("application/bitcoin-paymentrequest")
+  val paymentAckContentType = contentTypeFor("application/bitcoin-paymentack")
 
-  val paymentRequestContentType:ContentType = ContentType.parse(paymentRequestType) match {
+  private def contentTypeFor(customContentType:String) = ContentType.parse(customContentType) match {
     case Right(contentType) => contentType
-    case Left(err) => throw new RuntimeException(s"error occurred: ${err.toString}")
-  }
-
-  val contentTypePaymentRequest = {
-    HttpHeader.parse("Content-Type",paymentRequestType) match {
-      case Ok(header, errors) => header
-      case _ => throw new RuntimeException("Unable to parse content type payment request header")
-    }
-  }
-
-  val acceptBitcoinPaymentRequest:HttpHeader = {
-    HttpHeader.parse("Accept",paymentRequestType) match {
-      case Ok( header, errors ) => header
-      case _ => throw new RuntimeException("Unable to parse payment request header")
-    }
+    case Left(err) => throw new RuntimeException(s"Unable to generate Content-Type for $customContentType, ${err.toString}")
   }
 
 }

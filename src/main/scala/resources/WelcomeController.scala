@@ -3,11 +3,14 @@ package resources
 import akka.http.scaladsl.model._
 import akka.http.scaladsl.server._
 import akka.http.scaladsl.server.directives.LoggingMagnet
-import akka.util.Timeout
-import org.bitcoin.protocols.payments.Protos.PaymentRequest
+import akka.http.scaladsl.unmarshalling._
+import akka.util.{ByteString, Timeout}
+import org.bitcoin.protocols.payments.Protos
+import org.bitcoin.protocols.payments.Protos._
+import org.bitcoinj.protocols.payments.PaymentProtocol
 import wallet.WalletSupervisorService
-import wallet.WalletSupervisorService.{PAYMENT_REQUEST, GET_RECEIVING_ADDRESS}
-import scala.concurrent.Future
+import wallet.WalletSupervisorService.{PAYMENT, PAYMENT_REQUEST, GET_RECEIVING_ADDRESS}
+import scala.concurrent.{Future, ExecutionContext}
 import scala.concurrent.duration._
 import akka.pattern.ask
 import ExtraHttpHeaders._
@@ -22,34 +25,42 @@ trait WelcomeController extends CommonResource {
 
   lazy val walletServiceActor = actorRefFor[WalletSupervisorService]
 
-
-  def requestLogger:LoggingMagnet[HttpRequest ⇒ Unit] = LoggingMagnet { loggingAdapter => request =>
+  def headerLogger:LoggingMagnet[HttpRequest ⇒ Unit] = LoggingMagnet { loggingAdapter => request =>
      loggingAdapter.info(s"Headers: ${request._3.toString()}")
+     loggingAdapter.info(s"HTTP Method: ${request._1}")
   }
+
+
+  implicit val paymentUnmarshaller:FromRequestUnmarshaller[Protos.Payment] = Unmarshaller { ec => httpRequest =>
+    httpRequest._4.dataBytes.runFold(ByteString(Array.emptyByteArray))(_ ++ _) map { byteString =>
+      Protos.Payment.parseFrom(byteString.toArray[Byte])
+    }
+  }
+
 
   def welcomeRoute: Route = {
-    path("pay" / Segment) { sessionId:String =>
+    logRequest(headerLogger){
+     path("pay" / Segment) { sessionId:String =>
       get {
-        logRequest(requestLogger){
-          complete {
-            (walletServiceActor ? PAYMENT_REQUEST(sessionId)).map { case req: PaymentRequest =>
-              HttpEntity(req.toByteArray).withContentType(paymentRequestContentType)
-            }
-          }
+        complete {
+           (walletServiceActor ? PAYMENT_REQUEST(sessionId)).map { case req: PaymentRequest =>
+             HttpEntity(req.toByteArray).withContentType(paymentRequestContentType)
+           }
         }
       } ~ post {
-        complete {
-          "Heyy"
+        entity(as[Protos.Payment]){ payment =>
+          complete {
+            //Send the payment to the wallet actor and wait for its response
+            HttpEntity(
+              PaymentProtocol.createPaymentAck(payment, s"Enjoy session $sessionId").toByteArray
+            ).withContentType(paymentAckContentType)
+
+          }
         }
       }
+     }
     }
 
-  }
-
-  def getPaymentRequest(sessionId:String):Future[Array[Byte]] = {
-    (walletServiceActor ? PAYMENT_REQUEST(sessionId)).map { case req: PaymentRequest =>
-      req.toByteArray
-    }
   }
 
 }
