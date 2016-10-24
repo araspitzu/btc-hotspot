@@ -9,7 +9,7 @@ import org.bitcoin.protocols.payments.Protos
 import org.bitcoin.protocols.payments.Protos._
 import org.bitcoinj.protocols.payments.PaymentProtocol
 import wallet.WalletSupervisorService
-import wallet.WalletSupervisorService.{PAYMENT, PAYMENT_REQUEST, GET_RECEIVING_ADDRESS}
+import wallet.WalletSupervisorService._
 import scala.concurrent.{Future, ExecutionContext}
 import scala.concurrent.duration._
 import akka.pattern.ask
@@ -32,7 +32,7 @@ trait WelcomeController extends CommonResource {
 
 
   implicit val paymentUnmarshaller:FromRequestUnmarshaller[Protos.Payment] = Unmarshaller { ec => httpRequest =>
-    httpRequest._4.dataBytes.runFold(ByteString(Array.emptyByteArray))(_ ++ _) map { byteString =>
+    httpRequest._4.dataBytes.runFold(ByteString.empty)(_ ++ _) map { byteString =>
       Protos.Payment.parseFrom(byteString.toArray[Byte])
     }
   }
@@ -51,10 +51,11 @@ trait WelcomeController extends CommonResource {
         entity(as[Protos.Payment]){ payment =>
           complete {
             //Send the payment to the wallet actor and wait for its response
-            HttpEntity(
-              PaymentProtocol.createPaymentAck(payment, s"Enjoy session $sessionId").toByteArray
-            ).withContentType(paymentAckContentType)
-
+            (walletServiceActor ? PAYMENT(payment)).map { _ =>
+              HttpEntity(
+                PaymentProtocol.createPaymentAck(payment, s"Enjoy session $sessionId").toByteArray
+              ).withContentType(paymentAckContentType)
+            }
           }
         }
       }

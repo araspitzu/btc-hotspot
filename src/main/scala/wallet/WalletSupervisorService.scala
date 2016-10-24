@@ -10,6 +10,7 @@ import org.bitcoinj.kits.WalletAppKit
 import commons.Configuration.config
 import org.bitcoinj.protocols.payments.PaymentProtocol
 import wallet.WalletSupervisorService.{PAYMENT_ACK, PAYMENT, PAYMENT_REQUEST, GET_RECEIVING_ADDRESS}
+import commons.Helpers.ScalaConversions._
 
 /**
   * Created by andrea on 17/10/16.
@@ -59,16 +60,17 @@ class WalletSupervisorService extends Actor with LazyLogging {
     //respond OK/KO to sender actor
     case PAYMENT(payment) => {
 
-      for( i <- 0 to payment.getTransactionsCount ) yield {
+      for( i <- 0 to (payment.getTransactionsCount - 1) ) yield {
         val txBytes = payment.getTransactions(i).toByteArray
         val tx = new Transaction(networkParams, txBytes)
         val broadcast = peerGroup.broadcastTransaction(tx)
 
         broadcast.setProgressCallback(new ProgressCallback {
           override def onBroadcastProgress(progress: Double): Unit = {
-            logger.info(s"Hey i broadcasted TX ${tx.getHashAsString}")
+            logger.info(s"TX ${tx.getHashAsString} broadcast at $progress%")
           }
         })
+
 
       }
 

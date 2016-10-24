@@ -16,9 +16,19 @@
     </encoder>
   </appender>
 
-  <logger name="ch.qos.logback" level="WARN"/>
+  <!-- appender name="BITCOIN" class="ch.qos.logback.core.FileAppender">
+    <file>paypercom-bitcoin.log</file>
+    <append>true</append>
+    <encoder>
+      <pattern>%d %5p - %msg%n</pattern>
+    </encoder>
+  </appender -->
+
+
   <root level="INFO">
     <appender-ref ref="STDOUT"/>
     <appender-ref ref="FILE"/>
   </root>
+
+
 </configuration>
