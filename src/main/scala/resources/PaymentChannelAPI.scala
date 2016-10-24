@@ -10,7 +10,6 @@ import org.bitcoin.protocols.payments.Protos._
 import org.bitcoinj.protocols.payments.PaymentProtocol
 import wallet.WalletSupervisorService
 import wallet.WalletSupervisorService._
-import scala.concurrent.{Future, ExecutionContext}
 import scala.concurrent.duration._
 import akka.pattern.ask
 import ExtraHttpHeaders._
@@ -19,7 +18,7 @@ import commons.Helpers._
 /**
   * Created by andrea on 15/09/16.
   */
-trait WelcomeController extends CommonResource {
+trait PaymentChannelAPI extends CommonResource {
 
   implicit val timeout = Timeout(10 seconds)
 
@@ -38,7 +37,7 @@ trait WelcomeController extends CommonResource {
   }
 
 
-  def welcomeRoute: Route = {
+  def paymentChannelRoute: Route = {
     logRequest(headerLogger){
      path("pay" / Segment) { sessionId:String =>
       get {
@@ -51,7 +50,7 @@ trait WelcomeController extends CommonResource {
         entity(as[Protos.Payment]){ payment =>
           complete {
             //Send the payment to the wallet actor and wait for its response
-            (walletServiceActor ? PAYMENT(payment)).map { _ =>
+            (walletServiceActor ? PAYMENT(payment)).map { case PAYMENT_ACK =>
               HttpEntity(
                 PaymentProtocol.createPaymentAck(payment, s"Enjoy session $sessionId").toByteArray
               ).withContentType(paymentAckContentType)
