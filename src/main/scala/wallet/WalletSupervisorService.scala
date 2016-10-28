@@ -67,7 +67,7 @@ class WalletSupervisorService extends Actor with LazyLogging {
 
         broadcast.setProgressCallback(new ProgressCallback {
           override def onBroadcastProgress(progress: Double): Unit = {
-            logger.info(s"TX ${tx.getHashAsString} broadcast at $progress%")
+            logger.info(s"TX ${tx.getHashAsString} broadcast at ${progress * 100}%")
           }
         })
 
