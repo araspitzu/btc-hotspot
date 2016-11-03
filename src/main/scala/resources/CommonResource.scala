@@ -30,8 +30,8 @@ object CommonMarshallers extends GenericMarshallers
 
 object ExtraHttpHeaders {
 
-  val paymentRequestContentType = contentTypeFor("application/bitcoin-paymentrequest")
-  val paymentAckContentType = contentTypeFor("application/bitcoin-paymentack")
+  val paymentRequestContentType: ContentType = contentTypeFor("application/bitcoin-paymentrequest")
+  val paymentAckContentType: ContentType = contentTypeFor("application/bitcoin-paymentack")
 
   private def contentTypeFor(customContentType:String) = ContentType.parse(customContentType) match {
     case Right(contentType) => contentType

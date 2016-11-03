@@ -3,7 +3,7 @@
 
   <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
     <encoder>
-      <pattern>%d [%class] %5p - %m%n</pattern>
+      <pattern>%d [%logger{1}] %5p - %m%n</pattern>
     </encoder>
   </appender>
 
@@ -12,7 +12,7 @@
     <append>true</append>
 
     <encoder>
-      <pattern>%d [%class] %5p - %m%n</pattern>
+      <pattern>%d [%logger{1}] %5p - %m%n</pattern>
     </encoder>
   </appender>
 

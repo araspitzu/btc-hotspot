@@ -29,7 +29,8 @@ class WalletSupervisorService extends Actor with LazyLogging {
   def wallet = kit.wallet
 
   override def preStart():Unit = {
-    kit.startAsync()
+    if(config.getBoolean("wallet.enabled"))
+      kit.startAsync()
   }
 
 
