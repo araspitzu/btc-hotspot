@@ -25,8 +25,8 @@ trait PaymentChannelAPI extends CommonResource {
   lazy val walletServiceActor = actorRefFor[WalletSupervisorService]
 
   def headerLogger:LoggingMagnet[HttpRequest ⇒ Unit] = LoggingMagnet { loggingAdapter => request =>
-     loggingAdapter.info(s"Headers: ${request._3.toString()}")
-     loggingAdapter.info(s"HTTP Method: ${request._1}")
+     loggingAdapter.debug(s"Headers: ${request._3.toString()}")
+     loggingAdapter.debug(s"HTTP Method: ${request._1}")
   }
 
 

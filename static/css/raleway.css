@@ -2,7 +2,7 @@
   font-family: 'Raleway';
   font-style: normal;
   font-weight: 100;
-  src: local('Raleway Thin'), local('Raleway-Thin'), url(http://fonts.gstatic.com/s/raleway/v11/RJMlAoFXXQEzZoMSUteGWKCWcynf_cDxXwCLxiixG1c.ttf) format('truetype');
+  src: local('Raleway Thin'), local('Raleway-Thin'), url(file://fonts/Raleway-Thin.ttf) format('truetype');
 }
 @font-face {
   font-family: 'Raleway';
