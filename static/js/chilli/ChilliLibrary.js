@@ -79,7 +79,7 @@ var chilliLibrary = { revision:'85' , apiVersion:'2.0' } ;
  */
 
 if (!chilliController || !chilliController.host)
-var chilliController = { interval:30 , host:"1.0.0.1" , port:false , ident:'00' , ssl:false , uamService: false };
+var chilliController = { interval:30 , host:"10.1.0.1" , port:false , ident:'00' , ssl:false , uamService: false };
 
 /* Define clientState numerical code constants  */
 chilliController.stateCodes = { UNKNOWN:-1 , NOT_AUTH:0 , AUTH:1 , AUTH_PENDING:2 , AUTH_SPLASH:3 } ;

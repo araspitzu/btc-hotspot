@@ -100,6 +100,7 @@ function handleError( code ) {
 
 /* Action triggered when buttons are pressed */
 function connect() {
+    console.log('Calling connect');
     var username =  document.getElementById('username').value ;
     var password =  document.getElementById('password').value ;
 
