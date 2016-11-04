@@ -10,6 +10,8 @@ trait StaticFiles extends CommonResource {
 
   val staticFilesDir = config.getString("miniportal.staticFilesDir")
 
-  val staticFilesRoute:Route = getFromDirectory(staticFilesDir)
+  def staticFilesRoute:Route = getFromDirectory(staticFilesDir)
+
+  def resourceRoute:Route = getFromResourceDirectory(staticFilesDir)
 
 }

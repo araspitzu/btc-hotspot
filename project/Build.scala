@@ -30,20 +30,23 @@ object ThisBuild extends Build {
     libraryDependencies := dependencies
   )
 
-
   lazy val paypercomHotspot = Project(
     name, file("."),
     settings = buildSettings
-   ).enablePlugins(JavaAppPackaging, SystemdPlugin, DebianPlugin, UniversalPlugin)
+   ).enablePlugins(JavaServerAppPackaging, SystemdPlugin, DebianPlugin, UniversalPlugin)
     .settings(parallelExecution in Compile := true)
     .settings(parallelExecution in Test := false)
     .settings(sources in (Compile, doc) := Seq.empty)
     .settings(mainClass in (Compile, assembly) := Some("Boot"))
     .settings(assemblyJarName in assembly := jarName)
-    .settings(mappings in Universal <<= (mappings in Universal, assembly in Compile) map { (mappings, fatJar) =>
-      val filtered = mappings filter { case (file, name) =>  ! name.endsWith(".jar") }
-      filtered :+ (fatJar -> ("lib/" + fatJar.getName))
-    })
+//    .settings(mappings in Universal += {
+//      val base = baseDirectory.value
+//      val staticFilesDir = base / "static"
+//
+//      for {
+//        (file, relativePath) <-  (staticFilesDir.*** --- staticFilesDir) pair relativeTo(staticFilesDir)
+//      } yield file -> s"/opt/paypercom/$relativePath"
+//    })
 
 
   def currentGitBranch = {

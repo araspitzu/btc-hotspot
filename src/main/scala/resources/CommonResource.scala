@@ -23,11 +23,6 @@ trait CommonResource extends Directives with Json4sSupport with LazyLogging {
   implicit val materializer:ActorMaterializer
 }
 
-object CommonMarshallers extends GenericMarshallers
-  with PredefinedToEntityMarshallers
-  with PredefinedToResponseMarshallers
-  with PredefinedToRequestMarshallers  { }
-
 object ExtraHttpHeaders {
 
   val paymentRequestContentType: ContentType = contentTypeFor("application/bitcoin-paymentrequest")

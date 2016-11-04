@@ -22,7 +22,7 @@ trait PaymentChannelAPI extends CommonResource {
 
   implicit val timeout = Timeout(10 seconds)
 
-  lazy val walletServiceActor = actorRefFor[WalletSupervisorService]
+  private[this] lazy val walletServiceActor = actorRefFor[WalletSupervisorService]
 
   def headerLogger:LoggingMagnet[HttpRequest ⇒ Unit] = LoggingMagnet { loggingAdapter => request =>
      loggingAdapter.debug(s"Headers: ${request._3.toString()}")
@@ -36,31 +36,34 @@ trait PaymentChannelAPI extends CommonResource {
     }
   }
 
+  private def paymentRequestForSession(sessionId:String) = get {
+    complete {
+      (walletServiceActor ? PAYMENT_REQUEST(sessionId)).map { case req: PaymentRequest =>
+        HttpEntity(req.toByteArray).withContentType(paymentRequestContentType)
+      }
+    }
+  }
+
+  private def paymentDataForSession(sessionId:String) = post {
+    entity(as[Protos.Payment]){ payment =>
+      complete {
+        //Send the payment to the wallet actor and wait for its response
+        (walletServiceActor ? PAYMENT(payment)).map { case PAYMENT_ACK =>
+          HttpEntity(
+            PaymentProtocol.createPaymentAck(payment, s"Enjoy session $sessionId").toByteArray
+          ).withContentType(paymentAckContentType)
+        }
+      }
+    }
+  }
+
 
   def paymentChannelRoute: Route = {
     logRequest(headerLogger){
      path("pay" / Segment) { sessionId:String =>
-      get {
-        complete {
-           (walletServiceActor ? PAYMENT_REQUEST(sessionId)).map { case req: PaymentRequest =>
-             HttpEntity(req.toByteArray).withContentType(paymentRequestContentType)
-           }
-        }
-      } ~ post {
-        entity(as[Protos.Payment]){ payment =>
-          complete {
-            //Send the payment to the wallet actor and wait for its response
-            (walletServiceActor ? PAYMENT(payment)).map { case PAYMENT_ACK =>
-              HttpEntity(
-                PaymentProtocol.createPaymentAck(payment, s"Enjoy session $sessionId").toByteArray
-              ).withContentType(paymentAckContentType)
-            }
-          }
-        }
-      }
+      paymentRequestForSession(sessionId) ~ paymentDataForSession(sessionId)
      }
     }
-
   }
 
 }
