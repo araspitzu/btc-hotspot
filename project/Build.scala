@@ -5,7 +5,6 @@ import com.typesafe.sbt.packager.universal.UniversalPlugin
 import com.typesafe.sbt.packager.universal.UniversalPlugin.autoImport._
 import sbt.Keys._
 import sbt._
-import sbtassembly.AssemblyPlugin.autoImport._
 
 object ThisBuild extends Build {
 
@@ -37,17 +36,11 @@ object ThisBuild extends Build {
     .settings(parallelExecution in Compile := true)
     .settings(parallelExecution in Test := false)
     .settings(sources in (Compile, doc) := Seq.empty)
-    .settings(mainClass in (Compile, assembly) := Some("Boot"))
-    .settings(assemblyJarName in assembly := jarName)
-//    .settings(mappings in Universal += {
-//      val base = baseDirectory.value
-//      val staticFilesDir = base / "static"
-//
-//      for {
-//        (file, relativePath) <-  (staticFilesDir.*** --- staticFilesDir) pair relativeTo(staticFilesDir)
-//      } yield file -> s"/opt/paypercom/$relativePath"
-//    })
-
+    .settings(mainClass in Compile := Some("Boot"))
+    .settings(mappings in Universal += {
+      val conf = (resourceDirectory in Compile).value / "application.conf"
+      conf -> "conf/application.conf"
+    })
 
   def currentGitBranch = {
     "git rev-parse --abbrev-ref HEAD".lines_!.mkString.replaceAll("/", "-").replaceAll("heads-", "")
