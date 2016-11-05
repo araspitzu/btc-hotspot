@@ -1,0 +1,108 @@
+## 
+##  Paypercom hotspot build script
+##
+##  OS: 2016-09-23-raspbian-jessie-lite.img
+##
+##  Raspberry Pi3
+
+ESSID="swagger"	# Hotspot ap name
+IFACE_WAN=eth0  # Toward the internet
+IFACE_LAN=wlan0 # Offered to local clients
+
+# Update packages
+apt-get update
+
+# Set root password for mysql-server setup
+debconf-set-selections <<< 'mysql-server mysql-server/root_password password your_password'
+
+# Get dependencies and tools
+apt-get install -y \
+  git \
+  build-essential \
+  libtool \
+  autoconf \
+  automake \
+  gengetopt \
+  devscripts \
+  debhelper \
+  libssl-dev \
+  iptables \
+  haserl \
+  net-tools \
+  libjson0 \
+  libjson0-dev \
+  freeradius \
+  freeradius-mysql \
+  hostapd \
+  openjdk-8-jdk \
+  mysql-server    
+
+# Get coova chilli sources
+git clone --depth 2 https://github.com/coova/coova-chilli.git coova-chilli && cd coova-chilli
+
+# Build coova chilli deb package
+debuild -us -uc -b
+
+# Install chilli package
+dpkg -i ../coova-chilli_*.deb
+
+
+# Alter network interfaces  TODO: add WAN section
+nano /etc/network/interfaces >>
+"auto lo $IFACE_LAN
+iface $IFACE_LAN inet static
+address 10.0.0.1
+netmast 255.255.255.0
+gateway 10.0.0.1"
+
+# Create hostapd conf
+echo "auth_algs=1
+channel=3
+country_code=IT
+disassoc_low_ack=1
+# Require clients to know the network name
+ignore_broadcast_ssid=0
+hw_mode=g
+interface=$IFACE_LAN
+driver=nl80211
+ieee80211n=1
+ssid=$ESSID" > /etc/hostapd/hostapd.conf
+
+# Edit hostapd init script to use the conf 
+# BROKEN (must change only the first occurrence)!!!
+sed -i '/DAEMON_CONF/c\DAEMON_CONF=/etc/hostapd/hostapd.conf/' /etc/init.d/hostapd
+
+# Allow ipv4 packet forwarding in kernel
+echo 1 > /proc/sys/net/ipv4/ip_forward
+
+# Enable hostapd at boot
+systemctl enable hostapd
+
+# Edit chilli config to use proper interfaces
+sed -i '/HS_WANIF/c\HS_WANIF=eth0' /etc/chilli/defaults
+sed -i '/HS_LANIF/c\HS_LANIF=wlan0' /etc/chilli/defaults
+sed -i '/HS_TCP_PORTS/c\HS_TCP_PORTS="22 8081"' /etc/chilli/defaults
+
+# Enable chilli (WTF??)
+sed -i '/START_CHILLI/c\START_CHILLI=1' /etc/default/chilli
+
+# Setup mysql-freeradius
+mysql -u root -p -e "CREATE DATABASE radius;"
+mysql -u root -p -e "GRANT ALL ON radius.* TO radius@localhost IDENTIFIED BY 'radpass';"
+mysql -u root -p radius < /etc/freeradius/sql/mysql/schema.sql
+
+# Enable freeradius sql conf
+sed -i '/$INCLUDE sql.conf/c\$INCLUDE sql.conf' /etc/freeradius/radiusd.conf
+
+#/etc/freeradius/sites-available/default
+#authorize {
+#          sql
+#}
+
+#accounting {
+#         sql
+#}
+
+# Enable services to start at boot
+systemctl enable chilli freeradius hostapd
+
