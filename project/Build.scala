@@ -1,6 +1,7 @@
 import com.typesafe.sbt.packager.archetypes._
 import com.typesafe.sbt.packager.archetypes.systemloader.SystemdPlugin
-import com.typesafe.sbt.packager.debian.DebianPlugin
+import com.typesafe.sbt.packager.debian.{PackageInfo, DebianPlugin}
+import com.typesafe.sbt.packager.debian.DebianPlugin.autoImport._
 import com.typesafe.sbt.packager.universal.UniversalPlugin
 import com.typesafe.sbt.packager.universal.UniversalPlugin.autoImport._
 import com.typesafe.sbt.packager.MappingsHelper._
@@ -11,13 +12,14 @@ object ThisBuild extends Build {
 
   import Dependencies._
   import Resolvers._
+  import PackageSetting._
+  import DebianSetting._
 
   val buildOrganization = "paypercom"
   val buildVersion = "0.0.1"
   val buildScalaVersion = "2.11.8"
 
   val name = "paypercom-hotspot"
-  val jarName = s"$name.jar"
 
 
   val buildSettings = Seq(
@@ -27,35 +29,56 @@ object ThisBuild extends Build {
     scalacOptions ++= Seq("-unchecked", "-deprecation", "-encoding", "utf8"),
     shellPrompt := ShellPrompt.buildShellPrompt,
     resolvers := repositories,
-    libraryDependencies := dependencies
+    libraryDependencies := dependencies,
+    parallelExecution in Compile := true,
+    sources in (Compile, doc) := Seq.empty,
+    mainClass in Compile := Some("Boot")
   )
 
   lazy val paypercomHotspot = Project(
     name, file("."),
-    settings = buildSettings
+    settings = buildSettings ++ universalPluginSettings ++ debianSettings
    ).enablePlugins(JavaServerAppPackaging, SystemdPlugin, DebianPlugin, UniversalPlugin)
-    .settings(parallelExecution in Compile := true)
-    .settings(parallelExecution in Test := false)
-    .settings(sources in (Compile, doc) := Seq.empty)
-    .settings(mainClass in Compile := Some("Boot"))
-    .settings(javaOptions in Universal ++= Seq(
+
+
+}
+
+object DebianSetting {
+
+  def debianSettings = Seq(
+    debianPackageInfo in Debian := PackageInfo(
+      name = ThisBuild.name,
+      version = ThisBuild.buildVersion,
+      maintainer = "Andrea Raspitzu",
+      summary = "Hotspot enabled app",
+      description = "Enable your home connection to be sold for bitcoin"
+    )
+  )
+
+}
+
+object PackageSetting {
+
+  def universalPluginSettings = Seq(
+    javaOptions in Universal ++= Seq(
       // -J params will be added as jvm parameters
       "-J-Xmx640m",
-      "-J-Xms350m"
+      "-J-Xms350m",
+      //java.io.FileNotFoundException: paypercom-hotspot-0.0.1/conf/application.conf
+      s"-Dconfig.file=${topLevelDirectory.value.get}/${confFileMapping.value._2}"
+    ),
+    mappings in Universal ++= {
+      staticFilesMapping.value ++ Seq(confFileMapping.value)
+    }
+  )
 
-      // others will be added as app parameters
-      //"-Dproperty=true"
-    ))
-    .settings(mappings in Universal += {
-      val conf = (resourceDirectory in Compile).value / "application.conf"
-      conf -> "conf/application.conf"
-    })
-    .settings(mappings in Universal ++= directory(baseDirectory.value / "static"))
+  private def confFileMapping = Def.setting {
+    val conf = (resourceDirectory in Compile).value / "application.conf"
+    conf -> "conf/application.conf"
+  }
 
-
-
-  def currentGitBranch = {
-    "git rev-parse --abbrev-ref HEAD".lines_!.mkString.replaceAll("/", "-").replaceAll("heads-", "")
+  private def staticFilesMapping = Def.setting {
+    directory(baseDirectory.value / "static")
   }
 
 }
