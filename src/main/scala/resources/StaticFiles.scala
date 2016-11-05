@@ -12,6 +12,4 @@ trait StaticFiles extends CommonResource {
 
   def staticFilesRoute:Route = getFromDirectory(staticFilesDir)
 
-  def resourceRoute:Route = getFromResourceDirectory(staticFilesDir)
-
 }

@@ -3,6 +3,7 @@ import com.typesafe.sbt.packager.archetypes.systemloader.SystemdPlugin
 import com.typesafe.sbt.packager.debian.DebianPlugin
 import com.typesafe.sbt.packager.universal.UniversalPlugin
 import com.typesafe.sbt.packager.universal.UniversalPlugin.autoImport._
+import com.typesafe.sbt.packager.MappingsHelper._
 import sbt.Keys._
 import sbt._
 
@@ -37,10 +38,21 @@ object ThisBuild extends Build {
     .settings(parallelExecution in Test := false)
     .settings(sources in (Compile, doc) := Seq.empty)
     .settings(mainClass in Compile := Some("Boot"))
+    .settings(javaOptions in Universal ++= Seq(
+      // -J params will be added as jvm parameters
+      "-J-Xmx640m",
+      "-J-Xms350m"
+
+      // others will be added as app parameters
+      //"-Dproperty=true"
+    ))
     .settings(mappings in Universal += {
       val conf = (resourceDirectory in Compile).value / "application.conf"
       conf -> "conf/application.conf"
     })
+    .settings(mappings in Universal ++= directory(baseDirectory.value / "static"))
+
+
 
   def currentGitBranch = {
     "git rev-parse --abbrev-ref HEAD".lines_!.mkString.replaceAll("/", "-").replaceAll("heads-", "")
