@@ -4,6 +4,7 @@ import com.typesafe.sbt.packager.debian.{PackageInfo, DebianPlugin}
 import com.typesafe.sbt.packager.debian.DebianPlugin.autoImport._
 import com.typesafe.sbt.packager.universal.UniversalPlugin
 import com.typesafe.sbt.packager.universal.UniversalPlugin.autoImport._
+import com.typesafe.sbt.packager.linux.LinuxPlugin.autoImport._
 import com.typesafe.sbt.packager.MappingsHelper._
 import sbt.Keys._
 import sbt._
@@ -18,7 +19,6 @@ object ThisBuild extends Build {
   val buildOrganization = "paypercom"
   val buildVersion = "0.0.1"
   val buildScalaVersion = "2.11.8"
-
   val name = "paypercom-hotspot"
 
 
@@ -40,7 +40,6 @@ object ThisBuild extends Build {
     settings = buildSettings ++ universalPluginSettings ++ debianSettings
    ).enablePlugins(JavaServerAppPackaging, SystemdPlugin, DebianPlugin, UniversalPlugin)
 
-
 }
 
 object DebianSetting {
@@ -59,26 +58,48 @@ object DebianSetting {
 
 object PackageSetting {
 
+  //TODO find how to retrieve the target directory absolute path
+  private val targetDirectory = s"/usr/share/${ThisBuild.name}"
+
   def universalPluginSettings = Seq(
     javaOptions in Universal ++= Seq(
       // -J params will be added as jvm parameters
       "-J-Xmx640m",
       "-J-Xms350m",
-      //java.io.FileNotFoundException: paypercom-hotspot-0.0.1/conf/application.conf
-      s"-Dconfig.file=${topLevelDirectory.value.get}/${confFileMapping.value._2}"
+      s"-Dconfig.file=${targetDirectory}/${confFileMapping.value._2}",
+      s"-Dlogback.configurationFile=${targetDirectory}/${logbackConfMapping.value._2}"
     ),
     mappings in Universal ++= {
-      staticFilesMapping.value ++ Seq(confFileMapping.value)
+      walletDirMapping ++
+      staticDirMapping.value ++ Seq(
+        confFileMapping.value,
+        logbackConfMapping.value
+      )
     }
   )
+
+  private def logbackConfMapping = Def.setting {
+    val logback = (resourceDirectory in Compile).value / "logback.xml"
+    logback -> "conf/logback.xml"
+  }
 
   private def confFileMapping = Def.setting {
     val conf = (resourceDirectory in Compile).value / "application.conf"
     conf -> "conf/application.conf"
   }
 
-  private def staticFilesMapping = Def.setting {
+  /*
+    Copies directory "static" and its content into target directory /usr/share/<app>/
+   */
+  private def staticDirMapping = Def.setting {
     directory(baseDirectory.value / "static")
+  }
+
+  private def walletDirMapping = {
+    (packageMapping(
+      file("bitcoin") -> "bitcoin"
+    ) withUser "paypercom-hotspot"
+      withGroup "paypercom-hotspot").mappings.toSeq
   }
 
 }
