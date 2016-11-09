@@ -2,6 +2,7 @@ import com.typesafe.sbt.packager.archetypes._
 import com.typesafe.sbt.packager.archetypes.systemloader.SystemdPlugin
 import com.typesafe.sbt.packager.debian.{PackageInfo, DebianPlugin}
 import com.typesafe.sbt.packager.debian.DebianPlugin.autoImport._
+import com.typesafe.sbt.packager.linux.LinuxPackageMapping
 import com.typesafe.sbt.packager.universal.UniversalPlugin
 import com.typesafe.sbt.packager.universal.UniversalPlugin.autoImport._
 import com.typesafe.sbt.packager.linux.LinuxPlugin.autoImport._
