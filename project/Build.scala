@@ -70,7 +70,7 @@ object PackageSetting {
       s"-Dlogback.configurationFile=${targetDirectory}/${logbackConfMapping.value._2}"
     ),
     mappings in Universal ++= {
-      walletDirMapping ++
+      walletDirMapping.value ++
       staticDirMapping.value ++ Seq(
         confFileMapping.value,
         logbackConfMapping.value
@@ -88,6 +88,10 @@ object PackageSetting {
     conf -> "conf/application.conf"
   }
 
+  private def walletDirMapping = Def.setting {
+    directory(baseDirectory.value / "logs" / "bitcoin")
+  }
+
   /*
     Copies directory "static" and its content into target directory /usr/share/<app>/
    */
@@ -95,12 +99,13 @@ object PackageSetting {
     directory(baseDirectory.value / "static")
   }
 
-  private def walletDirMapping = {
-    (packageMapping(
-      file("bitcoin") -> "bitcoin"
-    ) withUser "paypercom-hotspot"
-      withGroup "paypercom-hotspot").mappings.toSeq
-  }
+
+//  private def walletDirMapping = {
+//    (packageMapping(
+//      file("bitcoin") -> "bitcoin"
+//    ) withUser "paypercom-hotspot"
+//      withGroup "paypercom-hotspot").mappings.toSeq
+//  }
 
 }
 

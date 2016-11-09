@@ -19,14 +19,13 @@ class WalletSupervisorService extends Actor with LazyLogging {
 
   val network = NetworkParameters.fromID(config.getString("wallet.net"))
   val walletFileName = config.getString("wallet.walletFile")
+  val walletDir = config.getString("wallet.walletDir")
 
-  val file = new File(".")
+  val file = new File(walletDir)
 
   logger.info(s"Using wallet dir ${file.getAbsolutePath}")
   val kit = new WalletAppKit(network, file, walletFileName) {
     override def onSetupCompleted() { wallet.importKey(new ECKey) }
-
-
   }
 
   def networkParams = kit.params

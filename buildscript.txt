@@ -72,7 +72,7 @@ ssid=$ESSID" > /etc/hostapd/hostapd.conf
 # BROKEN (must change only the first occurrence)!!!
 sed -i '/DAEMON_CONF/c\DAEMON_CONF=/etc/hostapd/hostapd.conf/' /etc/init.d/hostapd
 
-# Allow ipv4 packet forwarding in kernel
+# Allow ipv4 packet forwarding in kernel -- is that persistent?
 echo 1 > /proc/sys/net/ipv4/ip_forward
 
 # Enable hostapd at boot
