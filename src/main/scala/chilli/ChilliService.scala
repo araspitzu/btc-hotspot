@@ -10,12 +10,16 @@ import scala.concurrent.ExecutionContext.Implicits.global
 
 /**
   * Created by andrea on 09/11/16.
+  *
+  * Chilli daemon interface, uses the "chilli_query" script but we can
+  * connect directly to a TCP socket offered by coova-chilli to issue commands
+  *
   */
 class ChilliService extends LazyLogging{
 
   private val chilli_query = "chilli_query"
 
-  implicit class ShellExecutor(cmd:String) {
+  implicit class CmdExecutor(cmd:String) {
     def exec:Future[String] = Future {
 
       val proc = Runtime.getRuntime.exec(cmd)
@@ -39,7 +43,7 @@ class ChilliService extends LazyLogging{
     s"$chilli_query $cmd"
   }
 
-  //00:0D:XX:XX:XX:XX 10.1.0.3 dnat 46c83f70000 0 - 0/0 0/0 http://url.com
+  //00:0D:XX:XX:XX:XX 10.1.0.3 dnat 46c83f70000 1 me 2/0 2/0 http://url.com
   def status:Future[Report] = {
     cmd("list").exec.map{ result =>
       val elems = result.split("")

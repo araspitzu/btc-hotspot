@@ -76,7 +76,8 @@ object PackageSetting {
         confFileMapping.value,
         logbackConfMapping.value
       )
-    }
+    },
+    walletDirectory
   )
 
   private def logbackConfMapping = Def.setting {
@@ -90,7 +91,7 @@ object PackageSetting {
   }
 
   private def walletDirMapping = Def.setting {
-    directory(baseDirectory.value / "logs" / "bitcoin")
+    directory(baseDirectory.value / "bitcoin")
   }
 
   /*
@@ -100,13 +101,14 @@ object PackageSetting {
     directory(baseDirectory.value / "static")
   }
 
+  private def walletDirectory = {
+    linuxPackageMappings += packageTemplateMapping(
+      s"/opt/${ThisBuild.name}/bitcoin"
+    )().withUser((daemonUser in Linux).value)
+      .withGroup((daemonGroup in Linux).value)
+      .withPerms("755")
+  }
 
-//  private def walletDirMapping = {
-//    (packageMapping(
-//      file("bitcoin") -> "bitcoin"
-//    ) withUser "paypercom-hotspot"
-//      withGroup "paypercom-hotspot").mappings.toSeq
-//  }
 
 }
 
