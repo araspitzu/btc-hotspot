@@ -2,7 +2,7 @@ import com.typesafe.sbt.packager.archetypes._
 import com.typesafe.sbt.packager.archetypes.systemloader.SystemdPlugin
 import com.typesafe.sbt.packager.debian.{PackageInfo, DebianPlugin}
 import com.typesafe.sbt.packager.debian.DebianPlugin.autoImport._
-import com.typesafe.sbt.packager.linux.LinuxPackageMapping
+import com.typesafe.sbt.packager.linux.{LinuxSymlink, LinuxPackageMapping}
 import com.typesafe.sbt.packager.universal.UniversalPlugin
 import com.typesafe.sbt.packager.universal.UniversalPlugin.autoImport._
 import com.typesafe.sbt.packager.linux.LinuxPlugin.autoImport._
@@ -77,7 +77,10 @@ object PackageSetting {
         logbackConfMapping.value
       )
     },
-    walletDirectory
+    walletDirectory,
+    linuxPackageSymlinks += {
+      LinuxSymlink("bitcoin", s"/opt/${ThisBuild.name}/bitcoin")
+    }
   )
 
   private def logbackConfMapping = Def.setting {
