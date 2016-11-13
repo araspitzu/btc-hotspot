@@ -7,6 +7,6 @@ import akka.http.scaladsl.server.Route
   */
 trait MiniPortal extends PaymentChannelAPI with StaticFiles {
 
-  val miniportalRoute: Route = paymentChannelRoute ~ staticFilesRoute
+  val miniportalRoute: Route = paymentChannelRoute ~ staticFilesRoute ~ entryPointRoute
 
 }

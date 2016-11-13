@@ -150,6 +150,10 @@ object Dependencies {
     "org.bitcoinj" % "bitcoinj-core" % "0.14.3"
   )
 
+  val java8converters = Seq(
+    "org.scala-lang.modules" % "scala-java8-compat" % "0.8.0"
+  )
+
   val dependencies = akka ++ json4s ++ logging ++ bitcoinj
 }
 
