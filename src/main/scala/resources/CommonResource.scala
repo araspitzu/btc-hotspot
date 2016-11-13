@@ -1,11 +1,11 @@
 package resources
 
 import akka.actor.ActorSystem
-import akka.http.scaladsl.marshalling.{PredefinedToRequestMarshallers, PredefinedToResponseMarshallers, PredefinedToEntityMarshallers, GenericMarshallers}
 import akka.http.scaladsl.model.{ContentType, HttpHeader}
-import akka.http.scaladsl.model.HttpHeader.ParsingResult.Ok
 import akka.http.scaladsl.server.Directives
 import akka.stream.ActorMaterializer
+import akka.util.Timeout
+import scala.concurrent.duration._
 import com.typesafe.scalalogging.slf4j.LazyLogging
 import de.heikoseeberger.akkahttpjson4s.Json4sSupport
 
@@ -21,6 +21,9 @@ trait CommonResource extends Directives with Json4sSupport with LazyLogging {
   implicit val executionContext:ExecutionContext
 
   implicit val materializer:ActorMaterializer
+
+  implicit val timeout = Timeout(10 seconds)
+
 }
 
 object ExtraHttpHeaders {

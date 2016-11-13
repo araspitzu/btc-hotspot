@@ -1,12 +1,10 @@
 package resources
 
-import akka.http.scaladsl.model.StatusCodes.{Redirection, Success}
 import akka.http.scaladsl.model.{RemoteAddress, HttpRequest, StatusCodes, Uri}
 import akka.http.scaladsl.model.Uri._
-import akka.http.scaladsl.server.{PathMatchers, PathMatcher, Route}
+import akka.http.scaladsl.server.Route
 import commons.Configuration._
 import scala.compat.java8.OptionConverters._
-
 import scala.io.Source
 
 /**
@@ -31,7 +29,6 @@ trait StaticFiles extends CommonResource {
 
   def miniPortalUrl(clientIp:RemoteAddress, request: HttpRequest):Uri = {
 
-
     val mac = for {
       ipAddr <- clientIp.getAddress.asScala.map(_.getHostAddress)
       macAddr <- arpLookup(ipAddr)
@@ -44,7 +41,8 @@ trait StaticFiles extends CommonResource {
       .withPath(Path(miniPortalIndex))
       .withQuery(Query(
         "userUrl" -> request._2.toString,
-        "mac" -> mac.getOrElse("unknown")
+        "mac" -> mac.getOrElse("unknown"),
+        "sessionId" -> java.util.UUID.randomUUID.toString
       ))
   }
 
@@ -53,11 +51,6 @@ trait StaticFiles extends CommonResource {
       .fromFile("/proc/net/arp")
       .getLines
       .find(_.startsWith(ipAddr)).map(_.substring(41,58))
-  }
-
-
-  def makeUserUrl(req:HttpRequest):String = {
-    req._2.toString
   }
 
 

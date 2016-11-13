@@ -4,13 +4,12 @@ import akka.http.scaladsl.model._
 import akka.http.scaladsl.server._
 import akka.http.scaladsl.server.directives.LoggingMagnet
 import akka.http.scaladsl.unmarshalling._
-import akka.util.{ByteString, Timeout}
+import akka.util.{ByteString}
 import org.bitcoin.protocols.payments.Protos
 import org.bitcoin.protocols.payments.Protos._
 import org.bitcoinj.protocols.payments.PaymentProtocol
 import wallet.WalletSupervisorService
 import wallet.WalletSupervisorService._
-import scala.concurrent.duration._
 import akka.pattern.ask
 import ExtraHttpHeaders._
 import commons.Helpers._
@@ -19,8 +18,6 @@ import commons.Helpers._
   * Created by andrea on 15/09/16.
   */
 trait PaymentChannelAPI extends CommonResource {
-
-  implicit val timeout = Timeout(10 seconds)
 
   private[this] lazy val walletServiceActor = actorRefFor[WalletSupervisorService]
 
