@@ -2,6 +2,7 @@ package resources
 
 import akka.http.scaladsl.server.Route
 import commons.JsonSupport
+import protocol.domain.{PriceUnit, Price, Offer}
 
 
 /**
@@ -11,14 +12,14 @@ trait OffersAPI extends CommonResource with JsonSupport {
 
 
   def offersRoute:Route = get {
-    path("offers"){
-      complete(Offer(2.43, "Just an offer"))
+    path("api" / "offers"){
+      complete(Offer(
+        offerId = java.util.UUID.randomUUID.toString,
+        price = Price(2345, PriceUnit.MB),
+        description = "Buy 2345 MB!",
+        paymentURI = "bitcoin:r=/api/pay/session"
+      ))
     }
   }
-
-  case class Offer(
-     price:Double,
-     description:String
-  )
 
 }

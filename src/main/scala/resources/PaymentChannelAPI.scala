@@ -57,7 +57,7 @@ trait PaymentChannelAPI extends CommonResource {
 
   def paymentChannelRoute: Route = {
     logRequest(headerLogger){
-     path("pay" / Segment) { sessionId:String =>
+     path("api" / "pay" / Segment) { sessionId:String =>
       paymentRequestForSession(sessionId) ~ paymentDataForSession(sessionId)
      }
     }
