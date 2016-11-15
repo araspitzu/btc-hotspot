@@ -5,8 +5,12 @@ import akka.http.scaladsl.server.Route
 /**
   * Created by andrea on 09/09/16.
   */
-trait MiniPortal extends PaymentChannelAPI with StaticFiles {
+trait MiniPortal extends PaymentChannelAPI with StaticFiles with OffersAPI {
 
-  val miniportalRoute: Route = paymentChannelRoute ~ staticFilesRoute ~ entryPointRoute
+  val miniportalRoute: Route =
+    paymentChannelRoute ~
+    staticFilesRoute ~
+    offersRoute ~
+    entryPointRoute  //must stay in the last position
 
 }

@@ -1,13 +1,14 @@
 package resources
 
 import akka.http.scaladsl.server.Route
+import commons.JsonSupport
+
 
 /**
   * Created by andrea on 13/11/16.
   */
-trait OffersAPI extends CommonResource{
+trait OffersAPI extends CommonResource with JsonSupport {
 
-  val offerMarshaller = json4sMarshaller[Offer]
 
   def offersRoute:Route = get {
     path("offers"){
@@ -15,12 +16,9 @@ trait OffersAPI extends CommonResource{
     }
   }
 
-
-
   case class Offer(
      price:Double,
      description:String
   )
-
 
 }
