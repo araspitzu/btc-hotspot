@@ -6,7 +6,7 @@ import akka.http.scaladsl.model.MediaTypes._
 import akka.http.scaladsl.model.HttpCharsets._
 import akka.http.scaladsl.model.Uri._
 import akka.http.scaladsl.server.Route
-import commons.Configuration._
+import commons.Configuration.MiniPortalConfig._
 import scala.compat.java8.OptionConverters._
 import iptables.ArpService._
 
@@ -14,11 +14,6 @@ import iptables.ArpService._
   * Created by andrea on 19/10/16.
   */
 trait StaticFiles extends CommonResource {
-
-  val staticFilesDir = config.getString("miniportal.staticFilesDir")
-  val miniPortalHost = config.getString("miniportal.host")
-  val miniPortalPort = config.getInt("miniportal.port")
-  val miniPortalIndex = config.getString("miniportal.index")
 
   /**
     * Serves all static files in the given folder
