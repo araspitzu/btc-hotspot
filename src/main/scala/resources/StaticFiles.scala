@@ -8,7 +8,7 @@ import akka.http.scaladsl.model.Uri._
 import akka.http.scaladsl.server.Route
 import commons.Configuration._
 import scala.compat.java8.OptionConverters._
-import iptables.Arp._
+import iptables.ArpService._
 
 /**
   * Created by andrea on 19/10/16.

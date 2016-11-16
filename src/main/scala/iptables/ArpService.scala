@@ -7,7 +7,7 @@ import scala.io.Source
  * Created by andrea on 16/11/16.
  */
 //TODO add caching
-object Arp {
+object ArpService {
 
   private final val arpFile = "/proc/net/arp"
 
