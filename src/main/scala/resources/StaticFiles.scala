@@ -8,7 +8,7 @@ import akka.http.scaladsl.model.Uri._
 import akka.http.scaladsl.server.Route
 import commons.Configuration._
 import scala.compat.java8.OptionConverters._
-import scala.io.Source
+import iptables.Arp._
 
 /**
   * Created by andrea on 19/10/16.
@@ -20,8 +20,14 @@ trait StaticFiles extends CommonResource {
   val miniPortalPort = config.getInt("miniportal.port")
   val miniPortalIndex = config.getString("miniportal.index")
 
+  /**
+    * Serves all static files in the given folder
+    */
   def staticFilesRoute:Route = getFromDirectory(staticFilesDir)
 
+  /**
+    * Performs browser redirect
+    */
   def preloginRoute:Route = get {
     path("prelogin"){
       complete {
@@ -32,15 +38,18 @@ trait StaticFiles extends CommonResource {
     }
   }
 
+  /**
+    * Redirects the user to the prelogin
+    */
   def entryPointRoute:Route = get {
     extractClientIP { srcIp =>
       extractRequest { httpRequest =>
-        redirect(miniPortalUrl(srcIp, httpRequest), StatusCodes.TemporaryRedirect)
+        redirect(gotoPrelogin(srcIp, httpRequest), StatusCodes.TemporaryRedirect)
       }
     }
   }
 
-  def miniPortalUrl(clientIp:RemoteAddress, request: HttpRequest):Uri = {
+  def gotoPrelogin(clientIp:RemoteAddress, request: HttpRequest):Uri = {
 
     val mac = for {
       ipAddr <- clientIp.getAddress.asScala.map(_.getHostAddress)
@@ -59,13 +68,6 @@ trait StaticFiles extends CommonResource {
       ))
   }
 
-  def arpLookup(ipAddr:String) = {
-    Source
-      .fromFile("/proc/net/arp")
-      .getLines
-      .find(_.startsWith(ipAddr)).map(_.substring(41,58))
-  }
-
   val browserRedirectPage =
     """
       |<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
@@ -77,7 +79,7 @@ trait StaticFiles extends CommonResource {
       |window.onload = function() {
       |  var href = window.location.href;
       |  loginUrl = "index.html"+href.substring(href.indexOf("?"), href.length);
-      |  setTimeout(redirect, 2500);
+      |  setTimeout(redirect, 1500);
       |}
       |</script>
       |<meta http-equiv="refresh" content="7; URL=/prelogin">
