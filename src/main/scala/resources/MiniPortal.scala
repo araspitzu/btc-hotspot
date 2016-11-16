@@ -11,6 +11,7 @@ trait MiniPortal extends PaymentChannelAPI with StaticFiles with OffersAPI {
     paymentChannelRoute ~
     staticFilesRoute ~
     offersRoute ~
+    preloginRoute ~
     entryPointRoute  //must stay in the last position because it matches any request
 
 }
