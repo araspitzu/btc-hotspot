@@ -32,7 +32,7 @@ class IpTablesService extends LazyLogging{
   }
 
   private def iptables(params:String) = {
-    s"/sbin/iptables $params"
+    s"sudo /sbin/iptables $params"
   }
 
   def enableClient(mac:String):Future[String] = {

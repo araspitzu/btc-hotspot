@@ -70,7 +70,6 @@ trait StaticFiles extends CommonResource with ExtraDirectives {
       |  setTimeout(redirect, 1500);
       |}
       |</script>
-      |<meta http-equiv="refresh" content="7; URL=/prelogin">
       |</head>
       |<body style="margin: 0pt auto; height:100%;">
       |<div style="width:100%;height:80%;position:fixed;display:table;">

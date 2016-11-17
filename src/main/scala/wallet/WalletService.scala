@@ -6,7 +6,7 @@ import com.typesafe.scalalogging.slf4j.LazyLogging
 import commons.Configuration.WalletConfig._
 import commons.Configuration.MiniPortalConfig._
 import org.bitcoin.protocols.payments.Protos
-import org.bitcoin.protocols.payments.Protos.PaymentRequest
+import org.bitcoin.protocols.payments.Protos.{PaymentACK, PaymentRequest}
 import org.bitcoinj.core.TransactionBroadcast.ProgressCallback
 import org.bitcoinj.core.{Transaction, Coin, ECKey}
 import org.bitcoinj.kits.WalletAppKit
@@ -30,7 +30,7 @@ class WalletService extends LazyLogging {
 
   def bytes2hex(bytes:Array[Byte]):String = bytes.map("%02x ".format(_)).mkString
 
-  def generatePaymentRequest(sessionId:String):PaymentRequest = {
+  def generatePaymentRequest(sessionId:String, offerId:String):PaymentRequest = {
     logger.info(s"Issuing payment request for session $sessionId")
 
     val owedSatoshis = 35000
@@ -45,7 +45,7 @@ class WalletService extends LazyLogging {
     ).build()
   }
 
-  def payment(payment:Protos.Payment) = {
+  def payment(payment:Protos.Payment):Protos.PaymentACK = {
 
     for( i <- 0 to (payment.getTransactionsCount - 1) ) yield {
       val txBytes = payment.getTransactions(i).toByteArray
@@ -59,6 +59,9 @@ class WalletService extends LazyLogging {
       })
 
     }
+
+    PaymentACK.newBuilder.build
+
   }
 
 }

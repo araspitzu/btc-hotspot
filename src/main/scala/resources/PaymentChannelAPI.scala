@@ -5,6 +5,7 @@ import akka.http.scaladsl.server._
 import akka.http.scaladsl.server.directives.LoggingMagnet
 import akka.http.scaladsl.unmarshalling._
 import akka.util.{ByteString}
+import iptables.IpTablesService
 import org.bitcoin.protocols.payments.Protos
 import org.bitcoin.protocols.payments.Protos._
 import org.bitcoinj.protocols.payments.PaymentProtocol
@@ -17,9 +18,11 @@ import commons.Helpers._
 /**
   * Created by andrea on 15/09/16.
   */
-trait PaymentChannelAPI extends CommonResource {
+trait PaymentChannelAPI extends CommonResource with ExtraDirectives {
 
   private[this] lazy val walletServiceActor = actorRefFor[WalletSupervisorService]
+
+  private val iptables = new IpTablesService
 
   def headerLogger:LoggingMagnet[HttpRequest ⇒ Unit] = LoggingMagnet { loggingAdapter => request =>
      loggingAdapter.debug(s"Headers: ${request._3.toString()}")
@@ -59,6 +62,14 @@ trait PaymentChannelAPI extends CommonResource {
     logRequest(headerLogger){
      path("api" / "pay" / Segment) { sessionId:String =>
       paymentRequestForSession(sessionId) ~ paymentDataForSession(sessionId)
+     } ~ get {
+       extractClientMAC { someMac =>
+         path("api" / "enableme") {
+           complete(iptables.enableClient(someMac.get))
+         } ~ path("api" / "disableme") {
+           complete(iptables.disableClient(someMac.get))
+         }
+       }
      }
     }
   }
