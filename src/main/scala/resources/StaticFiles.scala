@@ -7,13 +7,11 @@ import akka.http.scaladsl.model.HttpCharsets._
 import akka.http.scaladsl.model.Uri._
 import akka.http.scaladsl.server.Route
 import commons.Configuration.MiniPortalConfig._
-import scala.compat.java8.OptionConverters._
-import iptables.ArpService._
 
 /**
   * Created by andrea on 19/10/16.
   */
-trait StaticFiles extends CommonResource {
+trait StaticFiles extends CommonResource with ExtraDirectives {
 
   /**
     * Serves all static files in the given folder
@@ -37,19 +35,14 @@ trait StaticFiles extends CommonResource {
     * Redirects the user to the prelogin
     */
   def entryPointRoute:Route = get {
-    extractClientIP { srcIp =>
+    extractClientMAC { clientMAC =>
       extractRequest { httpRequest =>
-        redirect(gotoPrelogin(srcIp, httpRequest), StatusCodes.TemporaryRedirect)
+        redirect(gotoPrelogin(clientMAC, httpRequest), StatusCodes.TemporaryRedirect)
       }
     }
   }
 
-  def gotoPrelogin(clientIp:RemoteAddress, request: HttpRequest):Uri = {
-
-    val mac = for {
-      ipAddr <- clientIp.getAddress.asScala.map(_.getHostAddress)
-      macAddr <- arpLookup(ipAddr)
-    } yield macAddr
+  def gotoPrelogin(clientMAC:Option[String], request: HttpRequest):Uri = {
 
     Uri()
       .withScheme("http")
@@ -58,7 +51,7 @@ trait StaticFiles extends CommonResource {
       .withPath(Path("/prelogin"))
       .withQuery(Query(
         "userUrl" -> request._2.toString,
-        "mac" -> mac.getOrElse("unknown"),
+        "mac" -> clientMAC.getOrElse("unknown"),
         "sessionId" -> java.util.UUID.randomUUID.toString
       ))
   }

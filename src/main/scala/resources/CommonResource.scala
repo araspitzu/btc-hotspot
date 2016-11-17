@@ -2,9 +2,11 @@ package resources
 
 import akka.actor.ActorSystem
 import akka.http.scaladsl.model.{ContentType, HttpHeader}
-import akka.http.scaladsl.server.Directives
+import akka.http.scaladsl.server.{Directive1, Directives}
 import akka.stream.ActorMaterializer
 import akka.util.Timeout
+import scala.compat.java8.OptionConverters._
+import iptables.ArpService._
 import scala.concurrent.duration._
 import com.typesafe.scalalogging.slf4j.LazyLogging
 import de.heikoseeberger.akkahttpjson4s.Json4sSupport
@@ -35,5 +37,17 @@ object ExtraHttpHeaders {
     case Right(contentType) => contentType
     case Left(err) => throw new RuntimeException(s"Unable to generate Content-Type for $customContentType, ${err.toString}")
   }
+
+}
+
+trait ExtraDirectives extends Directives {
+
+  def extractClientMAC:Directive1[Option[String]] = extractClientIP map { remoteAddress =>
+    for {
+      ipAddr <- remoteAddress.getAddress.asScala.map(_.getHostAddress)
+      macAddr <- arpLookup(ipAddr)
+    } yield macAddr
+  }
+
 
 }

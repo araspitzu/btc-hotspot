@@ -12,12 +12,12 @@ trait OffersAPI extends CommonResource with JsonSupport {
 
 
   def offersRoute:Route = get {
-    path("api" / "offers"){
+    path("api" / "offers" / Segment){ offerId =>
       complete(Offer(
         offerId = java.util.UUID.randomUUID.toString,
         price = Price(2345, PriceUnit.MB),
         description = "Buy 2345 MB!",
-        paymentURI = "bitcoin:r=/api/pay/session"
+        paymentURI = s"bitcoin:r=/api/pay/session?offerId=$offerId"
       ))
     }
   }

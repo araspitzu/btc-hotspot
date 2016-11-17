@@ -6,6 +6,7 @@ import com.typesafe.scalalogging.slf4j.LazyLogging
 import commons.Configuration._
 import resources.{StaticFiles, MiniPortal}
 import wallet.WalletSupervisorService
+import commons.Configuration.MiniPortalConfig._
 
 object Boot extends App
   with MiniPortal
@@ -16,10 +17,7 @@ object Boot extends App
 
   implicit val executionContext = actorSystem.dispatcher
 
-
-  val miniportalHost = config.getString("miniportal.host")
-  val miniportalPort = config.getInt("miniportal.port")
-  bindOrFail(miniportalRoute, miniportalHost, miniportalPort, "MiniPortal")
+  bindOrFail(miniportalRoute, miniPortalHost, miniPortalPort, "MiniPortal")
 
   //Spawn wallet service actor
   actorSystem.actorOf(Props[WalletSupervisorService],WalletSupervisorService.getClass.getSimpleName)
