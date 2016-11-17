@@ -37,12 +37,12 @@ trait StaticFiles extends CommonResource with ExtraDirectives {
   def entryPointRoute:Route = get {
     extractClientMAC { clientMAC =>
       extractRequest { httpRequest =>
-        redirect(gotoPrelogin(clientMAC, httpRequest), StatusCodes.TemporaryRedirect)
+        redirect(preLoginUrl(clientMAC, httpRequest), StatusCodes.TemporaryRedirect)
       }
     }
   }
 
-  def gotoPrelogin(clientMAC:Option[String], request: HttpRequest):Uri = {
+  def preLoginUrl(clientMAC:Option[String], request: HttpRequest):Uri = {
 
     Uri()
       .withScheme("http")
