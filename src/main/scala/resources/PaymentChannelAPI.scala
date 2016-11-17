@@ -9,6 +9,7 @@ import iptables.IpTablesService
 import org.bitcoin.protocols.payments.Protos
 import org.bitcoin.protocols.payments.Protos._
 import org.bitcoinj.protocols.payments.PaymentProtocol
+import protocol.domain.Session
 import wallet.WalletSupervisorService
 import wallet.WalletSupervisorService._
 import akka.pattern.ask
@@ -36,41 +37,40 @@ trait PaymentChannelAPI extends CommonResource with ExtraDirectives {
     }
   }
 
-  private def paymentRequestForSession(sessionId:String) = get {
+  private def paymentRequestForSession(session:Session, offerId:String) = get {
     complete {
-      (walletServiceActor ? PAYMENT_REQUEST(sessionId)).map { case req: PaymentRequest =>
+      (walletServiceActor ? PAYMENT_REQUEST(session.id)).map { case req: PaymentRequest =>
         HttpEntity(req.toByteArray).withContentType(paymentRequestContentType)
       }
     }
   }
 
-  private def paymentDataForSession(sessionId:String) = post {
+  private def paymentDataForSession(session:Session, offerId:String) = post {
     entity(as[Protos.Payment]){ payment =>
       complete {
         //Send the payment to the wallet actor and wait for its response
         (walletServiceActor ? PAYMENT(payment)).map { case PAYMENT_ACK =>
           HttpEntity(
-            PaymentProtocol.createPaymentAck(payment, s"Enjoy session $sessionId").toByteArray
+            PaymentProtocol.createPaymentAck(payment, s"Enjoy session ${session.id}").toByteArray
           ).withContentType(paymentAckContentType)
         }
       }
     }
   }
 
+  def enableMe(macAddress:String) = get {
+    path("api" / "enableme") {
+      complete(iptables.enableClient(macAddress))
+    } ~ path("api" / "disableme") {
+      complete(iptables.disableClient(macAddress))
+    }
+  }
 
   def paymentChannelRoute: Route = {
-    logRequest(headerLogger){
-     path("api" / "pay" / Segment) { sessionId:String =>
-      paymentRequestForSession(sessionId) ~ paymentDataForSession(sessionId)
-     } ~ get {
-       extractClientMAC { someMac =>
-         path("api" / "enableme") {
-           complete(iptables.enableClient(someMac.get))
-         } ~ path("api" / "disableme") {
-           complete(iptables.disableClient(someMac.get))
-         }
-       }
-     }
+    path("api" / "pay" / Segment) { offerId:String =>
+      sessionOrReject { session =>
+        paymentRequestForSession(session, offerId) ~ paymentDataForSession(session, offerId)
+      }
     }
   }
 

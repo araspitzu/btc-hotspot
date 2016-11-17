@@ -1,5 +1,6 @@
 package protocol
 
+import org.joda.time.LocalDateTime
 import protocol.domain.PriceUnit.PriceUnit
 
 /**
@@ -7,11 +8,18 @@ import protocol.domain.PriceUnit.PriceUnit
   */
 package object domain {
 
+  case class Session(
+    id:String = java.util.UUID.randomUUID.toString,
+    createdAt:LocalDateTime = LocalDateTime.now,
+    clientMac:String,
+    remainingUnits:Long = -1
+  )
+
   case class Offer(
-    offerId:String,
-    price:Price,
-    description:String,
-    paymentURI:String
+    offerId:String = java.util.UUID.randomUUID.toString,
+    qty:Quantity,
+    price:Long,
+    description:String
   )
 
   case object PriceUnit extends Enumeration {
@@ -20,7 +28,7 @@ package object domain {
     val seconds = Value("seconds")
   }
 
-  case class Price(
+  case class Quantity(
     value:Long,
     unit:PriceUnit
   )

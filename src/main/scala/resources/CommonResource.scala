@@ -1,16 +1,19 @@
 package resources
 
 import akka.actor.ActorSystem
-import akka.http.scaladsl.model.{ContentType, HttpHeader}
-import akka.http.scaladsl.server.{Directive1, Directives}
+import akka.http.scaladsl.model.Uri.{Query, Path}
+import akka.http.scaladsl.server.{StandardRoute, Directive1, Directives}
 import akka.stream.ActorMaterializer
 import akka.util.Timeout
+import protocol.Repository
+import protocol.domain.Session
 import scala.compat.java8.OptionConverters._
 import iptables.ArpService._
 import scala.concurrent.duration._
 import com.typesafe.scalalogging.slf4j.LazyLogging
 import de.heikoseeberger.akkahttpjson4s.Json4sSupport
-
+import akka.http.scaladsl.model._
+import commons.Configuration.MiniPortalConfig._
 import scala.concurrent.ExecutionContext
 
 /**
@@ -49,5 +52,29 @@ trait ExtraDirectives extends Directives {
     } yield macAddr
   }
 
+  def extractSessionForMac:Directive1[Option[Session]] = extractClientMAC map { someMac =>
+    someMac map Repository.sessionById
+  }
+
+  def redirectToPrelogin(request: Option[HttpRequest] = None) =
+    redirect(preLoginUrl(request), StatusCodes.TemporaryRedirect)
+
+  def sessionOrReject:Directive1[Session] = extractSessionForMac map {
+    _ match {
+      case None => throw new IllegalArgumentException("Session not found")
+      case Some(session) => session
+    }
+  }
+
+  private def preLoginUrl(request: Option[HttpRequest]):Uri = {
+    Uri()
+    .withScheme("http")
+    .withHost(miniPortalHost)
+    .withPort(miniPortalPort)
+    .withPath(Path("/prelogin"))
+    .withQuery(Query(
+      "userUrl" -> request.map(_._2.toString).getOrElse("paypercom.me")
+    ))
+  }
 
 }

@@ -7,6 +7,8 @@ import akka.http.scaladsl.model.HttpCharsets._
 import akka.http.scaladsl.model.Uri._
 import akka.http.scaladsl.server.Route
 import commons.Configuration.MiniPortalConfig._
+import protocol.Repository
+import protocol.domain.Session
 
 /**
   * Created by andrea on 19/10/16.
@@ -18,41 +20,44 @@ trait StaticFiles extends CommonResource with ExtraDirectives {
     */
   def staticFilesRoute:Route = getFromDirectory(staticFilesDir)
 
+  def createSessionForMac(clientMac:String) = {
+    val session = Session(clientMac = clientMac)
+    Repository.insertSession(session)
+  }
+
   /**
-    * Performs browser redirect
+    * Create the session and performs browser redirect
     */
   def preloginRoute:Route = get {
-    path("prelogin"){
-      complete {
-        HttpEntity(
-          browserRedirectPage
-        ).withContentType(`text/html`.toContentType(`UTF-8`))
+    path("prelogin") {
+      extractClientMAC { clientMac =>
+        complete {
+          createSessionForMac(clientMac.getOrElse("unknown"))
+          HttpEntity(
+            browserRedirectPage
+          ).withContentType(`text/html`.toContentType(`UTF-8`))
+        }
       }
     }
   }
 
   /**
-    * Redirects the user to the prelogin
+    * Redirects the user to prelogin
     */
   def entryPointRoute:Route = get {
-    extractClientMAC { clientMAC =>
       extractRequest { httpRequest =>
-        redirect(preLoginUrl(clientMAC, httpRequest), StatusCodes.TemporaryRedirect)
+        redirect(preLoginUrl(httpRequest), StatusCodes.TemporaryRedirect)
       }
-    }
   }
 
-  def preLoginUrl(clientMAC:Option[String], request: HttpRequest):Uri = {
-
+  def preLoginUrl(request: HttpRequest):Uri = {
     Uri()
       .withScheme("http")
       .withHost(miniPortalHost)
       .withPort(miniPortalPort)
       .withPath(Path("/prelogin"))
       .withQuery(Query(
-        "userUrl" -> request._2.toString,
-        "mac" -> clientMAC.getOrElse("unknown"),
-        "sessionId" -> java.util.UUID.randomUUID.toString
+        "userUrl" -> request._2.toString
       ))
   }
 
@@ -82,7 +87,6 @@ trait StaticFiles extends CommonResource with ExtraDirectives {
       |</div>
       |</body>
       |</html>
-      |
     """.stripMargin
 
 
