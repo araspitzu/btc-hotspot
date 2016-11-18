@@ -47,7 +47,7 @@ trait ExtraDirectives extends Directives {
   }
 
   def extractSessionForMac:Directive1[Option[Session]] = extractClientMAC map { someMac =>
-    someMac map Repository.sessionByMac
+    someMac map Repository.sessionByMac flatten
   }
 
   def redirectToPrelogin(request: Option[HttpRequest] = None) =

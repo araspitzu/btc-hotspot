@@ -34,7 +34,7 @@ object Repository {
 
   def insertSessionForMac(session:Session, mac:String) = sessionMacCache.put(mac, session)
 
-  def sessionByMac(mac:String) = sessionMacCache(mac)
+  def sessionByMac(mac:String) = sessionMacCache.get(mac)
 
 
 }

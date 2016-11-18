@@ -19,10 +19,12 @@ import scala.concurrent.Future
   * Created by andrea on 16/11/16.
   */
 trait WalletServiceComponent extends LazyLogging {
+  logger.info(s"Creating WalletServiceComponent")
 
   val walletService: WalletService
 
   class WalletService {
+    logger.info(s"Creating WalletService")
 
     val file = new File(walletDir)
 
@@ -30,12 +32,10 @@ trait WalletServiceComponent extends LazyLogging {
       override def onSetupCompleted() {
         wallet.importKey(new ECKey)
       }
-    }
+    }.setAutoStop(true)
 
     def networkParams = kit.params
-
     def peerGroup = kit.peerGroup
-
     def wallet = kit.wallet
 
     def receivingAddress: String = bytes2hex(wallet.currentReceiveAddress.getHash160)

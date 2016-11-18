@@ -5,9 +5,8 @@ import akka.http.scaladsl.model._
 import akka.http.scaladsl.server._
 import akka.http.scaladsl.server.directives.LoggingMagnet
 import akka.http.scaladsl.unmarshalling._
-import akka.stream.ActorMaterializer
 import akka.util.{ByteString}
-import commons.{AppExecutionContextRegistry, AppExecutionContext}
+import commons.{AppExecutionContextRegistry}
 import iptables.IpTablesService._
 import org.bitcoin.protocols.payments.Protos
 import org.bitcoin.protocols.payments.Protos._
@@ -49,6 +48,13 @@ trait PaymentChannelAPI extends CommonResource with ExtraDirectives {
           HttpEntity(ack.toByteArray).withContentType(paymentAckContentType)
         }
       }
+    }
+  }
+
+  def enableMeRoute = extractClientMAC {
+    _ match {
+      case Some(mac) => enableMe(mac)
+      case None => throw new IllegalArgumentException("Mac not found")
     }
   }
 

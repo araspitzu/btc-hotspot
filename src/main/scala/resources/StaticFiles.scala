@@ -21,10 +21,16 @@ trait StaticFiles extends CommonResource with ExtraDirectives {
   def staticFilesRoute:Route = getFromDirectory(staticFilesDir)
 
   def createSessionForMac(clientMac:String) = {
-    logger.info(s"CREATING SESSION FOR $clientMac")
-    val session = Session(clientMac = clientMac)
-    logger.info(s"SESSION ID: ${session.id}")
-    Repository.insertSessionForMac(session, clientMac)
+    Repository.sessionByMac(clientMac) match {
+      case Some(session) =>
+        logger.info(s"Found exising session for $clientMac")
+      case None =>
+        logger.info(s"CREATING SESSION FOR $clientMac")
+        val session = Session(clientMac = clientMac)
+        logger.info(s"SESSION ID: ${session.id}")
+        Repository.insertSessionForMac(session, clientMac)
+    }
+
   }
 
   /**

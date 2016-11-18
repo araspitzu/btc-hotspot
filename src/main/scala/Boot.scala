@@ -11,6 +11,8 @@ object Registry
     with PaymentChannelAPI
     with WalletServiceComponent {
 
+  logger.info(s"Creating Registry")
+
   override val walletService = new WalletService
 }
 
