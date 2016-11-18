@@ -44,7 +44,7 @@ trait PaymentChannelAPI extends CommonResource with ExtraDirectives {
   private def paymentDataForSession(session:Session, offerId:String) = post {
     entity(as[Protos.Payment]){ payment =>
       complete {
-        walletService.validatePayment(payment) map { ack =>
+        walletService.validatePayment(session, payment) map { ack =>
           HttpEntity(ack.toByteArray).withContentType(paymentAckContentType)
         }
       }

@@ -5,6 +5,7 @@ import java.io.{IOException, File}
 import com.typesafe.scalalogging.slf4j.LazyLogging
 import commons.Configuration.WalletConfig._
 import commons.Configuration.MiniPortalConfig._
+import iptables.IpTablesService
 import org.bitcoin.protocols.payments.Protos
 import org.bitcoin.protocols.payments.Protos.{PaymentRequest}
 import org.bitcoinj.core.TransactionBroadcast.ProgressCallback
@@ -58,7 +59,7 @@ trait WalletServiceComponent extends LazyLogging {
       ).build()
     }
 
-    def validatePayment(payment: Protos.Payment): Future[Protos.PaymentACK] = Future {
+    def validatePayment(session: Session, payment: Protos.Payment): Future[Protos.PaymentACK] = Future {
 
       for (i <- 0 to (payment.getTransactionsCount - 1)) yield {
         val txBytes = payment.getTransactions(i).toByteArray
@@ -72,6 +73,8 @@ trait WalletServiceComponent extends LazyLogging {
         })
 
       }
+
+      IpTablesService.enableClient(session.clientMac)
 
       PaymentProtocol.createPaymentAck(payment, s"Enjoy session your session!")
     }

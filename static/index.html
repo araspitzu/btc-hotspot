@@ -22,7 +22,23 @@
   <link rel="stylesheet" href="css/main.css">
 
   <script src="js/modernizr-2.7.1.js"></script>
-  
+
+  <script type="javascript">
+    window.onload = function(){
+          $.ajax({url: "/api/offers", success: function(offers){
+          console.log("Offers loaded: "+offers.length);
+
+          var link1 = document.getElementById("link1");
+          var link2 = document.getElementById("link2");
+          var link3 = document.getElementById("link3");
+
+          link1.href = offers[0].paymentURI;
+          link2.href = offers[1].paymentURI;
+          link3.href = offers[2].paymentURI;
+      }});
+    };
+  </script>
+
 </head>
 
 <body>
@@ -147,7 +163,7 @@
     					<li class="features first">Whatsapp</li>
     					<li class="features">Email</li>
                         <li class="features">Facebook</li>
-              <li class="features last btn btn-secondary btn-wide"><a href="bitcoin:?r=http://10.1.0.1:8081/pay/1me000122">Buy</a></li>
+                        <li class="features last btn btn-secondary btn-wide"><a id="link1" href="bitcoin:?r=http://10.1.0.1:8081/pay/1me000122">Buy</a></li>
     				</ul>
           </div>
           
@@ -160,7 +176,7 @@
     					<li class="features">Skype</li>
     					<li class="features">File sharing</li>
     					<li class="features">Streaming</li>
-    					<li class="features last btn btn-secondary btn-wide"><a href="bitcoin:?r=http://10.1.0.1:8081/pay/1me000122">Buy</a></li>
+    					<li class="features last btn btn-secondary btn-wide"><a id="link2" href="bitcoin:?r=http://10.1.0.1:8081/pay/1me000122">Buy</a></li>
     				</ul>
           </div>
           
@@ -173,7 +189,7 @@
     					<li class="features first">Video chiamate</li>
     					<li class="features">Gaming</li>
     					<li class="features">Tutto il resto..</li>
-    					<li class="features last btn btn-secondary btn-wide"><a href="bitcoin:?r=http://10.1.0.1:8081/pay/1me000122">Buy</a></li>
+    					<li class="features last btn btn-secondary btn-wide"><a id="link3" href="bitcoin:?r=http://10.1.0.1:8081/pay/1me000122">Buy</a></li>
     				</ul>
           </div>
           
@@ -265,6 +281,5 @@
     <script src="js/bootstrap.min.js"></script>
     <script src="js/main.js"></script>
 
-   
     </body>
 </html>

@@ -23,8 +23,15 @@ object Repository {
     description =  "5000 megabytes"
   )
 
+  val offer3 = Offer(
+    qty = Quantity(50000, MB),
+    price = 5000,
+    description =  "50000 megabytes"
+  )
+
   offerCache.put(offer1.offerId, offer1)
   offerCache.put(offer2.offerId, offer2)
+  offerCache.put(offer3.offerId, offer3)
 
   private val sessionOfferCache = new mutable.HashMap[Session, Option[Offer]]()
 

@@ -16,7 +16,7 @@ package object webDto {
   object WebOfferDto {
     def apply(offer:Offer):WebOfferDto = WebOfferDto(
       offer,
-      paymentURI = s"bitcoin:r=$miniPortalHost:$miniPortalPort/api/pay/${offer.offerId}"
+      paymentURI = s"bitcoin:?r=http://$miniPortalHost:$miniPortalPort/api/pay/${offer.offerId}"
     )
   }
 
