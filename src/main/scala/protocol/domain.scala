@@ -1,7 +1,7 @@
 package protocol
 
 import org.joda.time.LocalDateTime
-import protocol.domain.PriceUnit.PriceUnit
+import protocol.domain.QtyUnit.QtyUnit
 
 /**
   * Created by andrea on 15/11/16.
@@ -22,15 +22,15 @@ package object domain {
     description:String
   )
 
-  case object PriceUnit extends Enumeration {
-    type PriceUnit = Value
+  case object QtyUnit extends Enumeration {
+    type QtyUnit = Value
     val MB = Value("MB")
     val seconds = Value("seconds")
   }
 
   case class Quantity(
     value:Long,
-    unit:PriceUnit
+    unit:QtyUnit
   )
 
 }

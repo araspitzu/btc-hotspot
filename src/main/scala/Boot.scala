@@ -6,20 +6,18 @@ import resources.{PaymentChannelAPI, MiniPortal}
 import wallet.WalletServiceComponent
 import commons.AppExecutionContextRegistry.context._
 
-object Registry
+object MiniPortalRegistry
   extends MiniPortal
     with PaymentChannelAPI
     with WalletServiceComponent {
-
-  logger.info(s"Creating Registry")
 
   override val walletService = new WalletService
 }
 
 object Boot extends App with LazyLogging {
-
   logger.info(s"Starting paypercom-hotspot")
-  bindOrFail(Registry.miniportalRoute, miniPortalHost, miniPortalPort, "MiniPortal")
+
+  bindOrFail(MiniPortalRegistry.miniportalRoute, miniPortalHost, miniPortalPort, "MiniPortal")
 
 
   def bindOrFail(handler:Route, iface:String, port:Int, serviceName:String):Unit = {

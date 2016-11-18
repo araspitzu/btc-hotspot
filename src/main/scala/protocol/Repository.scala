@@ -1,7 +1,7 @@
 package protocol
 
-import protocol.domain.{PriceUnit, Quantity, Session, Offer}
-import protocol.domain.PriceUnit._
+import protocol.domain.{QtyUnit, Quantity, Session, Offer}
+import protocol.domain.QtyUnit._
 import scala.collection.mutable
 
 /**

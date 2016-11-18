@@ -1,6 +1,6 @@
 package wallet
 
-import java.io.File
+import java.io.{IOException, File}
 
 import com.typesafe.scalalogging.slf4j.LazyLogging
 import commons.Configuration.WalletConfig._
@@ -19,12 +19,10 @@ import scala.concurrent.Future
   * Created by andrea on 16/11/16.
   */
 trait WalletServiceComponent extends LazyLogging {
-  logger.info(s"Creating WalletServiceComponent")
 
   val walletService: WalletService
 
   class WalletService {
-    logger.info(s"Creating WalletService")
 
     val file = new File(walletDir)
 
@@ -33,6 +31,9 @@ trait WalletServiceComponent extends LazyLogging {
         wallet.importKey(new ECKey)
       }
     }.setAutoStop(true)
+
+    if(isEnabled)
+      kit.startAsync
 
     def networkParams = kit.params
     def peerGroup = kit.peerGroup
@@ -43,9 +44,9 @@ trait WalletServiceComponent extends LazyLogging {
     def bytes2hex(bytes: Array[Byte]): String = bytes.map("%02x ".format(_)).mkString
 
     def generatePaymentRequest(session: Session, offerId: String): Future[PaymentRequest] = Future {
-      logger.info(s"Issuing payment request for session ${session.id}")
+      logger.info(s"Issuing payment request for session ${session.id} and offer $offerId")
 
-      val owedSatoshis = 35000
+      val owedSatoshis = 35000 //offer.price
 
       PaymentProtocol.createPaymentRequest(
         networkParams,
