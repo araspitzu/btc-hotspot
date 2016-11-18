@@ -1,29 +1,26 @@
 package resources
 
+import akka.actor.ActorSystem
 import akka.http.scaladsl.model._
 import akka.http.scaladsl.server._
 import akka.http.scaladsl.server.directives.LoggingMagnet
 import akka.http.scaladsl.unmarshalling._
+import akka.stream.ActorMaterializer
 import akka.util.{ByteString}
-import iptables.IpTablesService
+import commons.{AppExecutionContextRegistry, AppExecutionContext}
+import iptables.IpTablesService._
 import org.bitcoin.protocols.payments.Protos
 import org.bitcoin.protocols.payments.Protos._
-import org.bitcoinj.protocols.payments.PaymentProtocol
 import protocol.domain.Session
-import wallet.WalletSupervisorService
-import wallet.WalletSupervisorService._
-import akka.pattern.ask
+import wallet.WalletServiceComponent
 import ExtraHttpHeaders._
-import commons.Helpers._
+import AppExecutionContextRegistry.context._
 
 /**
   * Created by andrea on 15/09/16.
   */
 trait PaymentChannelAPI extends CommonResource with ExtraDirectives {
-
-  private[this] lazy val walletServiceActor = actorRefFor[WalletSupervisorService]
-
-  private val iptables = new IpTablesService
+  this:WalletServiceComponent  =>
 
   def headerLogger:LoggingMagnet[HttpRequest ⇒ Unit] = LoggingMagnet { loggingAdapter => request =>
      loggingAdapter.debug(s"Headers: ${request._3.toString()}")
@@ -39,7 +36,7 @@ trait PaymentChannelAPI extends CommonResource with ExtraDirectives {
 
   private def paymentRequestForSession(session:Session, offerId:String) = get {
     complete {
-      (walletServiceActor ? PAYMENT_REQUEST(session.id)).map { case req: PaymentRequest =>
+      walletService.generatePaymentRequest(session, offerId) map { req:PaymentRequest =>
         HttpEntity(req.toByteArray).withContentType(paymentRequestContentType)
       }
     }
@@ -48,11 +45,8 @@ trait PaymentChannelAPI extends CommonResource with ExtraDirectives {
   private def paymentDataForSession(session:Session, offerId:String) = post {
     entity(as[Protos.Payment]){ payment =>
       complete {
-        //Send the payment to the wallet actor and wait for its response
-        (walletServiceActor ? PAYMENT(payment)).map { case PAYMENT_ACK =>
-          HttpEntity(
-            PaymentProtocol.createPaymentAck(payment, s"Enjoy session ${session.id}").toByteArray
-          ).withContentType(paymentAckContentType)
+        walletService.validatePayment(payment) map { ack =>
+          HttpEntity(ack.toByteArray).withContentType(paymentAckContentType)
         }
       }
     }
@@ -60,14 +54,14 @@ trait PaymentChannelAPI extends CommonResource with ExtraDirectives {
 
   def enableMe(macAddress:String) = get {
     path("api" / "enableme") {
-      complete(iptables.enableClient(macAddress))
+      complete(enableClient(macAddress))
     } ~ path("api" / "disableme") {
-      complete(iptables.disableClient(macAddress))
+      complete(disableClient(macAddress))
     }
   }
 
   def paymentChannelRoute: Route = {
-    path("api" / "pay" / Segment) { offerId:String =>
+    path("api" / "pay" / Segment) { offerId =>
       sessionOrReject { session =>
         paymentRequestForSession(session, offerId) ~ paymentDataForSession(session, offerId)
       }

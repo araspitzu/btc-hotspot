@@ -1,26 +1,23 @@
-import akka.actor.{ Props, ActorSystem }
 import akka.http.scaladsl.Http
 import akka.http.scaladsl.server.Route
-import akka.stream.ActorMaterializer
 import com.typesafe.scalalogging.slf4j.LazyLogging
-import commons.Configuration._
-import resources.{StaticFiles, MiniPortal}
-import wallet.WalletSupervisorService
 import commons.Configuration.MiniPortalConfig._
+import resources.{PaymentChannelAPI, MiniPortal}
+import wallet.WalletServiceComponent
+import commons.AppExecutionContextRegistry.context._
 
-object Boot extends App
-  with MiniPortal
-  with LazyLogging {
+object Registry
+  extends MiniPortal
+    with PaymentChannelAPI
+    with WalletServiceComponent {
 
-  implicit val actorSystem = ActorSystem(config.getString("akka.actorSystem"))
-  implicit val materializer = ActorMaterializer()
+  override val walletService = new WalletService
+}
 
-  implicit val executionContext = actorSystem.dispatcher
+object Boot extends App with LazyLogging {
 
-  bindOrFail(miniportalRoute, miniPortalHost, miniPortalPort, "MiniPortal")
-
-  //Spawn wallet service actor
-  actorSystem.actorOf(Props[WalletSupervisorService],WalletSupervisorService.getClass.getSimpleName)
+  logger.info(s"Starting paypercom-hotspot")
+  bindOrFail(Registry.miniportalRoute, miniPortalHost, miniPortalPort, "MiniPortal")
 
 
   def bindOrFail(handler:Route, iface:String, port:Int, serviceName:String):Unit = {

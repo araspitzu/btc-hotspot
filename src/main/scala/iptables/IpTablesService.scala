@@ -11,7 +11,7 @@ import scala.concurrent.ExecutionContext.Implicits.global
   * Created by andrea on 09/11/16.
   *
   */
-class IpTablesService extends LazyLogging{
+object IpTablesService extends LazyLogging{
 
   private implicit class CmdExecutor(cmd:String) {
     def exec:Future[String] = Future {

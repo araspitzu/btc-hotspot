@@ -5,6 +5,7 @@ import akka.http.scaladsl.model.Uri.{Query, Path}
 import akka.http.scaladsl.server.{StandardRoute, Directive1, Directives}
 import akka.stream.ActorMaterializer
 import akka.util.Timeout
+import commons.AppExecutionContext
 import protocol.Repository
 import protocol.domain.Session
 import scala.compat.java8.OptionConverters._
@@ -14,18 +15,11 @@ import com.typesafe.scalalogging.slf4j.LazyLogging
 import de.heikoseeberger.akkahttpjson4s.Json4sSupport
 import akka.http.scaladsl.model._
 import commons.Configuration.MiniPortalConfig._
-import scala.concurrent.ExecutionContext
 
 /**
   * Created by andrea on 09/09/16.
   */
 trait CommonResource extends Directives with Json4sSupport with LazyLogging {
-
-  implicit val actorSystem: ActorSystem
-
-  implicit val executionContext:ExecutionContext
-
-  implicit val materializer:ActorMaterializer
 
   implicit val timeout = Timeout(10 seconds)
 
