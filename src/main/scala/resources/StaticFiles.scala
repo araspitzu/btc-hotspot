@@ -21,8 +21,10 @@ trait StaticFiles extends CommonResource with ExtraDirectives {
   def staticFilesRoute:Route = getFromDirectory(staticFilesDir)
 
   def createSessionForMac(clientMac:String) = {
+    logger.info(s"CREATING SESSION FOR $clientMac")
     val session = Session(clientMac = clientMac)
-    Repository.insertSession(session)
+    logger.info(s"SESSION ID: ${session.id}")
+    Repository.insertSessionForMac(session, clientMac)
   }
 
   /**
@@ -46,20 +48,10 @@ trait StaticFiles extends CommonResource with ExtraDirectives {
     */
   def entryPointRoute:Route = get {
       extractRequest { httpRequest =>
-        redirect(preLoginUrl(httpRequest), StatusCodes.TemporaryRedirect)
+        redirectToPrelogin(Some(httpRequest))
       }
   }
 
-  def preLoginUrl(request: HttpRequest):Uri = {
-    Uri()
-      .withScheme("http")
-      .withHost(miniPortalHost)
-      .withPort(miniPortalPort)
-      .withPath(Path("/prelogin"))
-      .withQuery(Query(
-        "userUrl" -> request._2.toString
-      ))
-  }
 
   val browserRedirectPage =
     """

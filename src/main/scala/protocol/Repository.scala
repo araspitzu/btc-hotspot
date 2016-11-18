@@ -32,9 +32,9 @@ object Repository {
 
   def allOffers = offerCache.values.toSeq
 
-  def insertSession(session:Session) = sessionOfferCache.put(session, None)
+  def insertSessionForMac(session:Session, mac:String) = sessionMacCache.put(mac, session)
 
-  def sessionById(mac:String) = sessionMacCache(mac)
+  def sessionByMac(mac:String) = sessionMacCache(mac)
 
 
 }
