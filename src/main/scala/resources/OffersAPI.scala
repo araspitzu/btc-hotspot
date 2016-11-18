@@ -12,7 +12,7 @@ trait OffersAPI extends CommonResource with JsonSupport {
 
 
   def offersRoute:Route = get {
-    path("api" / "offers" / Segment){ offerId =>
+    path("api" / "offers"){
       complete(Repository.allOffers.map(WebOfferDto(_)))
     }
   }
