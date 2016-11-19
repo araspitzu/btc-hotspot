@@ -1,10 +1,8 @@
 package resources
 
-
 import akka.http.scaladsl.model._
 import akka.http.scaladsl.model.MediaTypes._
 import akka.http.scaladsl.model.HttpCharsets._
-import akka.http.scaladsl.model.Uri._
 import akka.http.scaladsl.server.Route
 import commons.Configuration.MiniPortalConfig._
 import protocol.Repository
@@ -29,7 +27,6 @@ trait StaticFiles extends CommonResource with ExtraDirectives {
         logger.info(s"New session: ${session.id} for $clientMac")
         Repository.insertSessionForMac(session, clientMac)
     }
-
   }
 
   /**
@@ -53,7 +50,6 @@ trait StaticFiles extends CommonResource with ExtraDirectives {
     */
   def entryPointRoute:Route = get {
       extractRequest { httpRequest =>
-        logger.info(httpRequest.toString)
         redirectToPrelogin(Some(httpRequest))
       }
   }

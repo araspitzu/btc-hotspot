@@ -23,7 +23,7 @@
 
   <script src="js/modernizr-2.7.1.js"></script>
 
-  <script type="javascript">
+  <script>
     window.onload = function(){
           $.ajax({url: "/api/offers", success: function(offers){
           console.log("Offers loaded: "+offers.length);
@@ -37,6 +37,7 @@
           link3.href = offers[2].paymentURI;
       }});
     };
+
   </script>
 
 </head>

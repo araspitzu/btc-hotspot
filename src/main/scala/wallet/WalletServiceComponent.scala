@@ -12,6 +12,7 @@ import org.bitcoinj.core.TransactionBroadcast.ProgressCallback
 import org.bitcoinj.core.{Transaction, Coin, ECKey}
 import org.bitcoinj.kits.WalletAppKit
 import org.bitcoinj.protocols.payments.PaymentProtocol
+import protocol.Repository
 import protocol.domain.Session
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
@@ -47,13 +48,15 @@ trait WalletServiceComponent extends LazyLogging {
     def generatePaymentRequest(session: Session, offerId: String): Future[PaymentRequest] = Future {
       logger.info(s"Issuing payment request for session ${session.id} and offer $offerId")
 
-      val owedSatoshis = 35000 //offer.price
+      val Some(offer) = Repository.allOffers.find(_.offerId == offerId)
+
+      val owedSatoshis = offer.price
 
       PaymentProtocol.createPaymentRequest(
         networkParams,
         Coin.valueOf(owedSatoshis),
         wallet.currentReceiveAddress,
-        s"Please pay $owedSatoshis satoshis for using session ${session.id}",
+        s"Please pay $owedSatoshis satoshis for ${offer.description}",
         s"http://$miniPortalHost:$miniPortalPort/api/pay/${session.id}",
         Array.emptyByteArray
       ).build()
