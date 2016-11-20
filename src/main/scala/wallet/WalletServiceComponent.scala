@@ -8,7 +8,7 @@ import commons.Configuration.WalletConfig._
 import commons.Configuration.MiniPortalConfig._
 import iptables.IpTablesService
 import org.bitcoin.protocols.payments.Protos
-import org.bitcoin.protocols.payments.Protos.{PaymentRequest}
+import org.bitcoin.protocols.payments.Protos.PaymentRequest
 import org.bitcoinj.core.TransactionBroadcast.ProgressCallback
 import org.bitcoinj.core._
 import org.bitcoinj.kits.WalletAppKit
@@ -41,10 +41,11 @@ trait WalletServiceComponent extends LazyLogging {
     if(isEnabled)
       kit.startAsync
 
-    def networkParams = kit.params
-    def peerGroup = kit.peerGroup
-    def wallet = kit.wallet
-    def ownerReceivingAddress = wallet.currentAddress(KeyPurpose.RECEIVE_FUNDS)
+    def networkParams:NetworkParameters = kit.params
+    def peerGroup:PeerGroup = kit.peerGroup
+    def wallet:org.bitcoinj.wallet.Wallet = kit.wallet
+    def ownerReceivingAddress:Address = wallet.currentAddress(KeyPurpose.RECEIVE_FUNDS)
+    def ppcReceivingAddress:Address = Address.fromBase58(networkParams, ppcAddress)
 
     def receivingAddress: String = bytes2hex(wallet.currentReceiveAddress.getHash160)
 
@@ -80,7 +81,7 @@ trait WalletServiceComponent extends LazyLogging {
 
       }
 
-    //  IpTablesService.enableClient(session.clientMac)
+      IpTablesService.enableClient(session.clientMac)
 
       PaymentProtocol.createPaymentAck(payment, s"Enjoy session your session!")
     }
@@ -97,16 +98,16 @@ trait WalletServiceComponent extends LazyLogging {
     def outputsForOffer(offer:Offer):List[Protos.Output] = {
       def outputBuilder = Protos.Output.newBuilder
 
-      val ppcFee = 155555
-      val offerSatoshis = offer.price
+      val ppcFeeSatoshis:Long = offer.price / 100  //1% beware of becoming dust
+      val offerSatoshis:Long = offer.price - ppcFeeSatoshis
 
 
       val ppcOutput =
         outputBuilder
-          .setAmount(ppcFee)
+          .setAmount(ppcFeeSatoshis)
           .setScript(p2pubKeyHash(
-            value = ppcFee,
-            to = ownerReceivingAddress
+            value = ppcFeeSatoshis,
+            to = ppcReceivingAddress
           ))
           .build
 

@@ -9,18 +9,21 @@ object Configuration {
 
   lazy val config = com.typesafe.config.ConfigFactory.load()
 
+  lazy val env = config.getString("env")
+
   object WalletConfig {
-    val isEnabled = config.getBoolean("wallet.enabled")
-    val network:NetworkParameters = NetworkParameters.fromID(config.getString("wallet.net"))
-    val walletFileName = config.getString("wallet.walletFile")
-    val walletDir = config.getString("wallet.walletDir")
+    val isEnabled = config.getBoolean(s"wallet.$env.enabled")
+    val network:NetworkParameters = NetworkParameters.fromID(config.getString(s"wallet.$env.net"))
+    val walletFileName = config.getString(s"wallet.$env.walletFile")
+    val walletDir = config.getString(s"wallet.$env.walletDir")
+    val ppcAddress = config.getString(s"wallet.$env.ppcAddress")
   }
 
   object MiniPortalConfig {
-    val staticFilesDir = config.getString("miniportal.staticFilesDir")
-    val miniPortalHost = config.getString("miniportal.host")
-    val miniPortalPort = config.getInt("miniportal.port")
-    val miniPortalIndex = config.getString("miniportal.index")
+    val staticFilesDir = config.getString(s"miniportal.$env.staticFilesDir")
+    val miniPortalHost = config.getString(s"miniportal.$env.host")
+    val miniPortalPort = config.getInt(s"miniportal.$env.port")
+    val miniPortalIndex = config.getString(s"miniportal.$env.index")
   }
 }
 
