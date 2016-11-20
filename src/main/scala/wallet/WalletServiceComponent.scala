@@ -1,7 +1,8 @@
 package wallet
 
-import java.io.{IOException, File}
+import java.io.File
 
+import com.google.protobuf.ByteString
 import com.typesafe.scalalogging.slf4j.LazyLogging
 import commons.Configuration.WalletConfig._
 import commons.Configuration.MiniPortalConfig._
@@ -9,11 +10,13 @@ import iptables.IpTablesService
 import org.bitcoin.protocols.payments.Protos
 import org.bitcoin.protocols.payments.Protos.{PaymentRequest}
 import org.bitcoinj.core.TransactionBroadcast.ProgressCallback
-import org.bitcoinj.core.{Transaction, Coin, ECKey}
+import org.bitcoinj.core._
 import org.bitcoinj.kits.WalletAppKit
 import org.bitcoinj.protocols.payments.PaymentProtocol
+import org.bitcoinj.wallet.KeyChain.KeyPurpose
 import protocol.Repository
-import protocol.domain.Session
+import protocol.domain.{Offer, Session}
+import scala.collection.JavaConverters._
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
@@ -33,6 +36,7 @@ trait WalletServiceComponent extends LazyLogging {
         wallet.importKey(new ECKey)
       }
     }.setAutoStop(true)
+     .setUserAgent("paypercom", "0.0.1-alpha")
 
     if(isEnabled)
       kit.startAsync
@@ -40,6 +44,7 @@ trait WalletServiceComponent extends LazyLogging {
     def networkParams = kit.params
     def peerGroup = kit.peerGroup
     def wallet = kit.wallet
+    def ownerReceivingAddress = wallet.currentAddress(KeyPurpose.RECEIVE_FUNDS)
 
     def receivingAddress: String = bytes2hex(wallet.currentReceiveAddress.getHash160)
 
@@ -50,16 +55,14 @@ trait WalletServiceComponent extends LazyLogging {
 
       val Some(offer) = Repository.allOffers.find(_.offerId == offerId)
 
-      val owedSatoshis = offer.price
-
       PaymentProtocol.createPaymentRequest(
         networkParams,
-        Coin.valueOf(owedSatoshis),
-        wallet.currentReceiveAddress,
-        s"Please pay $owedSatoshis satoshis for ${offer.description}",
+        outputsForOffer(offer).asJava,
+        s"Please pay ${offer.price} satoshis for ${offer.description}",
         s"http://$miniPortalHost:$miniPortalPort/api/pay/${session.id}",
         Array.emptyByteArray
-      ).build()
+      ).build
+
     }
 
     def validatePayment(session: Session, payment: Protos.Payment): Future[Protos.PaymentACK] = Future {
@@ -77,10 +80,52 @@ trait WalletServiceComponent extends LazyLogging {
 
       }
 
-      IpTablesService.enableClient(session.clientMac)
+    //  IpTablesService.enableClient(session.clientMac)
 
       PaymentProtocol.createPaymentAck(payment, s"Enjoy session your session!")
     }
+
+    def p2pubKeyHash(value:Long, to:Address):ByteString = {
+      ByteString.copyFrom(new TransactionOutput(
+        networkParams,
+        null,
+        Coin.valueOf(value),
+        to
+      ).getScriptBytes)
+    }
+
+    def outputsForOffer(offer:Offer):List[Protos.Output] = {
+      def outputBuilder = Protos.Output.newBuilder
+
+      val ppcFee = 155555
+      val offerSatoshis = offer.price
+
+
+      val ppcOutput =
+        outputBuilder
+          .setAmount(ppcFee)
+          .setScript(p2pubKeyHash(
+            value = ppcFee,
+            to = ownerReceivingAddress
+          ))
+          .build
+
+      val ownerOutput =
+        outputBuilder
+          .setAmount(offerSatoshis)
+          .setScript(p2pubKeyHash(
+            offerSatoshis,
+            to = ownerReceivingAddress
+          ))
+          .build
+
+      List(ppcOutput, ownerOutput)
+    }
+
+
+
+
   }
+
 
 }

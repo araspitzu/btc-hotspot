@@ -1,6 +1,5 @@
 package resources
 
-import akka.actor.ActorSystem
 import akka.http.scaladsl.model._
 import akka.http.scaladsl.server._
 import akka.http.scaladsl.server.directives.LoggingMagnet

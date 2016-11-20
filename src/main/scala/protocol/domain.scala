@@ -31,6 +31,9 @@ package object domain {
   case class Quantity(
     value:Long,
     unit:QtyUnit
-  )
+  ) {
+    override def toString():String =
+        s"$value $unit"
+  }
 
 }

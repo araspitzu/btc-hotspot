@@ -10,6 +10,8 @@ import scala.collection.mutable
 object Repository {
 
   private val offerCache = new mutable.HashMap[String, Offer]()
+  private val sessionOfferCache = new mutable.HashMap[Session, Option[Offer]]()
+  private val sessionMacCache = new mutable.HashMap[String, Session]()
 
   val offer1 = Offer(
     qty = Quantity(120, seconds),
@@ -31,11 +33,10 @@ object Repository {
   offerCache.put(offer2.offerId, offer2)
   offerCache.put(offer3.offerId, offer3)
 
-  private val sessionOfferCache = new mutable.HashMap[Session, Option[Offer]]()
-
-  private val sessionMacCache = new mutable.HashMap[String, Session]()
 
   def allOffers = offerCache.values.toSeq
+
+  def allSessions = sessionMacCache.values.toSeq
 
   def insertSessionForMac(session:Session, mac:String) = sessionMacCache.put(mac, session)
 
