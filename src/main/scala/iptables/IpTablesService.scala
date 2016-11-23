@@ -11,7 +11,7 @@ import scala.concurrent.ExecutionContext.Implicits.global
   * Created by andrea on 09/11/16.
   *
   */
-object IpTablesService extends LazyLogging{
+object IpTablesService extends LazyLogging {
 
   private implicit class CmdExecutor(cmd:String) {
     def exec:Future[String] = Future {
@@ -28,12 +28,16 @@ object IpTablesService extends LazyLogging{
       reader.lines.iterator.asScala.fold("")(_ + _)
     }
 
+    private def withDelay(minutes:Int):String = {
+      s"""sudo 'echo \" $cmd \" |at now + $minutes"""
+    }
 
   }
 
   private def iptables(params:String) = {
     s"sudo /sbin/iptables $params"
   }
+
 
   def enableClient(mac:String):Future[String] = {
     iptables(s"-I internet 1 -t mangle -m mac --mac-source $mac -j RETURN").exec

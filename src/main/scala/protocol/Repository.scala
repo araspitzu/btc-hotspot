@@ -15,17 +15,17 @@ object Repository {
 
   val offer1 = Offer(
     qty = Quantity(120, seconds),
-    price = 3500,
+    price = 350000,
     description =  "120 seconds"
   )
   val offer2 = Offer(
     qty = Quantity(5000, MB),
-    price = 3500,
+    price = 350000,
     description =  "5000 megabytes"
   )
   val offer3 = Offer(
     qty = Quantity(50000, MB),
-    price = 5000,
+    price = 500000,
     description =  "50000 megabytes"
   )
 

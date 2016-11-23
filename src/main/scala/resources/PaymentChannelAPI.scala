@@ -53,7 +53,7 @@ trait PaymentChannelAPI extends CommonResource with ExtraDirectives {
   def enableMeRoute = extractClientMAC {
     _ match {
       case Some(mac) => enableMe(mac)
-      case None => throw new IllegalArgumentException("Mac not found")
+      case None => reject(ValidationRejection("Mac not found"))
     }
   }
 
