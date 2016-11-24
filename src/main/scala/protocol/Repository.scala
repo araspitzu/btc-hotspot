@@ -14,7 +14,7 @@ object Repository {
   private val sessionMacCache = new mutable.HashMap[String, Session]()
 
   val offer1 = Offer(
-    qty = Quantity(120, seconds),
+    qty = Quantity(120, minutes),
     price = 350000,
     description =  "120 seconds"
   )
@@ -35,6 +35,8 @@ object Repository {
 
 
   def allOffers = offerCache.values.toSeq
+
+  def offerById(offerId:String) = offerCache(offerId)
 
   def allSessions = sessionMacCache.values.toSeq
 

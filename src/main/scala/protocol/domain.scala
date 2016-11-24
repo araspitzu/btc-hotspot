@@ -25,7 +25,7 @@ package object domain {
   case object QtyUnit extends Enumeration {
     type QtyUnit = Value
     val MB = Value("MB")
-    val seconds = Value("seconds")
+    val minutes = Value("minutes")
   }
 
   case class Quantity(
