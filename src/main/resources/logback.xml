@@ -8,10 +8,10 @@
   </appender>
 
   <appender name="FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
-    <file>logs/paypercom-hotspot.log</file>
+    <file>logs/btc-hotspot.log</file>
 
     <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
-      <fileNamePattern>logs/paypercom-hotspot.%d{yyyy-MM-dd}.log</fileNamePattern>
+      <fileNamePattern>logs/btc-hotspot.%d{yyyy-MM-dd}.log</fileNamePattern>
       <maxHistory>10</maxHistory>
     </rollingPolicy>
 

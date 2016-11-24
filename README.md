@@ -1,4 +1,4 @@
-btc-paywall application.
+btc-hotspot application.
 
 
 The application is a hotspot paywall where clients can pay the owner via bitcoin.

@@ -15,7 +15,7 @@ object MiniPortalRegistry
 }
 
 object Boot extends App with LazyLogging {
-  logger.info(s"Starting paypercom-hotspot")
+  logger.info(s"Starting btc-hotspot")
 
   bindOrFail(MiniPortalRegistry.miniportalRoute, miniPortalHost, miniPortalPort, "MiniPortal")
 

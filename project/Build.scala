@@ -17,10 +17,10 @@ object ThisBuild extends Build {
   import PackageSetting._
   import DebianSetting._
 
-  val buildOrganization = "paypercom"
+  val buildOrganization = "andrea"
   val buildVersion = "0.0.1"
   val buildScalaVersion = "2.11.8"
-  val name = "paypercom-hotspot"
+  val name = "btc-hotspot"
 
 
   val buildSettings = Seq(
