@@ -65,9 +65,7 @@ trait WalletServiceComponent extends LazyLogging {
     def networkParams:NetworkParameters = kit.params
     def peerGroup:PeerGroup = kit.peerGroup
     def wallet:org.bitcoinj.wallet.Wallet = kit.wallet
-    def ownerReceivingAddress:Address = wallet.currentAddress(KeyPurpose.RECEIVE_FUNDS)
-
-    def receivingAddress: String = bytes2hex(wallet.currentReceiveAddress.getHash160)
+    def receivingAddress:Address = wallet.currentAddress(KeyPurpose.RECEIVE_FUNDS)
 
     def bytes2hex(bytes: Array[Byte]): String = bytes.map("%02x ".format(_)).mkString
 
@@ -142,7 +140,7 @@ trait WalletServiceComponent extends LazyLogging {
           .setAmount(offer.price)
           .setScript(p2pubKeyHash(
             value = offer.price,
-            to = ownerReceivingAddress
+            to = receivingAddress
           ))
           .build
 
