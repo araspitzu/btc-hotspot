@@ -1,5 +1,5 @@
 ## 
-##  Paypercom hotspot build script
+##  btc hotspot build script
 ##
 ##  OS: 2016-09-23-raspbian-jessie-lite.img
 ##
@@ -11,9 +11,6 @@ IFACE_LAN=wlan0 # Offered to local clients
 
 # Update packages
 apt-get update
-
-# Set root password for mysql-server setup
-debconf-set-selections <<< 'mysql-server mysql-server/root_password password your_password'
 
 # Get dependencies and tools
 apt-get install -y \
@@ -36,15 +33,6 @@ apt-get install -y \
   hostapd \
   openjdk-8-jdk \
   mysql-server    
-
-# Get coova chilli sources
-git clone --depth 2 https://github.com/coova/coova-chilli.git coova-chilli && cd coova-chilli
-
-# Build coova chilli deb package
-debuild -us -uc -b
-
-# Install chilli package
-dpkg -i ../coova-chilli_*.deb
 
 
 # Alter network interfaces  TODO: add WAN section
@@ -78,31 +66,9 @@ echo 1 > /proc/sys/net/ipv4/ip_forward
 # Enable hostapd at boot
 systemctl enable hostapd
 
-# Edit chilli config to use proper interfaces
-sed -i '/HS_WANIF/c\HS_WANIF=eth0' /etc/chilli/defaults
-sed -i '/HS_LANIF/c\HS_LANIF=wlan0' /etc/chilli/defaults
-sed -i '/HS_TCP_PORTS/c\HS_TCP_PORTS="22 8081"' /etc/chilli/defaults
 
-# Enable chilli (WTF??)
-sed -i '/START_CHILLI/c\START_CHILLI=1' /etc/default/chilli
+#ln -s /opt/btc-hotspot/bitcoin/ /usr/share/btc-hotspot/bitcoin
 
-# Setup mysql-freeradius
-mysql -u root -p -e "CREATE DATABASE radius;"
-mysql -u root -p -e "GRANT ALL ON radius.* TO radius@localhost IDENTIFIED BY 'radpass';"
-mysql -u root -p radius < /etc/freeradius/sql/mysql/schema.sql
-
-# Enable freeradius sql conf
-sed -i '/$INCLUDE sql.conf/c\$INCLUDE sql.conf' /etc/freeradius/radiusd.conf
-
-#/etc/freeradius/sites-available/default
-#authorize {
-#          sql
-#}
-
-#accounting {
-#         sql
-#}
-
-# Enable services to start at boot
-systemctl enable chilli freeradius hostapd
-
+# btc user append to /etc/sudoers
+#btc-hotspot ALL = NOPASSWD: /sbin/iptables -I internet 1 -t mangle -m mac --mac-source ??\:??\:??\:??\:??\:?? -j RETURN
+#btc-hotspot ALL = NOPASSWD: /sbin/iptables -D internet -t mangle -m mac --mac-source ??\:??\:??\:??\:??\:?? -j RETURN

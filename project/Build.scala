@@ -71,17 +71,15 @@ object PackageSetting {
       s"-Dlogback.configurationFile=${targetDirectory}/${logbackConfMapping.value._2}"
     ),
     mappings in Universal ++= {
-      walletDirMapping.value ++
       staticDirMapping.value ++ Seq(
         confFileMapping.value,
         logbackConfMapping.value
       )
     },
     walletDirectory,
-    linuxPackageSymlinks += {
-      LinuxSymlink("bitcoin", s"/opt/${ThisBuild.name}/bitcoin")
-    }
+    walletDirSymlink
   )
+
 
   private def logbackConfMapping = Def.setting {
     val logback = (resourceDirectory in Compile).value / "logback.xml"
@@ -91,10 +89,6 @@ object PackageSetting {
   private def confFileMapping = Def.setting {
     val conf = (resourceDirectory in Compile).value / "application.conf"
     conf -> "conf/application.conf"
-  }
-
-  private def walletDirMapping = Def.setting {
-    directory(baseDirectory.value / "bitcoin")
   }
 
   /*
@@ -112,6 +106,11 @@ object PackageSetting {
       .withPerms("755")
   }
 
+  private def walletDirSymlink = {
+    linuxPackageSymlinks += {
+      LinuxSymlink(s"$targetDirectory/bitcoin", s"/opt/${ThisBuild.name}/bitcoin")
+    }
+  }
 
 }
 
