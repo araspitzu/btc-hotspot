@@ -90,10 +90,10 @@ trait WalletServiceComponent extends LazyLogging {
         throw new IllegalStateException("Too many tx received in payment session")
 
       val offer = Repository.offerById(offerId)
-      if(offer.qty.unit != QtyUnit.minutes)
+      if(offer.qtyUnit != QtyUnit.minutes)
         throw new NotImplementedError(s"${QtyUnit.MB} not yet implemented")
 
-      val offerRemainingTime = offer.qty.value
+      val offerRemainingTime = offer.qty
 
       val txBytes = payment.getTransactions(0).toByteArray
       val tx = new Transaction(networkParams, txBytes)

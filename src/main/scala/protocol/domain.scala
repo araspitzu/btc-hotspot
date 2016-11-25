@@ -35,7 +35,8 @@ package object domain {
 
   case class Offer(
     offerId:String = java.util.UUID.randomUUID.toString,
-    qty:Quantity,
+    qty:Long,
+    qtyUnit: QtyUnit,
     price:Long,
     description:String
   )
@@ -44,14 +45,6 @@ package object domain {
     type QtyUnit = Value
     val MB = Value("MB")
     val minutes = Value("minutes")
-  }
-
-  case class Quantity(
-    value:Long,
-    unit:QtyUnit
-  ) {
-    override def toString():String =
-        s"$value $unit"
   }
 
 }

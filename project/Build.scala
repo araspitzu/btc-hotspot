@@ -171,7 +171,15 @@ object Dependencies {
     "org.scala-lang.modules" % "scala-java8-compat" % "0.8.0"
   )
 
-  val dependencies = akka ++ json4s ++ logging ++ bitcoinj
+  val slick = Seq(
+    "com.typesafe.slick" %% "slick" % "3.0.3"
+  )
+
+  val h2 = Seq(
+    "com.h2database" % "h2" % "1.4.+"
+  )
+
+  val dependencies = akka ++ json4s ++ logging ++ bitcoinj ++ slick ++ h2
 }
 
 // Shell prompt which show the current project,
