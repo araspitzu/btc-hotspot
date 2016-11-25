@@ -34,7 +34,6 @@ object Configuration {
     val network:NetworkParameters = NetworkParameters.fromID(config.getString(s"wallet.$env.net"))
     val walletFileName = config.getString(s"wallet.$env.walletFile")
     val walletDir = config.getString(s"wallet.$env.walletDir")
-    val ppcAddress = config.getString(s"wallet.$env.ppcAddress")
   }
 
   object MiniPortalConfig {

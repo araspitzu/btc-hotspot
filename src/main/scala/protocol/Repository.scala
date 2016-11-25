@@ -32,19 +32,19 @@ object Repository {
   private val sessionMacCache = new mutable.HashMap[String, Session]()
 
   val offer1 = Offer(
-    qty = Quantity(120, minutes),
+    qty = Quantity(10, minutes),
     price = 350000,
-    description =  "120 seconds"
+    description =  "10 minutes"
   )
   val offer2 = Offer(
-    qty = Quantity(5000, MB),
-    price = 350000,
-    description =  "5000 megabytes"
+    qty = Quantity(20, minutes),
+    price = 450000,
+    description =  "20 minutes"
   )
   val offer3 = Offer(
-    qty = Quantity(50000, MB),
+    qty = Quantity(30, minutes),
     price = 500000,
-    description =  "50000 megabytes"
+    description =  "30 minutes"
   )
 
   offerCache.put(offer1.offerId, offer1)

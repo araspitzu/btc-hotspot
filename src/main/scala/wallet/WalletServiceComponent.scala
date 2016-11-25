@@ -66,7 +66,6 @@ trait WalletServiceComponent extends LazyLogging {
     def peerGroup:PeerGroup = kit.peerGroup
     def wallet:org.bitcoinj.wallet.Wallet = kit.wallet
     def ownerReceivingAddress:Address = wallet.currentAddress(KeyPurpose.RECEIVE_FUNDS)
-    def ppcReceivingAddress:Address = Address.fromBase58(networkParams, ppcAddress)
 
     def receivingAddress: String = bytes2hex(wallet.currentReceiveAddress.getHash160)
 
@@ -118,8 +117,8 @@ trait WalletServiceComponent extends LazyLogging {
 
     def p2pubKeyHash(value:Long, to:Address):ByteString = {
 
-      val scriptOpReturn = new ScriptBuilder().op(OP_RETURN).data("hello".getBytes()).build()
-
+      //Create custom script containing offer's id bytes
+//      val scriptOpReturn = new ScriptBuilder().op(OP_RETURN).data("hello".getBytes()).build()
 
       ByteString.copyFrom(new TransactionOutput(
         networkParams,
@@ -134,30 +133,20 @@ trait WalletServiceComponent extends LazyLogging {
     def outputsForOffer(offer:Offer):List[Protos.Output] = {
       def outputBuilder = Protos.Output.newBuilder
 
+      if(isDust(offer.price))
+        throw new IllegalArgumentException(s"Price ${offer.price} is too low, considered dust")
 
-      val ppcFeeSatoshis:Long = offer.price / 100  //1% beware of becoming dust
-      val offerSatoshis:Long = offer.price - ppcFeeSatoshis
-
-
-      val ppcOutput =
-        outputBuilder
-          .setAmount(ppcFeeSatoshis)
-          .setScript(p2pubKeyHash(
-            value = ppcFeeSatoshis,
-            to = ppcReceivingAddress
-          ))
-          .build
 
       val ownerOutput =
         outputBuilder
-          .setAmount(offerSatoshis)
+          .setAmount(offer.price)
           .setScript(p2pubKeyHash(
-            offerSatoshis,
+            value = offer.price,
             to = ownerReceivingAddress
           ))
           .build
 
-      List(ppcOutput, ownerOutput)
+      List(ownerOutput)
     }
 
 
