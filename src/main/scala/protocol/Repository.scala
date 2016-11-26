@@ -18,20 +18,21 @@
 
 package protocol
 
-import java.util.Date
-
+import java.sql.{Date => SQLDate}
 import com.typesafe.scalalogging.slf4j.LazyLogging
 import commons.Configuration._
-import org.joda.time.{DateTime, LocalDateTime}
+import org.joda.time.{LocalDateTime}
 import protocol.domain.{QtyUnit, Session, Offer}
 import protocol.domain.QtyUnit._
 import scala.collection.mutable
 import slick.driver.H2Driver.api._
 
+import scala.concurrent.Future
+
 /**
   * Created by andrea on 17/11/16.
   */
-object Repository extends LazyLogging {
+package object Repository extends LazyLogging {
 
   private val db = Database.forConfig(s"db.$env")
 
@@ -42,38 +43,67 @@ object Repository extends LazyLogging {
     }
   })
 
-  class SessionTable(tag: Tag) extends Table[Session](tag, "SESSIONS"){
-    implicit val localDateTimeMapper = MappedColumnType.base[LocalDateTime,java.sql.Date](
-      localDateTime => new java.sql.Date(localDateTime.toDateTime.toDate),
-      date => new LocalDateTime(date)
-    )
+  object SessionRepository {
 
-    def id = column[String]("id", O.PrimaryKey)
-    def createdAt = column[LocalDateTime]("createdAt", O.SqlType("DATE"))
-    def clientMac = column[String]("clientMac")
-    def remainingUnits = column[Long]("remainingUnits")
+    class SessionTable(tag: Tag) extends Table[Session](tag, "SESSIONS"){
+      implicit val localDateTimeMapper = MappedColumnType.base[LocalDateTime,SQLDate](
+        localDateTime => new SQLDate(localDateTime.toDateTime.toDate.getTime),
+        date => new LocalDateTime(date)
+      )
 
-    override def * = (id, createdAt, clientMac, remainingUnits) <> (Session.tupled, Session.unapply)
+      def id = column[String]("id", O.PrimaryKey)
+      def createdAt = column[LocalDateTime]("createdAt", O.SqlType("DATE")) //Gets mapped to java.sql.Date
+      def clientMac = column[String]("clientMac")
+      def remainingUnits = column[Long]("remainingUnits")
+
+      override def * = (id, createdAt, clientMac, remainingUnits) <> (Session.tupled, Session.unapply)
+    }
+
+    val sessionsTable = TableQuery[SessionTable]
+
+    // returns number of modified rows
+    def insert(session: Session):Future[Int] = db.run {
+      sessionsTable.insertOrUpdate(session)
+    }
+
+    val byMacAddress = db.run {
+      sessionsTable.delete
+    }
+
+
   }
 
-  class OfferTable(tag:Tag) extends Table[Offer](tag,"OFFERS"){
+  object OfferRepository {
 
-    implicit val qtyUnitMapper = MappedColumnType.base[QtyUnit, String](
-      e => e.toString,
-      s => QtyUnit.withName(s)
-    )
+    class OfferTable(tag:Tag) extends Table[Offer](tag,"OFFERS"){
 
-    def offerId = column[String]("offerId", O.PrimaryKey)
-    def qty = column[Long]("qty")
-    def qtyUnit = column[QtyUnit]("qtyUnit")
-    def price = column[Long]("price")
-    def description = column[String]("description")
+      implicit val qtyUnitMapper = MappedColumnType.base[QtyUnit, String](
+        e => e.toString,
+        s => QtyUnit.withName(s)
+      )
 
-    override def * = (offerId, qty, qtyUnit, price, description) <> (Offer.tupled, Offer.unapply)
+      def offerId = column[String]("offerId", O.PrimaryKey)
+      def qty = column[Long]("qty")
+      def qtyUnit = column[QtyUnit]("qtyUnit")
+      def price = column[Long]("price")
+      def description = column[String]("description")
+
+      override def * = (offerId, qty, qtyUnit, price, description) <> (Offer.tupled, Offer.unapply)
+    }
+
+    val offersTable = TableQuery[OfferTable]
+
+
+    def insert(offer: Offer) = {
+      offersTable.insertOrUpdate(offer)
+    }
+
+    def allOffers:Future[Int] = db.run {
+      offersTable.length.result
+    }
+
+
   }
-
-  val offersTable = TableQuery[OfferTable]
-
 
 
   private val offerCache = new mutable.HashMap[String, Offer]()
