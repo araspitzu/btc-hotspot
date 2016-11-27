@@ -22,25 +22,22 @@ import akka.http.scaladsl.model._
 import akka.http.scaladsl.model.MediaTypes._
 import akka.http.scaladsl.model.HttpCharsets._
 import akka.http.scaladsl.server.Route
-import commons.Configuration.MiniPortalConfig._
-import protocol.Repository
-import protocol.domain.Session
+import commons.AppExecutionContextRegistry.context._
 import sarvices.SessionService
-
-import scala.concurrent.Future
 
 /**
   * Created by andrea on 19/10/16.
   */
-trait StaticFiles extends CommonResource with ExtraDirectives {
+trait CaptiveResource extends CommonResource with ExtraDirectives {
+
 
   /**
-    * Serves all static files in the given folder
+    * Redirects the user to prelogin
     */
-  def staticFilesRoute:Route = getFromDirectory(staticFilesDir)
-
-  def createSessionForMac(clientMac:String) = {
-
+  def entryPointRoute:Route = get {
+    extractRequest { httpRequest =>
+      redirectToPrelogin(Some(httpRequest))
+    }
   }
 
   /**
@@ -50,22 +47,14 @@ trait StaticFiles extends CommonResource with ExtraDirectives {
     path("prelogin") {
       extractClientMAC { clientMac =>
         complete {
-          createSessionForMac(clientMac.getOrElse("unknown"))
-          HttpEntity(
-            browserRedirectPage
-          ).withContentType(`text/html`.toContentType(`UTF-8`))
+          SessionService.create(clientMac.getOrElse("unknown")).map { _ =>
+            HttpEntity(
+              browserRedirectPage
+            ).withContentType(`text/html`.toContentType(`UTF-8`))
+          }
         }
       }
     }
-  }
-
-  /**
-    * Redirects the user to prelogin
-    */
-  def entryPointRoute:Route = get {
-      extractRequest { httpRequest =>
-        redirectToPrelogin(Some(httpRequest))
-      }
   }
 
 

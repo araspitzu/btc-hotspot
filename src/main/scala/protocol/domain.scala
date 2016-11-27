@@ -27,7 +27,7 @@ import protocol.domain.QtyUnit.QtyUnit
 package object domain {
 
   case class Session(
-    id:String,
+    id:Long = -1,
     createdAt:LocalDateTime = LocalDateTime.now,
     clientMac:String,
     remainingUnits:Long = -1

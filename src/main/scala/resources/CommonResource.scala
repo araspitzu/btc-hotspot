@@ -18,11 +18,9 @@
 
 package resources
 
-import akka.actor.ActorSystem
 import akka.http.scaladsl.model.Uri.{Query, Path}
 import akka.http.scaladsl.server.{Directive1, Directives}
 import akka.util.Timeout
-import protocol.Repository
 import protocol.domain.Session
 import sarvices.SessionService
 import scala.compat.java8.OptionConverters._

@@ -40,16 +40,22 @@ object SessionService extends LazyLogging {
     Await.result(byMac(mac), futureTimeoutDuration)
   }
 
-//  def createIfNotExist(mac:String) = {
-//    byMac(mac).map {
-//      case
-//    }
-//  }
-
-  def create(mac: String): Future[String] = {
-    val session = Session(clientMac = mac)
-    SessionRepository.insert(session)
-
-    //        logger.info(s"Found exising session: ${existingSession.id} for $mac")
+  /*
+    Returns the id of the existing session for this mac, create a new one if
+    no session can be found
+   */
+  def create(mac:String):Future[Long] = {
+    byMacSync(mac) match {
+      case Some(session) =>
+        Future.successful(session.id)
+      case None =>
+        val session = Session(clientMac = mac)
+        SessionRepository.insert(session) map { sessionId =>
+          logger.info(s"Created session $sessionId for $mac")
+          sessionId
+        }
+    }
   }
+
+
 }

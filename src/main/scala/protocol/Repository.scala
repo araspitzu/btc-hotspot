@@ -57,7 +57,7 @@ object Repository extends LazyLogging {
         date => new LocalDateTime(date)
       )
 
-      def id = column[String]("id", O.PrimaryKey)
+      def id = column[Long]("id", O.PrimaryKey, O.AutoInc)
       def createdAt = column[LocalDateTime]("createdAt", O.SqlType("DATE")) //Gets mapped to LocalDateTime -> java.sql.Date -> DATATYPE(DATE)
       def clientMac = column[String]("clientMac")
       def remainingUnits = column[Long]("remainingUnits")
@@ -67,7 +67,7 @@ object Repository extends LazyLogging {
 
     val sessionsTable = TableQuery[SessionTable]
 
-    def insert(session: Session):Future[String] = db.run {
+    def insert(session: Session):Future[Long] = db.run {
       (sessionsTable returning sessionsTable.map(_.id)) += session
     }
 

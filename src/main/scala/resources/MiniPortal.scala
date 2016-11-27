@@ -19,13 +19,19 @@
 package resources
 
 import akka.http.scaladsl.server.Route
+import commons.Configuration.MiniPortalConfig._
 import wallet.WalletServiceComponent
 
 /**
   * Created by andrea on 09/09/16.
   */
-trait MiniPortal extends PaymentChannelAPI with StaticFiles with OffersAPI {
+trait MiniPortal extends PaymentChannelAPI with CaptiveResource with OffersAPI {
   this: WalletServiceComponent =>
+
+  /**
+    * Serves all static files in the given folder
+    */
+  def staticFilesRoute:Route = getFromDirectory(staticFilesDir)
 
   val miniportalRoute: Route =
     paymentChannelRoute ~
