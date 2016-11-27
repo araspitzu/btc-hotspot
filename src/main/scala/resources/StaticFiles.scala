@@ -25,6 +25,9 @@ import akka.http.scaladsl.server.Route
 import commons.Configuration.MiniPortalConfig._
 import protocol.Repository
 import protocol.domain.Session
+import sarvices.SessionService
+
+import scala.concurrent.Future
 
 /**
   * Created by andrea on 19/10/16.
@@ -37,14 +40,7 @@ trait StaticFiles extends CommonResource with ExtraDirectives {
   def staticFilesRoute:Route = getFromDirectory(staticFilesDir)
 
   def createSessionForMac(clientMac:String) = {
-    Repository.sessionByMac(clientMac) match {
-      case Some(session) =>
-        logger.info(s"Found exising session: ${session.id} for $clientMac")
-      case None =>
-        val session = Session(clientMac = clientMac)
-        logger.info(s"New session: ${session.id} for $clientMac")
-        Repository.insertSessionForMac(session, clientMac)
-    }
+
   }
 
   /**

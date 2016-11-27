@@ -25,7 +25,7 @@
 
   <script>
     window.onload = function(){
-          $.ajax({url: "/api/offers", success: function(offers){
+          $.ajax({url: "/api/offer", success: function(offers){
           console.log("Offers loaded: "+offers.length);
 
           var link1 = document.getElementById("link1");

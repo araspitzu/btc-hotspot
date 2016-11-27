@@ -21,20 +21,26 @@ package protocol
 import java.sql.{Date => SQLDate}
 import com.typesafe.scalalogging.slf4j.LazyLogging
 import commons.Configuration._
+import commons.TestData
 import org.joda.time.{LocalDateTime}
-import protocol.domain.{QtyUnit, Session, Offer}
-import protocol.domain.QtyUnit._
+import protocol.domain.{Session, Offer}
+import protocol.domain.QtyUnit.QtyUnit
+import protocol.domain.QtyUnit
 import scala.collection.mutable
 import slick.driver.H2Driver.api._
-
 import scala.concurrent.Future
 
 /**
   * Created by andrea on 17/11/16.
   */
-package object Repository extends LazyLogging {
+object Repository extends LazyLogging {
 
-  private val db = Database.forConfig(s"db.$env")
+  private val db = {
+    val port = config.getString(s"db.$env.port")
+    logger.info(s"Opening database for conf 'db.$env' @ localhost:$port")
+    org.h2.tools.Server.createTcpServer("-tcpPort", port).start() //starts h2 in server mode
+    Database.forConfig(s"db.$env")
+  }
 
   Runtime.getRuntime.addShutdownHook(new Thread {
     override def run:Unit ={
@@ -52,7 +58,7 @@ package object Repository extends LazyLogging {
       )
 
       def id = column[String]("id", O.PrimaryKey)
-      def createdAt = column[LocalDateTime]("createdAt", O.SqlType("DATE")) //Gets mapped to java.sql.Date
+      def createdAt = column[LocalDateTime]("createdAt", O.SqlType("DATE")) //Gets mapped to LocalDateTime -> java.sql.Date -> DATATYPE(DATE)
       def clientMac = column[String]("clientMac")
       def remainingUnits = column[Long]("remainingUnits")
 
@@ -61,13 +67,22 @@ package object Repository extends LazyLogging {
 
     val sessionsTable = TableQuery[SessionTable]
 
-    // returns number of modified rows
-    def insert(session: Session):Future[Int] = db.run {
-      sessionsTable.insertOrUpdate(session)
+    def insert(session: Session):Future[String] = db.run {
+      (sessionsTable returning sessionsTable.map(_.id)) += session
     }
 
-    val byMacAddress = db.run {
-      sessionsTable.delete
+    def allSession:Future[Seq[Session]] = db.run {
+      sessionsTable
+        .map(identity)
+        .result
+    }
+
+    def byMacAddress(mac:String):Future[Option[Session]] = db.run {
+      sessionsTable
+        .filter(_.clientMac === mac)
+        .map(identity)
+        .result
+        .headOption
     }
 
 
@@ -93,56 +108,35 @@ package object Repository extends LazyLogging {
 
     val offersTable = TableQuery[OfferTable]
 
-
-    def insert(offer: Offer) = {
-      offersTable.insertOrUpdate(offer)
+    def byId(id:String):Future[Option[Offer]] = db.run {
+      offersTable
+        .filter(_.offerId === id)
+        .map(identity)
+        .result
+        .headOption
     }
 
-    def allOffers:Future[Int] = db.run {
-      offersTable.length.result
+    def insert(offer: Offer):Future[Int] = db.run {
+      offersTable
+        .insertOrUpdate(offer)
     }
 
+    def allOffers:Future[Seq[Offer]] = db.run {
+      offersTable.map(identity).result
+    }
 
   }
 
+  val dbSetup = DBIO.seq (
+    (OfferRepository.offersTable.schema ++
+     SessionRepository.sessionsTable.schema).create,
 
-  private val offerCache = new mutable.HashMap[String, Offer]()
-  private val sessionOfferCache = new mutable.HashMap[Session, Option[Offer]]()
-  private val sessionMacCache = new mutable.HashMap[String, Session]()
-
-  val offer1 = Offer(
-    qty = 10,
-    qtyUnit = minutes,
-    price = 350000,
-    description =  "10 minutes"
-  )
-  val offer2 = Offer(
-    qty = 20,
-    qtyUnit = minutes,
-    price = 450000,
-    description =  "20 minutes"
-  )
-  val offer3 = Offer(
-    qty = 30,
-    qtyUnit = minutes,
-    price = 500000,
-    description =  "30 minutes"
+    //Insert some offers
+    OfferRepository.offersTable ++= TestData.offers
   )
 
-  offerCache.put(offer1.offerId, offer1)
-  offerCache.put(offer2.offerId, offer2)
-  offerCache.put(offer3.offerId, offer3)
-
-
-  def allOffers = offerCache.values.toSeq
-
-  def offerById(offerId:String) = offerCache(offerId)
-
-  def allSessions = sessionMacCache.values.toSeq
-
-  def insertSessionForMac(session:Session, mac:String) = sessionMacCache.put(mac, session)
-
-  def sessionByMac(mac:String) = sessionMacCache.get(mac)
-
+  def setupDb = db.run(
+    {logger.debug(s"Setting up schemas and populating tables"); dbSetup}
+  )
 
 }

@@ -24,6 +24,7 @@ import akka.http.scaladsl.server.{Directive1, Directives}
 import akka.util.Timeout
 import protocol.Repository
 import protocol.domain.Session
+import sarvices.SessionService
 import scala.compat.java8.OptionConverters._
 import iptables.ArpService._
 import scala.concurrent.duration._
@@ -63,7 +64,7 @@ trait ExtraDirectives extends Directives {
   }
 
   def extractSessionForMac:Directive1[Option[Session]] = extractClientMAC map { someMac =>
-    someMac map Repository.sessionByMac flatten
+    someMac map SessionService.byMacSync flatten
   }
 
   def redirectToPrelogin(request: Option[HttpRequest] = None) =
@@ -83,7 +84,7 @@ trait ExtraDirectives extends Directives {
     .withPort(miniPortalPort)
     .withPath(Path("/prelogin"))
     .withQuery(Query(
-      "userUrl" -> request.map(_._2.toString).getOrElse("paypercom.me")
+      "userUrl" -> request.map(_._2.toString).getOrElse("duckduckgo.com")
     ))
   }
 

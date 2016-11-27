@@ -27,9 +27,9 @@ import commons.Configuration._
   */
 trait AppExecutionContext {
 
-  val context:ExecCont
+  val context:ExecutionFramework
 
-  class ExecCont {
+  class ExecutionFramework {
     implicit val actorSystem = ActorSystem(config.getString("akka.actorSystem"))
     implicit val materializer = ActorMaterializer()
     implicit val executionContext = actorSystem.dispatcher
@@ -37,5 +37,5 @@ trait AppExecutionContext {
 }
 
 object AppExecutionContextRegistry extends AppExecutionContext {
-  val context = new ExecCont
+  val context = new ExecutionFramework
 }

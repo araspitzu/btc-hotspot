@@ -41,7 +41,7 @@ package object Helpers {
   object ScalaConversions {
 
     implicit class ListenableFutureToScalaFuture[T](lfuture:ListenableFuture[T]) {
-      def toScalaFuture:Future[T] = {
+      def asScala:Future[T] = {
         val promise = Promise[T]()
         Futures.addCallback(lfuture, new FutureCallback[T] {
           override def onFailure(t: Throwable): Unit = promise failure t

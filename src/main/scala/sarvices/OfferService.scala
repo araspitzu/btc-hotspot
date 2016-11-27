@@ -16,32 +16,29 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package resources
+package sarvices
 
-import akka.http.scaladsl.server.Route
-import wallet.WalletServiceComponent
+import commons.AppExecutionContextRegistry.context._
+import protocol.Repository.OfferRepository
+import protocol.domain.Offer
+import protocol.webDto.WebOfferDto
+
+import scala.concurrent.Future
 
 /**
-  * Created by andrea on 09/09/16.
+  * Created by andrea on 27/11/16.
   */
-trait MiniPortal extends PaymentChannelAPI with StaticFiles with OffersAPI {
-  this: WalletServiceComponent =>
+object OfferService {
 
-  val miniportalRoute: Route =
-    paymentChannelRoute ~
-    staticFilesRoute ~
-    offersRoute ~
-    enableMeRoute ~
-    preloginRoute ~
-    entryPointRoute  //must stay in the last position because it matches any request
+  def allOffers:Future[Seq[WebOfferDto]] = {
+    OfferRepository.allOffers.map( xs => xs.map(WebOfferDto(_)) )
+  }
+
+  def offerById(id:String):Future[Offer] = {
+    OfferRepository.byId(id).map {
+      case Some(offer) => offer
+      case None => throw new IllegalArgumentException(s"Offer $id not found")
+    }
+  }
 
 }
-
-object MiniPortalRegistry
-  extends MiniPortal
-    with PaymentChannelAPI
-    with WalletServiceComponent {
-
-  override val walletService = new WalletService
-}
-

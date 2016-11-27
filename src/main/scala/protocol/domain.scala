@@ -27,7 +27,7 @@ import protocol.domain.QtyUnit.QtyUnit
 package object domain {
 
   case class Session(
-    id:String = java.util.UUID.randomUUID.toString,
+    id:String,
     createdAt:LocalDateTime = LocalDateTime.now,
     clientMac:String,
     remainingUnits:Long = -1

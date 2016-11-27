@@ -16,35 +16,40 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import akka.http.scaladsl.Http
-import akka.http.scaladsl.server.Route
+package sarvices
+
 import com.typesafe.scalalogging.slf4j.LazyLogging
-import commons.Configuration.MiniPortalConfig._
-import protocol.Repository
-import resources.MiniPortalRegistry._
+import protocol.Repository.SessionRepository
+import protocol.domain.Session
 import commons.AppExecutionContextRegistry.context._
+import scala.concurrent.duration.Duration
+import scala.concurrent.{Await, Future}
 
-object Boot extends App with LazyLogging {
-  logger.info(s"Starting btc-hotspot")
+/**
+  * Created by andrea on 27/11/16.
+  */
+object SessionService extends LazyLogging {
 
-  bindOrFail(miniportalRoute, miniPortalHost, miniPortalPort, "MiniPortal")
+  val futureTimeoutDuration = Duration(10, "seconds")
 
-
-  Repository.setupDb.map { _ =>
-    logger.info("Done setting up db")
+  def byMac(mac: String): Future[Option[Session]] = {
+    SessionRepository.byMacAddress(mac)
   }
 
-
-  def bindOrFail(handler:Route, iface:String, port:Int, serviceName:String):Unit = {
-    Http().bindAndHandle(handler, iface, port) map { binding =>
-      logger.info(s"Service $serviceName bound to ${binding.localAddress}") } recover { case ex =>
-      logger.info(s"Interface could not bind to $iface:$port", ex.getMessage)
-      throw ex;
-    }
+  def byMacSync(mac: String): Option[Session] = {
+    Await.result(byMac(mac), futureTimeoutDuration)
   }
 
+//  def createIfNotExist(mac:String) = {
+//    byMac(mac).map {
+//      case
+//    }
+//  }
 
+  def create(mac: String): Future[String] = {
+    val session = Session(clientMac = mac)
+    SessionRepository.insert(session)
 
+    //        logger.info(s"Found exising session: ${existingSession.id} for $mac")
+  }
 }
-
-
