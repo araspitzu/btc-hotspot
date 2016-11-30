@@ -16,35 +16,26 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package protocol
+package iptables
 
-import org.joda.time.LocalDateTime
-import protocol.domain.QtyUnit.QtyUnit
+import java.net.InetAddress
 
 /**
-  * Created by andrea on 15/11/16.
+  * Created by andrea on 30/11/16.
   */
 package object domain {
-
-  case class Session(
-    id:Long = -1,
-    createdAt:LocalDateTime = LocalDateTime.now,
-    clientMac:String,
-    remainingUnits:Long = -1
+  
+  case class ChainEntry(
+      pkts:Long,
+      bytes:Long,
+      target:String,
+      prot:String,
+      opt:String,
+      in:String,
+      out:String,
+      source:InetAddress,
+      destination:InetAddress,
+      rule:String
   )
-
-  case class Offer(
-    offerId:Long = -1,
-    qty:Long,
-    qtyUnit: QtyUnit,
-    price:Long,
-    description:String
-  )
-
-  case object QtyUnit extends Enumeration {
-    type QtyUnit = Value
-    val MB = Value("MB")
-    val minutes = Value("minutes")
-  }
   
 }

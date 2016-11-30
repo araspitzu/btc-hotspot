@@ -18,10 +18,14 @@
 
 package iptables
 
+import java.net.InetAddress
+
 import commons.Helpers._
 import com.typesafe.scalalogging.slf4j.LazyLogging
+
 import scala.concurrent.Future
 import commons.AppExecutionContextRegistry.context._
+import iptables.domain.ChainEntry
 
 /**
   * Created by andrea on 09/11/16.
@@ -32,20 +36,37 @@ object IpTablesService extends LazyLogging {
   private def iptables(params:String) = {
     s"sudo /sbin/iptables $params"
   }
-
+  
+  def report:Future[Seq[ChainEntry]] = {
+    iptables("-t mangle -nvxL internet").exec.map {
+       _.lines
+        .drop(2)     //drop header and column header
+        .map { r =>  //iterate over each rule
+           val words = r.split(" ").filter(_ != "")  //extract words
+           ChainEntry(
+             pkts = words(0).toLong,
+             bytes = words(1).toLong,
+             target = words(2),
+             prot = words(3),
+             opt = words(4),
+             in = words(5),
+             out = words(6),
+             source = InetAddress.getByName( words(7) ),
+             destination = InetAddress.getByName( words(8) ),
+             rule = words.drop(8).fold("")(_ + " "+ _)
+           )
+        }.toSeq
+    }
+    
+  }
+  
   def enableClient(mac:String):Future[String] = {
-    iptables(enableClientRule(mac)).exec
+    iptables(s"-I internet 1 -t mangle -m mac --mac-source $mac -j RETURN").exec
   }
 
   def disableClient(mac:String):Future[String] = {
-    iptables(disableClientRule(mac)) exec
+    iptables(s"-D internet -t mangle -m mac --mac-source $mac -j RETURN").exec
   }
-
-  private def enableClientRule(mac:String):String =
-    s"-I internet 1 -t mangle -m mac --mac-source $mac -j RETURN"
-
-  private def disableClientRule(mac:String):String =
-    s"-D internet -t mangle -m mac --mac-source $mac -j RETURN"
 
 }
 
