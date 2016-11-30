@@ -73,7 +73,7 @@ trait WalletServiceComponent extends LazyLogging {
 
     def bytes2hex(bytes: Array[Byte]): String = bytes.map("%02x ".format(_)).mkString
 
-    def generatePaymentRequest(session: Session, offerId: String): Future[PaymentRequest] = {
+    def generatePaymentRequest(session: Session, offerId: Long): Future[PaymentRequest] = {
       logger.info(s"Issuing payment request for session ${session.id} and offer $offerId")
 
       OfferService.offerById(offerId) map { offer =>
@@ -83,13 +83,13 @@ trait WalletServiceComponent extends LazyLogging {
           outputsForOffer(offer).asJava,
           s"Please pay ${offer.price} satoshis for ${offer.description}",
           s"http://$miniPortalHost:$miniPortalPort/api/pay/${session.id}",
-          offerId.getBytes
+          Array.emptyByteArray
         ).build
       }
 
     }
 
-    def validatePayment(session: Session, offerId:String, payment: Protos.Payment): Future[Protos.PaymentACK] = {
+    def validatePayment(session: Session, offerId:Long, payment: Protos.Payment): Future[Protos.PaymentACK] = {
 
       if(payment.getTransactionsCount != 1)
         throw new IllegalStateException("Too many tx received in payment session")

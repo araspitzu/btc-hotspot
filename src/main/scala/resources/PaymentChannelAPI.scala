@@ -50,7 +50,7 @@ trait PaymentChannelAPI extends CommonResource with ExtraDirectives {
     }
   }
 
-  private def paymentRequestForSession(session:Session, offerId:String) = get {
+  private def paymentRequestForSession(session:Session, offerId:Long) = get {
     complete {
       walletService.generatePaymentRequest(session, offerId) map { req:PaymentRequest =>
         HttpEntity(req.toByteArray).withContentType(paymentRequestContentType)
@@ -58,7 +58,7 @@ trait PaymentChannelAPI extends CommonResource with ExtraDirectives {
     }
   }
 
-  private def paymentDataForSession(session:Session, offerId:String) = post {
+  private def paymentDataForSession(session:Session, offerId:Long) = post {
     entity(as[Protos.Payment]){ payment =>
       complete {
         walletService.validatePayment(session, offerId, payment) map { ack =>
@@ -84,7 +84,7 @@ trait PaymentChannelAPI extends CommonResource with ExtraDirectives {
   }
 
   def paymentChannelRoute: Route = {
-    path("api" / "pay" / Segment) { offerId =>
+    path("api" / "pay" / LongNumber) { offerId =>
       sessionOrReject { session =>
         paymentRequestForSession(session, offerId) ~ paymentDataForSession(session, offerId)
       }

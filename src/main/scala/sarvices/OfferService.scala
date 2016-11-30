@@ -34,7 +34,7 @@ object OfferService {
     OfferRepository.allOffers.map( xs => xs.map(WebOfferDto(_)) )
   }
 
-  def offerById(id:String):Future[Offer] = {
+  def offerById(id:Long):Future[Offer] = {
     OfferRepository.byId(id).map {
       case Some(offer) => offer
       case None => throw new IllegalArgumentException(s"Offer $id not found")

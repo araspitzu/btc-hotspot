@@ -29,11 +29,11 @@ trait OffersAPI extends CommonResource with JsonSupport {
 
 
   def offersRoute:Route = get {
-    path("api" / "offer"){
-      path(Segment / PathEnd) { id =>
-        complete(OfferService.offerById(id))
-      } ~ {
+    pathPrefix("api" / "offer"){
+      pathEnd{
         complete(OfferService.allOffers)
+      } ~ path(LongNumber) { id =>
+        complete(OfferService.offerById(id))
       }
     }
   }

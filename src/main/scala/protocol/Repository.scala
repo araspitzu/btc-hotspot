@@ -109,7 +109,7 @@ object Repository extends LazyLogging {
         s => QtyUnit.withName(s)
       )
 
-      def offerId = column[String]("offerId", O.PrimaryKey)
+      def offerId = column[Long]("offerId", O.PrimaryKey, O.AutoInc)
       def qty = column[Long]("qty")
       def qtyUnit = column[QtyUnit]("qtyUnit")
       def price = column[Long]("price")
@@ -120,7 +120,7 @@ object Repository extends LazyLogging {
 
     val offersTable = TableQuery[OfferTable]
 
-    def byId(id:String):Future[Option[Offer]] = db.run {
+    def byId(id:Long):Future[Option[Offer]] = db.run {
       offersTable
         .filter(_.offerId === id)
         .map(identity)

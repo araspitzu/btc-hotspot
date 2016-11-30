@@ -34,7 +34,7 @@ package object domain {
   )
 
   case class Offer(
-    offerId:String = java.util.UUID.randomUUID.toString,
+    offerId:Long = -1,
     qty:Long,
     qtyUnit: QtyUnit,
     price:Long,
