@@ -32,10 +32,12 @@ import org.bitcoinj.core._
 import org.bitcoinj.kits.WalletAppKit
 import org.bitcoinj.protocols.payments.PaymentProtocol
 import org.bitcoinj.wallet.KeyChain.KeyPurpose
-import protocol.domain.{QtyUnit, Offer, Session}
-import sarvices.OfferService
+import protocol.domain.{Offer, QtyUnit, Session}
+import sarvices.{OfferService, SessionService}
+
 import scala.collection.JavaConverters._
 import commons.AppExecutionContextRegistry.context._
+
 import scala.concurrent.Future
 import commons.Helpers.ScalaConversions._
 
@@ -103,9 +105,8 @@ trait WalletServiceComponent extends LazyLogging {
         if(offer.qtyUnit != QtyUnit.minutes)
            throw new NotImplementedError(s"${QtyUnit.MB} not yet implemented")
 
-        val offerRemainingTime = offer.qty
-        IpTablesService.enableClient(session.clientMac, offerRemainingTime.toInt)
-        PaymentProtocol.createPaymentAck(payment, s"Enjoy, your session will last for ${offerRemainingTime}min")
+        SessionService.enableSessionFor(session, offer)
+        PaymentProtocol.createPaymentAck(payment, s"Enjoy, your session will last for ${offer.qty} ${offer.qtyUnit}")
 
       }
 

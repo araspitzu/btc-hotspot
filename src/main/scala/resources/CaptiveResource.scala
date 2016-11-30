@@ -49,7 +49,7 @@ trait CaptiveResource extends CommonResource with ExtraDirectives {
     path("prelogin") {
       extractClientMAC { clientMac =>
         complete {
-          SessionService.create(clientMac.getOrElse("unknown")).map { _ =>
+          SessionService.getOrCreate(clientMac.getOrElse("unknown")).map { _ =>
             HttpEntity(
               browserRedirectPage
             ).withContentType(`text/html`.toContentType(`UTF-8`))

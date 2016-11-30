@@ -19,7 +19,6 @@
 package protocol
 
 import java.sql.{Date => SQLDate}
-
 import com.typesafe.scalalogging.slf4j.LazyLogging
 import commons.Configuration._
 import commons.TestData
@@ -29,7 +28,6 @@ import protocol.domain.{Offer, Session}
 import protocol.domain.QtyUnit.QtyUnit
 import protocol.domain.QtyUnit
 import slick.driver.H2Driver.api._
-
 import scala.concurrent.duration.Duration
 import scala.concurrent.{Await, Future}
 

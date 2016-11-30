@@ -44,33 +44,11 @@ object IpTablesService extends LazyLogging {
 
       reader.lines.iterator.asScala.fold("")(_ + _)
     }
-
-    def withDelay(minutes:Int):String = {
-      s"""echo "$cmd" |at now + $minutes minutes"""
-    }
-
+    
   }
 
   private def iptables(params:String) = {
     s"sudo /sbin/iptables $params"
-  }
-
-  /**
-    * Enables the mac client in iptables and then schedules another iptable command to remove the previous rule,
-    * it effectively restrict a client to use internet for a certain amount of @param minutes
-    * TODO parse the date from the output of "at" and return it inside the future
-    * @param mac
-    * @param minutes
-    * @return the output of the scheduling
-    */
-  def enableClient(mac:String, minutes:Int):Future[String] = {
-    for {
-      enabled <- enableClient(mac)
-      scheduledAt <- iptables(disableClientRule(mac)) withDelay(minutes) exec
-    } yield {
-      logger.info(scheduledAt)
-      scheduledAt
-    }
   }
 
   def enableClient(mac:String):Future[String] = {

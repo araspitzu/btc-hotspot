@@ -20,9 +20,13 @@ package sarvices
 
 import com.typesafe.scalalogging.slf4j.LazyLogging
 import protocol.Repository.SessionRepository
-import protocol.domain.Session
+import protocol.domain.{Offer, Session}
 import commons.AppExecutionContextRegistry.context._
-import scala.concurrent.duration.Duration
+import iptables.IpTablesService
+import protocol.domain.QtyUnit.QtyUnit
+import protocol.domain.QtyUnit._
+
+import scala.concurrent.duration.{Duration, FiniteDuration, SECONDS}
 import scala.concurrent.{Await, Future}
 
 /**
@@ -31,6 +35,19 @@ import scala.concurrent.{Await, Future}
 object SessionService extends LazyLogging {
 
   val futureTimeoutDuration = Duration(10, "seconds")
+  
+  def enableSessionFor(session: Session, offer:Offer) = {
+    if(offer.qtyUnit == MB)
+      throw new NotImplementedError
+  
+    val offerRemainingTime = FiniteDuration(offer.qty, SECONDS)
+    IpTablesService.enableClient(session.clientMac)
+    logger.info(s"Enabled ${session.clientMac}, scheduled disable for now + $offerRemainingTime")
+    actorSystem.scheduler.scheduleOnce(offerRemainingTime) {
+      IpTablesService.disableClient(session.clientMac)
+    }
+  
+  }
 
   def byMac(mac: String): Future[Option[Session]] = {
     SessionRepository.byMacAddress(mac)
@@ -42,9 +59,9 @@ object SessionService extends LazyLogging {
 
   /*
     Returns the id of the existing session for this mac, create a new one if
-    no session can be found
+    no session can be found, ids are created from the database
    */
-  def create(mac:String):Future[Long] = {
+  def getOrCreate(mac:String):Future[Long] = {
     byMacSync(mac) match {
       case Some(session) =>
         Future.successful(session.id)
