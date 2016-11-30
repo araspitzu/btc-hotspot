@@ -38,6 +38,12 @@ package object Helpers {
     actorSystem.actorSelection(s"akka://${actorPathFor[T]}")
   }
 
+  def addShutDownHook(hook: => Unit) = {
+    Runtime.getRuntime.addShutdownHook(new Thread {
+      override def run:Unit = hook
+    })
+  }
+  
   object ScalaConversions {
 
     implicit class ListenableFutureToScalaFuture[T](lfuture:ListenableFuture[T]) {

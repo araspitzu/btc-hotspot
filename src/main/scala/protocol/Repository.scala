@@ -19,16 +19,19 @@
 package protocol
 
 import java.sql.{Date => SQLDate}
+
 import com.typesafe.scalalogging.slf4j.LazyLogging
 import commons.Configuration._
 import commons.TestData
-import org.joda.time.{LocalDateTime}
-import protocol.domain.{Session, Offer}
+import commons.Helpers._
+import org.joda.time.LocalDateTime
+import protocol.domain.{Offer, Session}
 import protocol.domain.QtyUnit.QtyUnit
 import protocol.domain.QtyUnit
-import scala.collection.mutable
 import slick.driver.H2Driver.api._
-import scala.concurrent.Future
+
+import scala.concurrent.duration.Duration
+import scala.concurrent.{Await, Future}
 
 /**
   * Created by andrea on 17/11/16.
@@ -41,13 +44,24 @@ object Repository extends LazyLogging {
     org.h2.tools.Server.createTcpServer("-tcpPort", port).start() //starts h2 in server mode
     Database.forConfig(s"db.$env")
   }
+  
+  val dbSetup = DBIO.seq (
+    (OfferRepository.offersTable.schema ++
+      SessionRepository.sessionsTable.schema).create,
+    
+    //Insert some offers
+    OfferRepository.offersTable ++= TestData.offers
+  )
+  
+  lazy val setupDb = db.run(
+    {logger.info(s"Setting up schemas and populating tables"); dbSetup}
+  )
 
-  Runtime.getRuntime.addShutdownHook(new Thread {
-    override def run:Unit ={
-      logger.info("Shutting down db")
-      db.shutdown.wait(2000)
-    }
-  })
+  addShutDownHook {
+    logger.info("Shutting down db")
+    Await.result( db.shutdown, Duration(2, "seconds") )
+  }
+  
 
   object SessionRepository {
 
@@ -126,17 +140,5 @@ object Repository extends LazyLogging {
     }
 
   }
-
-  val dbSetup = DBIO.seq (
-    (OfferRepository.offersTable.schema ++
-     SessionRepository.sessionsTable.schema).create,
-
-    //Insert some offers
-    OfferRepository.offersTable ++= TestData.offers
-  )
-
-  def setupDb = db.run(
-    {logger.debug(s"Setting up schemas and populating tables"); dbSetup}
-  )
 
 }

@@ -24,21 +24,18 @@ import com.google.protobuf.ByteString
 import com.typesafe.scalalogging.slf4j.LazyLogging
 import commons.Configuration.WalletConfig._
 import commons.Configuration.MiniPortalConfig._
+import commons.Helpers._
 import iptables.IpTablesService
 import org.bitcoin.protocols.payments.Protos
 import org.bitcoin.protocols.payments.Protos.PaymentRequest
-import org.bitcoinj.core.TransactionBroadcast.ProgressCallback
 import org.bitcoinj.core._
 import org.bitcoinj.kits.WalletAppKit
 import org.bitcoinj.protocols.payments.PaymentProtocol
-import org.bitcoinj.script.{ScriptBuilder, ScriptOpCodes}
-import org.bitcoinj.script.ScriptOpCodes._
 import org.bitcoinj.wallet.KeyChain.KeyPurpose
-import protocol.Repository
 import protocol.domain.{QtyUnit, Offer, Session}
 import sarvices.OfferService
 import scala.collection.JavaConverters._
-import scala.concurrent.ExecutionContext.Implicits.global
+import commons.AppExecutionContextRegistry.context._
 import scala.concurrent.Future
 import commons.Helpers.ScalaConversions._
 
@@ -59,6 +56,10 @@ trait WalletServiceComponent extends LazyLogging {
       }
     }.setAutoStop(true)
      .setUserAgent("paypercom", "0.0.1-alpha")
+    
+    addShutDownHook {
+      kit.peerGroup.stop
+    }
 
     if(isEnabled)
       kit.startAsync

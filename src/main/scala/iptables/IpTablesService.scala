@@ -19,11 +19,10 @@
 package iptables
 
 import java.io.{InputStreamReader, BufferedReader}
-
 import scala.collection.JavaConverters._
 import com.typesafe.scalalogging.slf4j.LazyLogging
 import scala.concurrent.Future
-import scala.concurrent.ExecutionContext.Implicits.global
+import commons.AppExecutionContextRegistry.context._
 
 /**
   * Created by andrea on 09/11/16.

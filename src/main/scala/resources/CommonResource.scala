@@ -65,8 +65,6 @@ trait ExtraDirectives extends Directives {
     someMac map SessionService.byMacSync flatten
   }
 
-  def redirectToPrelogin(request: Option[HttpRequest] = None) =
-    redirect(preLoginUrl(request), StatusCodes.TemporaryRedirect)
 
   def sessionOrReject:Directive1[Session] = extractSessionForMac map {
     _ match {
@@ -74,16 +72,6 @@ trait ExtraDirectives extends Directives {
       case Some(session) => session
     }
   }
-
-  private def preLoginUrl(request: Option[HttpRequest]):Uri = {
-    Uri()
-    .withScheme("http")
-    .withHost(miniPortalHost)
-    .withPort(miniPortalPort)
-    .withPath(Path("/prelogin"))
-    .withQuery(Query(
-      "userUrl" -> request.map(_._2.toString).getOrElse("duckduckgo.com")
-    ))
-  }
+  
 
 }

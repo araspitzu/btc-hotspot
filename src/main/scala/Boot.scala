@@ -24,16 +24,17 @@ import protocol.Repository
 import resources.MiniPortalRegistry._
 import commons.AppExecutionContextRegistry.context._
 
+import scala.concurrent.Await
+import scala.concurrent.duration.Duration
+
 object Boot extends App with LazyLogging {
   logger.info(s"Starting btc-hotspot")
 
   bindOrFail(miniportalRoute, miniPortalHost, miniPortalPort, "MiniPortal")
-
-
-  Repository.setupDb.map { _ =>
-    logger.info("Done setting up db")
-  }
-
+  
+  logger.info(s"Preparing db...")
+  Await.result(Repository.setupDb, Duration(10, "seconds"))
+  logger.info("Done setting up db")
 
   def bindOrFail(handler:Route, iface:String, port:Int, serviceName:String):Unit = {
     Http().bindAndHandle(handler, iface, port) map { binding =>
