@@ -43,7 +43,7 @@ object Repository extends StrictLogging {
     org.h2.tools.Server.createTcpServer("-tcpAllowOthers", "-tcpPort", dbmsPort).start() //starts h2 in server mode
     
     if(webUI) {
-      logger.info(s"Creating web ui for database, port 8888")
+      logger.info(s"Creating web ui @ localhost:8888")
       org.h2.tools.Server.createWebServer("-webAllowOthers", "-webPort", "8888").start()
     }
     

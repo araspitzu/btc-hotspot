@@ -18,8 +18,7 @@
 
 package iptables
 
-import java.io.{InputStreamReader, BufferedReader}
-import scala.collection.JavaConverters._
+import commons.Helpers._
 import com.typesafe.scalalogging.slf4j.LazyLogging
 import scala.concurrent.Future
 import commons.AppExecutionContextRegistry.context._
@@ -29,24 +28,7 @@ import commons.AppExecutionContextRegistry.context._
   *
   */
 object IpTablesService extends LazyLogging {
-
-  private implicit class CmdExecutor(cmd:String) {
-    def exec:Future[String] = Future {
-
-      val proc = Runtime.getRuntime.exec(cmd)
-      val exitValue = proc.waitFor
-      if(exitValue != 0)
-        throw new IllegalStateException(s"\'$cmd\' exited with code $exitValue")
-
-      val reader = new BufferedReader(
-        new InputStreamReader (proc.getInputStream )
-      )
-
-      reader.lines.iterator.asScala.fold("")(_ + _)
-    }
-    
-  }
-
+  
   private def iptables(params:String) = {
     s"sudo /sbin/iptables $params"
   }

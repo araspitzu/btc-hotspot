@@ -18,9 +18,12 @@
 
 package commons
 
+import java.io.{BufferedReader, InputStreamReader}
+
 import Configuration._
 import akka.actor.ActorSystem
 import com.google.common.util.concurrent.{FutureCallback, Futures, ListenableFuture}
+import scala.collection.JavaConverters._
 import scala.concurrent._
 import scala.reflect.ClassTag
 import scala.reflect._
@@ -59,6 +62,24 @@ package object Helpers {
     }
 
   }
-
-
+  
+  implicit class CmdExecutor(cmd:String) {
+    def exec:Future[String] = Future {
+      
+      val proc = Runtime.getRuntime.exec(cmd)
+      val exitValue = proc.waitFor
+      if(exitValue != 0)
+        throw new IllegalStateException(s"\'$cmd\' exited with code $exitValue")
+      
+      val reader = new BufferedReader(
+        new InputStreamReader (proc.getInputStream )
+      )
+      
+      reader.lines.iterator.asScala.fold("")(_ + _)
+    }
+    
+  }
+  
+  
+  
 }
