@@ -42,5 +42,12 @@ object Configuration {
     val miniPortalPort = config.getInt(s"miniportal.$env.port")
     val miniPortalIndex = config.getString(s"miniportal.$env.index")
   }
+  
+  object DbConfig {
+    val configPath = s"db.$env"
+    val webUI = config.getBoolean(s"db.webUI")
+    val dbmsPort = config.getString(s"db.$env.port")
+  }
+  
 }
 

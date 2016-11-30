@@ -19,8 +19,9 @@
 package protocol
 
 import java.sql.{Date => SQLDate}
-import com.typesafe.scalalogging.slf4j.LazyLogging
-import commons.Configuration._
+
+import com.typesafe.scalalogging.slf4j.{LazyLogging, StrictLogging}
+import commons.Configuration.DbConfig._
 import commons.TestData
 import commons.Helpers._
 import org.joda.time.LocalDateTime
@@ -28,19 +29,25 @@ import protocol.domain.{Offer, Session}
 import protocol.domain.QtyUnit.QtyUnit
 import protocol.domain.QtyUnit
 import slick.driver.H2Driver.api._
+
 import scala.concurrent.duration.Duration
 import scala.concurrent.{Await, Future}
 
 /**
   * Created by andrea on 17/11/16.
   */
-object Repository extends LazyLogging {
+object Repository extends StrictLogging {
 
   private val db = {
-    val port = config.getString(s"db.$env.port")
-    logger.info(s"Opening database for conf 'db.$env' @ localhost:$port")
-    org.h2.tools.Server.createTcpServer("-tcpPort", port).start() //starts h2 in server mode
-    Database.forConfig(s"db.$env")
+    logger.info(s"Opening database for conf '$configPath' @ localhost:$dbmsPort")
+    org.h2.tools.Server.createTcpServer("-tcpAllowOthers", "-tcpPort", dbmsPort).start() //starts h2 in server mode
+    
+    if(webUI) {
+      logger.info(s"Creating web ui for database, port 8888")
+      org.h2.tools.Server.createWebServer("-webAllowOthers", "-webPort", "8888").start()
+    }
+    
+    Database.forConfig(configPath)
   }
   
   val dbSetup = DBIO.seq (
@@ -51,9 +58,10 @@ object Repository extends LazyLogging {
     OfferRepository.offersTable ++= TestData.offers
   )
   
-  lazy val setupDb = db.run(
-    {logger.info(s"Setting up schemas and populating tables"); dbSetup}
-  )
+  lazy val setupDb = db.run({
+    logger.info(s"Setting up schemas and populating tables")
+    dbSetup
+  })
 
   addShutDownHook {
     logger.info("Shutting down db")
