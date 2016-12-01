@@ -18,8 +18,7 @@
 
 package resources
 
-import akka.http.scaladsl.model.Uri.{Query, Path}
-import akka.http.scaladsl.server.{Directive1, Directives}
+import akka.http.scaladsl.server.{Directive1, Directives, Route}
 import akka.util.Timeout
 import protocol.domain.Session
 import sarvices.SessionService
@@ -29,7 +28,6 @@ import scala.concurrent.duration._
 import com.typesafe.scalalogging.slf4j.LazyLogging
 import de.heikoseeberger.akkahttpjson4s.Json4sSupport
 import akka.http.scaladsl.model._
-import commons.Configuration.MiniPortalConfig._
 
 /**
   * Created by andrea on 09/09/16.

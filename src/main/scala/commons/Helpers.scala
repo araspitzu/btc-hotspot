@@ -27,6 +27,7 @@ import scala.collection.JavaConverters._
 import scala.concurrent._
 import scala.reflect.ClassTag
 import scala.reflect._
+import commons.AppExecutionContextRegistry.context._
 
 /**
   * Created by andrea on 21/10/16.

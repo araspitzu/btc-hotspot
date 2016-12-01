@@ -16,25 +16,26 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package iptables
+package resources
 
-import scala.io.Source
-
+import akka.http.scaladsl.server.{AuthorizationFailedRejection, Route}
+import commons.JsonSupport
 
 /**
- * Created by andrea on 16/11/16.
- */
-//TODO add caching
-object ArpService {
-
-  private final val arpFile = "/proc/net/arp"
-
-  def arpLookup(ipAddr:String):Option[String] = {
-    Source
-      .fromFile(arpFile)
-      .getLines
-      .drop(1)
-      .find(_.startsWith(ipAddr)).map(_.substring(41,58))
+  * Created by andrea on 01/12/16.
+  */
+trait StatusAPI extends CommonResource with JsonSupport with ExtraDirectives {
+  
+  def statusRoute:Route = get {
+    path("api" / "session" / LongNumber) { sessionId =>
+      sessionOrReject { session =>
+        if(session.id == sessionId)
+          complete(session)
+        else
+          reject(AuthorizationFailedRejection)
+      }
+    }
   }
-
+  
+  
 }

@@ -18,8 +18,6 @@
 
 package iptables
 
-import java.net.InetAddress
-
 import commons.Helpers._
 import com.typesafe.scalalogging.slf4j.LazyLogging
 
@@ -51,8 +49,8 @@ object IpTablesService extends LazyLogging {
              opt = words(4),
              in = words(5),
              out = words(6),
-             source = InetAddress.getByName( words(7) ),
-             destination = InetAddress.getByName( words(8) ),
+             source = words(7),
+             destination = words(8),
              rule = words.drop(8).fold("")(_ + " "+ _)
            )
         }.toSeq

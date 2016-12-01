@@ -18,8 +18,6 @@
 
 package iptables
 
-import java.net.InetAddress
-
 /**
   * Created by andrea on 30/11/16.
   */
@@ -33,8 +31,8 @@ package object domain {
       opt:String,
       in:String,
       out:String,
-      source:InetAddress,
-      destination:InetAddress,
+      source:String,
+      destination:String,
       rule:String
   )
   

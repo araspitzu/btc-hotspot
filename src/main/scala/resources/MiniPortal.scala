@@ -25,8 +25,11 @@ import wallet.WalletServiceComponent
 /**
   * Created by andrea on 09/09/16.
   */
-trait MiniPortal extends PaymentChannelAPI with CaptiveResource with OffersAPI {
-  this: WalletServiceComponent =>
+trait MiniPortal extends
+  PaymentChannelAPI with
+  CaptiveResource with
+  OffersAPI with
+  StatusAPI { this: WalletServiceComponent =>
 
   /**
     * Serves all static files in the given folder
@@ -37,6 +40,7 @@ trait MiniPortal extends PaymentChannelAPI with CaptiveResource with OffersAPI {
     paymentChannelRoute ~
     staticFilesRoute ~
     offersRoute ~
+    statusRoute ~
     enableMeRoute ~
     preloginRoute ~
     entryPointRoute  //must stay in the last position because it matches any request
