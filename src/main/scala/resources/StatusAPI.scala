@@ -29,9 +29,10 @@ trait StatusAPI extends CommonResource with JsonSupport with ExtraDirectives {
   def statusRoute:Route = get {
     path("api" / "session" / LongNumber) { sessionId =>
       sessionOrReject { session =>
-        if(session.id == sessionId)
+        if(session.id == sessionId) {
+          logger.info(s"Returning session $session")
           complete(session)
-        else
+        }else
           reject(AuthorizationFailedRejection)
       }
     }

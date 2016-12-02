@@ -18,13 +18,14 @@
 
 package protocol
 
-import java.sql.{Date => SQLDate}
+import java.sql.{Timestamp, Date => SQLDate}
 
 import com.typesafe.scalalogging.slf4j.{LazyLogging, StrictLogging}
 import commons.Configuration.DbConfig._
 import commons.TestData
 import commons.Helpers._
-import org.joda.time.LocalDateTime
+import java.time.LocalDateTime
+
 import protocol.domain.{Offer, Session}
 import protocol.domain.QtyUnit.QtyUnit
 import protocol.domain.QtyUnit
@@ -44,7 +45,7 @@ object Repository extends StrictLogging {
     
     if(webUI) {
       logger.info(s"Creating web ui @ localhost:8888")
-      org.h2.tools.Server.createWebServer("-webAllowOthers", "-webPort", "8888").start()
+      org.h2.tools.Server.createWebServer( "-webPort", "8888").start()
     }
     
     Database.forConfig(configPath)
@@ -71,14 +72,15 @@ object Repository extends StrictLogging {
 
   object SessionRepository {
 
+
     class SessionTable(tag: Tag) extends Table[Session](tag, "SESSIONS"){
-      implicit val localDateTimeMapper = MappedColumnType.base[LocalDateTime,SQLDate](
-        localDateTime => new SQLDate(localDateTime.toDateTime.toDate.getTime),
-        date => new LocalDateTime(date)
+      implicit val localDateTimeMapper = MappedColumnType.base[LocalDateTime,Timestamp](
+        localDateTime => Timestamp.valueOf(localDateTime),
+        date => date.toLocalDateTime
       )
 
       def id = column[Long]("id", O.PrimaryKey, O.AutoInc)
-      def createdAt = column[LocalDateTime]("createdAt", O.SqlType("DATE")) //Gets mapped to LocalDateTime -> java.sql.Date -> DATATYPE(DATE)
+      def createdAt = column[LocalDateTime]("createdAt", O.SqlType("DATETIME")) //Gets mapped to LocalDateTime -> java.sql.Date -> DATATYPE(DATE)
       def clientMac = column[String]("clientMac")
       def remainingUnits = column[Long]("remainingUnits")
 

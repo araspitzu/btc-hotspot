@@ -50,7 +50,7 @@ object ExtraHttpHeaders {
 
 }
 
-trait ExtraDirectives extends Directives {
+trait ExtraDirectives extends Directives with LazyLogging {
 
   def extractClientMAC:Directive1[Option[String]] = extractClientIP map { remoteAddress =>
     for {

@@ -19,7 +19,7 @@
 package iptables
 
 import scala.io.Source
-
+import commons.Configuration._
 
 /**
  * Created by andrea on 16/11/16.
@@ -30,6 +30,8 @@ object ArpService {
   private final val arpFile = "/proc/net/arp"
 
   def arpLookup(ipAddr:String):Option[String] = {
+    if(env == "local") return Some("unknown")
+    
     Source
       .fromFile(arpFile)
       .getLines

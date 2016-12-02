@@ -60,14 +60,14 @@ ssid=$ESSID" > /etc/hostapd/hostapd.conf
 # BROKEN (must change only the first occurrence)!!!
 sed -i '/DAEMON_CONF/c\DAEMON_CONF=/etc/hostapd/hostapd.conf/' /etc/init.d/hostapd
 
+#sed -i '/Exec/c\Exec=spotify --force-device-scale-factor=1.5 %U' /usr/share/applications/spotify.desktop
+
 # Allow ipv4 packet forwarding in kernel -- is that persistent?
 echo 1 > /proc/sys/net/ipv4/ip_forward
 
 # Enable hostapd at boot
 systemctl enable hostapd
 
-
-#ln -s /opt/btc-hotspot/bitcoin/ /usr/share/btc-hotspot/bitcoin
 
 # btc user append to /etc/sudoers
 #btc-hotspot ALL = NOPASSWD: /sbin/iptables -I internet 1 -t mangle -m mac --mac-source ??\:??\:??\:??\:??\:?? -j RETURN

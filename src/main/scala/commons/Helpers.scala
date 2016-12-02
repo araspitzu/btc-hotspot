@@ -19,10 +19,9 @@
 package commons
 
 import java.io.{BufferedReader, InputStreamReader}
-
 import Configuration._
 import akka.actor.ActorSystem
-import com.google.common.util.concurrent.{FutureCallback, Futures, ListenableFuture}
+import com.google.common.util.concurrent.{ FutureCallback, Futures, ListenableFuture }
 import scala.collection.JavaConverters._
 import scala.concurrent._
 import scala.reflect.ClassTag
