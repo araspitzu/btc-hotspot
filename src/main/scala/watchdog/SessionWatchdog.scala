@@ -16,27 +16,17 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package resources
-
-import akka.http.scaladsl.server.{AuthorizationFailedRejection, Route}
-import commons.JsonSupport
+package watchdog
 
 /**
-  * Created by andrea on 01/12/16.
+  * Created by andrea on 05/12/16.
   */
-trait StatusAPI extends CommonResource with JsonSupport with ExtraDirectives {
+class SessionWatchdog {
   
-  def statusRoute:Route = get {
-    path("api" / "session" / LongNumber) { sessionId =>
-      sessionOrReject { session =>
-        if(session.id == sessionId) {
-          logger.info(s"Returning session $session")
-          complete(session)
-        }else
-          reject(AuthorizationFailedRejection)
-      }
-    }
-  }
+  
+  def timeBasedBehaviour = ???
+  
+  def dataBasedBehaviour = ???
   
   
 }

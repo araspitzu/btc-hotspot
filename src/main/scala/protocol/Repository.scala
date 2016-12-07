@@ -18,9 +18,8 @@
 
 package protocol
 
-import java.sql.{Timestamp, Date => SQLDate}
-
-import com.typesafe.scalalogging.slf4j.{LazyLogging, StrictLogging}
+import java.sql.Timestamp
+import com.typesafe.scalalogging.slf4j.LazyLogging
 import commons.Configuration.DbConfig._
 import commons.TestData
 import commons.Helpers._
@@ -37,7 +36,7 @@ import scala.concurrent.{Await, Future}
 /**
   * Created by andrea on 17/11/16.
   */
-object Repository extends StrictLogging {
+object Repository extends LazyLogging {
 
   private val db = {
     logger.info(s"Opening database for conf '$configPath' @ localhost:$dbmsPort")
@@ -74,23 +73,39 @@ object Repository extends StrictLogging {
 
 
     class SessionTable(tag: Tag) extends Table[Session](tag, "SESSIONS"){
+      
       implicit val localDateTimeMapper = MappedColumnType.base[LocalDateTime,Timestamp](
         localDateTime => Timestamp.valueOf(localDateTime),
         date => date.toLocalDateTime
       )
 
       def id = column[Long]("id", O.PrimaryKey, O.AutoInc)
-      def createdAt = column[LocalDateTime]("createdAt", O.SqlType("DATETIME")) //Gets mapped to LocalDateTime -> java.sql.Date -> DATATYPE(DATE)
+      def createdAt = column[LocalDateTime]("createdAt", O.SqlType("DATETIME")) //mapped via java.time.LocalDateTime -> java.sql.Timestamp -> DATATYPE(DATETIME)
       def clientMac = column[String]("clientMac")
       def remainingUnits = column[Long]("remainingUnits")
+      def offerId = column[Option[Long]]("offerId")
 
-      override def * = (id, createdAt, clientMac, remainingUnits) <> (Session.tupled, Session.unapply)
+      def offer = foreignKey("offerFK", offerId, OfferRepository.offersTable)(_.offerId.?)
+      
+      override def * = (id, createdAt, clientMac, remainingUnits, offerId) <> (Session.tupled, Session.unapply)
     }
 
     val sessionsTable = TableQuery[SessionTable]
 
     def insert(session: Session):Future[Long] = db.run {
       (sessionsTable returning sessionsTable.map(_.id)) += session
+    }
+    
+    def updateSessionWithOffer(session: Session, offer: Option[Offer]):Future[Int] = db.run {
+      sessionsTable
+        .update(session.copy(offerId = offer.map(_.offerId)))
+    }
+    
+    def byId(id:Long):Future[Option[Session]] = db.run {
+      sessionsTable
+        .filter(_.id === id)
+        .result
+        .headOption
     }
 
     def allSession:Future[Seq[Session]] = db.run {
@@ -105,6 +120,13 @@ object Repository extends StrictLogging {
         .map(identity)
         .result
         .headOption
+    }
+    
+    def activeSessions:Future[Seq[Session]] = db.run {
+      sessionsTable
+        .filter(_.remainingUnits > 0L)
+        .map(identity)
+        .result
     }
 
 

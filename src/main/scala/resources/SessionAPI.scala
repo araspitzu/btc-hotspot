@@ -16,25 +16,32 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package sarvices
+package resources
 
-import commons.AppExecutionContextRegistry.context._
-import protocol.Repository.OfferRepository
-import protocol.domain.Offer
-import protocol.webDto.WebOfferDto
-
-import scala.concurrent.Future
+import akka.http.scaladsl.server.{AuthorizationFailedRejection, Route}
+import commons.JsonSupport
+import sarvices.SessionService
 
 /**
-  * Created by andrea on 27/11/16.
+  * Created by andrea on 01/12/16.
   */
-object OfferService {
-
-  def allOffers:Future[Seq[WebOfferDto]] = {
-    OfferRepository.allOffers.map( xs => xs.map(WebOfferDto(_)) )
+trait SessionAPI extends CommonResource with JsonSupport with ExtraDirectives {
+  
+  def statusRoute:Route =
+    path("api" / "session" / LongNumber) { sessionId =>
+      sessionOrReject { session =>
+        if(session.id != sessionId)
+          reject(AuthorizationFailedRejection)
+        else {
+          get {
+            complete(session)
+          } ~ delete {
+            complete(session)
+          }
+          
+        }
+    }
   }
   
-  def offerById(id:Long):Future[Option[Offer]] = OfferRepository.byId(id)
   
-
 }

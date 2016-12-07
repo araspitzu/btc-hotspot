@@ -16,25 +16,29 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package sarvices
+package watchdog
 
+import java.time.LocalDateTime
+import akka.actor.Cancellable
+import scala.concurrent.duration.FiniteDuration
 import commons.AppExecutionContextRegistry.context._
-import protocol.Repository.OfferRepository
-import protocol.domain.Offer
-import protocol.webDto.WebOfferDto
-
-import scala.concurrent.Future
-
 /**
-  * Created by andrea on 27/11/16.
+  * Created by andrea on 05/12/16.
   */
-object OfferService {
-
-  def allOffers:Future[Seq[WebOfferDto]] = {
-    OfferRepository.allOffers.map( xs => xs.map(WebOfferDto(_)) )
+object Scheduler {
+  
+  case class Schedule(createdAt:LocalDateTime, cancellable: Cancellable)
+  
+  val tasks = new scala.collection.mutable.HashMap[Long, Schedule]
+  
+  def schedule(sessionId:Long, delay: FiniteDuration)(task: Unit):Unit = {
+    
+    val cancellable = actorSystem.scheduler.scheduleOnce(delay)(task)
+    val schedule = Schedule(LocalDateTime.now, cancellable)
+    
+    tasks += ((sessionId, schedule))
   }
   
-  def offerById(id:Long):Future[Option[Offer]] = OfferRepository.byId(id)
   
-
+  
 }

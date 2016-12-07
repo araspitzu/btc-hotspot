@@ -19,8 +19,14 @@
 package protocol
 
 import java.time.LocalDateTime
-import protocol.domain.QtyUnit.QtyUnit
 
+import protocol.domain.QtyUnit.QtyUnit
+import sarvices.OfferService
+import watchdog.StopWatch
+
+import scala.concurrent.Await
+import scala.concurrent.duration.Duration
+import scala.concurrent.duration._
 /**
   * Created by andrea on 15/11/16.
   */
@@ -30,8 +36,27 @@ package object domain {
     id:Long = -1,
     createdAt:LocalDateTime = LocalDateTime.now,
     clientMac:String,
-    remainingUnits:Long = -1
-  )
+    remainingUnits:Long = -1,
+    offerId: Option[Long] = None
+  ) {
+    
+    private def stopWatchOrFail:StopWatch = stopwatch match {
+      case None => throw new IllegalAccessException(s"Unable to use session without a stopwatch, offerId is $offerId")
+      case Some(stopWatch) => stopWatch
+    }
+    
+    private lazy val stopwatch:Option[StopWatch] = offerId map { id =>
+      Await.result(OfferService.offerById(id), 5 seconds) map {
+        StopWatch.forOffer(this, _)
+      }
+    } flatten
+    
+    
+    def start = stopWatchOrFail.start
+    
+    def stop = stopWatchOrFail.stop
+    
+  }
 
   case class Offer(
     offerId:Long = -1,

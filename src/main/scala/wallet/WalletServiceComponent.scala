@@ -76,15 +76,16 @@ trait WalletServiceComponent extends LazyLogging {
     def generatePaymentRequest(session: Session, offerId: Long): Future[PaymentRequest] = {
       logger.info(s"Issuing payment request for session ${session.id} and offer $offerId")
 
-      OfferService.offerById(offerId) map { offer =>
-
-        PaymentProtocol.createPaymentRequest(
-          networkParams,
-          outputsForOffer(offer).asJava,
-          s"Please pay ${offer.price} satoshis for ${offer.description}",
-          s"http://$miniPortalHost:$miniPortalPort/api/pay/${session.id}",
-          Array.emptyByteArray
-        ).build
+      OfferService.offerById(offerId) map {
+        case None => throw new IllegalArgumentException("")
+        case Some(offer) =>
+            PaymentProtocol.createPaymentRequest(
+              networkParams,
+              outputsForOffer(offer).asJava,
+              s"Please pay ${offer.price} satoshis for ${offer.description}",
+              s"http://$miniPortalHost:$miniPortalPort/api/pay/${session.id}",
+              Array.emptyByteArray
+            ).build
       }
 
     }
@@ -98,10 +99,10 @@ trait WalletServiceComponent extends LazyLogging {
       val tx = new Transaction(networkParams, txBytes)
 
       for {
-        offer <- OfferService.offerById(offerId)
+        Some(offer) <- OfferService.offerById(offerId)
         br <- peerGroup.broadcastTransaction(tx).future.asScala
       } yield {
-
+        
         if(offer.qtyUnit != QtyUnit.minutes)
            throw new NotImplementedError(s"${QtyUnit.MB} not yet implemented")
 

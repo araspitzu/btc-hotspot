@@ -29,7 +29,7 @@ trait MiniPortal extends
   PaymentChannelAPI with
   CaptiveResource with
   OffersAPI with
-  StatusAPI { this: WalletServiceComponent =>
+  SessionAPI { this: WalletServiceComponent =>
 
   /**
     * Serves all static files in the given folder
