@@ -23,8 +23,8 @@ import registry.{DatabaseRegistry, MiniPortalRegistry}
 object Boot extends App with LazyLogging {
   
   logger.info(s"Starting btc-hotspot")
-  MiniPortalRegistry.start
-  DatabaseRegistry.start
+  val miniPortalStarted = MiniPortalRegistry.start
+  val databaseStarted = DatabaseRegistry.start
  
 }
 

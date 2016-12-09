@@ -35,7 +35,7 @@ package object registry {
   
   trait Registry {
     //Dummy call to trigger object initialization thus the registries instantiation
-    val start = ()
+    val start = true
   }
 
   

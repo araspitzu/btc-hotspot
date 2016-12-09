@@ -35,8 +35,7 @@ trait DatabaseComponent extends LazyLogging {
   class Database {
     val db = {
       logger.info(s"Opening database for conf '$configPath' @ $jdbcUrl")
-      org.h2.tools.Server.createTcpServer("-tcpPort", dbmsPort).start() //starts h2 in server mode
-  
+    
       if(webUI) {
         logger.info(s"Creating web ui @ localhost:8888")
         org.h2.tools.Server.createWebServer( "-webPort", "8888").start()
