@@ -24,9 +24,7 @@ import com.typesafe.scalalogging.slf4j.LazyLogging
 import protocol.domain.QtyUnit.QtyUnit
 import sarvices.OfferService
 import watchdog.StopWatch
-
 import scala.concurrent.Await
-import scala.concurrent.duration.Duration
 import scala.concurrent.duration._
 /**
   * Created by andrea on 15/11/16.
@@ -42,27 +40,24 @@ package object domain extends LazyLogging {
   ) {
     
     
-    private def stopWatchOrFail:StopWatch = stopwatch match {
-      case None => throw new IllegalAccessException(s"Unable to use session without a stopwatch, offerId is $offerId")
-      case Some(stopWatch) => stopWatch
+    private lazy val stopwatch:StopWatch = offerId match {
+      case None => throw new IllegalAccessException(s"Unable to use session without a stopwatch, no offerId is $offerId")
+      case Some(id) => Await.result(OfferService.offerById(id).future, 5 seconds) match {
+        case None => throw new IllegalAccessException(s"Unable to use session without a stopwatch, offer NOT FOUND! offerId = $offerId")
+        case Some(offer) => StopWatch.forOffer(this, offer)
+      }
     }
     
-    private lazy val stopwatch:Option[StopWatch] = ???
-//      offerId flatMap { id =>
-//      Await.result(OfferService.offerById(id), 5 seconds) map {
-//        StopWatch.forOffer(this, _)
-//      }
-//    }
     
     
     def start = {
       logger.info(s"Starting session $id")
-      stopWatchOrFail.start
+      stopwatch.start
     }
     
     def stop = {
       logger.info(s"Stopping session $id")
-      stopWatchOrFail.stop
+      stopwatch.stop
     }
     
   }

@@ -39,14 +39,7 @@ import scala.concurrent.{Await, Future}
 object Repository extends LazyLogging {
 
   private val db = {
-    logger.info(s"Opening database for conf '$configPath' @ localhost:$dbmsPort")
-    org.h2.tools.Server.createTcpServer("-tcpAllowOthers", "-tcpPort", dbmsPort).start() //starts h2 in server mode
-    
-    if(webUI) {
-      logger.info(s"Creating web ui @ localhost:8888")
-      org.h2.tools.Server.createWebServer( "-webPort", "8888").start()
-    }
-    
+    logger.info(s"Opening database for conf '$configPath' @ localhost")
     Database.forConfig(configPath)
   }
   

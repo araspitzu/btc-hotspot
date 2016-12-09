@@ -46,6 +46,7 @@ object ThisBuild extends Build {
     version := buildVersion,
     scalaVersion := buildScalaVersion,
     scalacOptions ++= Seq("-unchecked", "-deprecation", "-encoding", "utf8"),
+    scalacOptions in Test ++= Seq("-Yrangepos"),
     shellPrompt := ShellPrompt.buildShellPrompt,
     resolvers := repositories,
     libraryDependencies := dependencies,
@@ -149,7 +150,7 @@ object Dependencies {
   val akka = Seq(
     "com.typesafe.akka" %% "akka-actor" % akkaVersion,
     "com.typesafe.akka" %% "akka-slf4j" % akkaVersion,
-    "com.typesafe.akka" %% "akka-http-testkit" % akkaVersion
+    "com.typesafe.akka" %% "akka-http-testkit" % akkaVersion % "test"
   )
 
   val json4s= Seq(
@@ -171,15 +172,20 @@ object Dependencies {
     "org.scala-lang.modules" % "scala-java8-compat" % "0.8.0"
   )
 
-  val slick = Seq(
-    "com.typesafe.slick" %% "slick" % "3.0.3"
-  )
-
-  val h2 = Seq(
+  val db = Seq(
+    "com.typesafe.slick" %% "slick" % "3.0.3",
     "com.h2database" % "h2" % "1.4.+"
   )
+  
+  val testing = Seq(
+    "org.specs2" %% "specs2-core" % "3.8.+" % "test",
+    "org.specs2" %% "specs2-mock" % "3.8.+" % "test",
+    "org.specs2" %% "specs2-matcher-extra" % "3.8.+" % "test",
+    "org.mockito" % "mockito-core" % "2.2.+" % "test"
+  )
+  
 
-  val dependencies = akka ++ json4s ++ logging ++ bitcoinj ++ slick ++ h2
+  val dependencies = akka ++ json4s ++ logging ++ bitcoinj ++ db ++ testing
 }
 
 // Shell prompt which show the current project,
