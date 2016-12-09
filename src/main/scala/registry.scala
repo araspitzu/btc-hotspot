@@ -1,3 +1,8 @@
+import protocol.DatabaseComponent
+import resources.{MiniPortal, PaymentChannelAPI}
+import wallet.WalletServiceComponent
+
+
 /*
  * btc-hotspot
  * Copyright (C) 2016  Andrea Raspitzu
@@ -16,26 +21,21 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package sarvices
-
-import commons.AppExecutionContextRegistry.context._
-import commons.Helpers.FutureOption
-import protocol.OfferRepository
-import protocol.domain.Offer
-import protocol.webDto.WebOfferDto
-
-import scala.concurrent.Future
-
 /**
-  * Created by andrea on 27/11/16.
+  * Created by andrea on 09/12/16.
   */
-object OfferService {
-
-  def allOffers:Future[Seq[WebOfferDto]] = {
-    OfferRepository.allOffers.map( xs => xs.map(WebOfferDto(_)) )
+package object registry {
+  
+  object MiniPortalRegistry
+    extends MiniPortal
+      with PaymentChannelAPI
+      with WalletServiceComponent {
+    
+    override val walletService = new WalletService
   }
   
-  def offerById(id:Long):FutureOption[Offer] = OfferRepository.byId(id)
+  object DatabaseRegistry extends DatabaseComponent {
+    override val database = new Database
+  }
   
-
 }

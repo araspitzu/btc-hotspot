@@ -20,8 +20,8 @@ package service
 
 import org.specs2.mutable.{BeforeAfter, Specification}
 import org.specs2.specification.Scope
-import protocol.Repository
-import sarvices.SessionService
+import protocol.DatabaseComponent
+import sarvices.{OfferService, SessionService}
 import util.Helpers._
 
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -31,18 +31,15 @@ import scala.util.{Failure, Success}
 /**
   * Created by andrea on 09/12/16.
   */
-class SessionServceSpecs extends Specification with BeforeAfter {
+class SessionServceSpecs extends Specification  {
   
-  def before = Repository.setupDb.futureValue
-  def after = Repository.db.shutdown
+ // def before = Repository.setupDb.futureValue
+ // def after = Repository.db.shutdown
   
-  trait mockedScope extends Scope {
-  
-  }
   
   "SessionService" should {
     
-    "save and load session to db" in new mockedScope {
+    "save and load session to db" in {
       val mac = "123"
       
      // val sessionId = SessionService.getOrCreate(mac).futureValue
@@ -53,8 +50,7 @@ class SessionServceSpecs extends Specification with BeforeAfter {
       
       Thread.sleep(2000)
       
-      SessionService.getOrCreate(mac).futureValue
-      
+      SessionService.getOrCreate(mac).futureValue === 1
     }
     
   }

@@ -20,7 +20,7 @@ package watchdog
 
 import com.typesafe.scalalogging.slf4j.LazyLogging
 import iptables.IpTablesService
-import protocol.Repository.SessionRepository
+import protocol.SessionRepository
 import protocol.domain.{Offer, Session}
 import protocol.domain.QtyUnit._
 import sarvices.SessionService

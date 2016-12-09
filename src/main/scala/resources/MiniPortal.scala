@@ -47,11 +47,4 @@ trait MiniPortal extends
 
 }
 
-object MiniPortalRegistry
-  extends MiniPortal
-    with PaymentChannelAPI
-    with WalletServiceComponent {
-
-  override val walletService = new WalletService
-}
 

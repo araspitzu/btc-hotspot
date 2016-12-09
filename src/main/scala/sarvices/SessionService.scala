@@ -19,8 +19,8 @@
 package sarvices
 
 import com.typesafe.scalalogging.slf4j.LazyLogging
-import protocol.Repository.SessionRepository._
 import protocol.domain.{Offer, Session}
+import protocol.SessionRepository._
 import commons.AppExecutionContextRegistry.context._
 import commons.Helpers.FutureOption
 import scala.concurrent.duration._

@@ -20,21 +20,22 @@ import akka.http.scaladsl.Http
 import akka.http.scaladsl.server.Route
 import com.typesafe.scalalogging.slf4j.LazyLogging
 import commons.Configuration.MiniPortalConfig._
-import protocol.Repository
-import resources.MiniPortalRegistry._
+import registry.MiniPortalRegistry._
 import commons.AppExecutionContextRegistry.context._
+import registry.{DatabaseRegistry, MiniPortalRegistry}
 
-import scala.concurrent.Await
-import scala.concurrent.duration.Duration
 
 object Boot extends App with LazyLogging {
+ 
   logger.info(s"Starting btc-hotspot")
 
-  bindOrFail(miniportalRoute, miniPortalHost, miniPortalPort, "MiniPortal")
+  //Start db
+  DatabaseRegistry.database
   
-  logger.info(s"Preparing db...")
-  Await.result(Repository.setupDb, Duration(10, "seconds"))
-  logger.info("Done setting up db")
+  //starts wallet service for miniportal
+  //MiniPortalRegistry.walletService
+  
+  bindOrFail(miniportalRoute, miniPortalHost, miniPortalPort, "MiniPortal")
 
   def bindOrFail(handler:Route, iface:String, port:Int, serviceName:String):Unit = {
     Http().bindAndHandle(handler, iface, port) map { binding =>
