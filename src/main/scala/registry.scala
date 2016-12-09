@@ -1,7 +1,14 @@
-import protocol.DatabaseComponent
+import Boot.logger
+import akka.http.scaladsl.Http
+import akka.http.scaladsl.server.Route
+import commons.Configuration.MiniPortalConfig.{miniPortalHost, miniPortalPort}
+import commons.TestData
+import protocol.{DatabaseComponent, OfferRepository, SessionRepository}
 import resources.{MiniPortal, PaymentChannelAPI}
 import wallet.WalletServiceComponent
-
+import slick.driver.H2Driver.api._
+import commons.AppExecutionContextRegistry.context._
+import akka.http.scaladsl.Http
 
 /*
  * btc-hotspot
@@ -26,16 +33,48 @@ import wallet.WalletServiceComponent
   */
 package object registry {
   
+  trait Registry {
+    //Dummy call to trigger object initialization thus the registries instantiation
+    val start = ()
+  }
+
+  
   object MiniPortalRegistry
-    extends MiniPortal
-      with PaymentChannelAPI
-      with WalletServiceComponent {
-    
+    extends Registry
+       with MiniPortal
+       with WalletServiceComponent {
+  
+  
     override val walletService = new WalletService
+  
+    
+    
+    bindOrFail(miniportalRoute, miniPortalHost, miniPortalPort, "MiniPortal")
+  
+    def bindOrFail(handler:Route, iface:String, port:Int, serviceName:String):Unit = {
+      Http().bindAndHandle(handler, iface, port) map { binding =>
+        logger.info(s"Service $serviceName bound to ${binding.localAddress}") } recover { case ex =>
+        logger.info(s"Interface could not bind to $iface:$port", ex.getMessage)
+        throw ex;
+      }
+    }
+    
   }
   
-  object DatabaseRegistry extends DatabaseComponent {
+  object DatabaseRegistry extends Registry with DatabaseComponent {
     override val database = new Database
+  
+    database.db.run({
+      logger.info(s"Setting up schemas and populating tables")
+      DBIO.seq (
+        (OfferRepository.offersTable.schema ++
+          SessionRepository.sessionsTable.schema).create,
+      
+        //Insert some offers
+        OfferRepository.offersTable ++= TestData.offers
+      )
+    })
+    
   }
   
 }

@@ -18,18 +18,10 @@
 
 package protocol
 
-import java.sql.Timestamp
 import com.typesafe.scalalogging.slf4j.LazyLogging
 import commons.Configuration.DbConfig._
-import commons.TestData
 import commons.Helpers._
-import java.time.LocalDateTime
-
-import protocol.domain.{Offer, Session}
-import protocol.domain.QtyUnit.QtyUnit
-import protocol.domain.QtyUnit
 import slick.driver.H2Driver.api._
-
 import scala.concurrent.duration.Duration
 import scala.concurrent.{Await, Future}
 
@@ -43,20 +35,16 @@ trait DatabaseComponent extends LazyLogging {
   class Database {
     val db = {
       logger.info(s"Opening database for conf '$configPath' @ $jdbcUrl")
+      org.h2.tools.Server.createTcpServer("-tcpPort", dbmsPort).start() //starts h2 in server mode
+  
+      if(webUI) {
+        logger.info(s"Creating web ui @ localhost:8888")
+        org.h2.tools.Server.createWebServer( "-webPort", "8888").start()
+      }
+      
       Database.forConfig(configPath)
     }
-  
-    db.run({
-      logger.info(s"Setting up schemas and populating tables")
-      DBIO.seq (
-        (OfferRepository.offersTable.schema ++
-          SessionRepository.sessionsTable.schema).create,
-      
-        //Insert some offers
-        OfferRepository.offersTable ++= TestData.offers
-      )
-    })
-  
+    
     addShutDownHook {
       logger.info("Shutting down db")
       Await.result( db.shutdown, Duration(2, "seconds") )

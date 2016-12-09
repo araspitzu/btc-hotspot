@@ -16,37 +16,16 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import akka.http.scaladsl.Http
-import akka.http.scaladsl.server.Route
 import com.typesafe.scalalogging.slf4j.LazyLogging
-import commons.Configuration.MiniPortalConfig._
-import registry.MiniPortalRegistry._
-import commons.AppExecutionContextRegistry.context._
 import registry.{DatabaseRegistry, MiniPortalRegistry}
 
 
 object Boot extends App with LazyLogging {
- 
+  
   logger.info(s"Starting btc-hotspot")
-
-  //Start db
-  DatabaseRegistry.database
-  
-  //starts wallet service for miniportal
-  //MiniPortalRegistry.walletService
-  
-  bindOrFail(miniportalRoute, miniPortalHost, miniPortalPort, "MiniPortal")
-
-  def bindOrFail(handler:Route, iface:String, port:Int, serviceName:String):Unit = {
-    Http().bindAndHandle(handler, iface, port) map { binding =>
-      logger.info(s"Service $serviceName bound to ${binding.localAddress}") } recover { case ex =>
-      logger.info(s"Interface could not bind to $iface:$port", ex.getMessage)
-      throw ex;
-    }
-  }
-
-
-
+  MiniPortalRegistry.start
+  DatabaseRegistry.start
+ 
 }
 
 

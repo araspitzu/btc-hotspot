@@ -24,9 +24,6 @@ import protocol.DatabaseComponent
 import sarvices.{OfferService, SessionService}
 import util.Helpers._
 
-import scala.concurrent.ExecutionContext.Implicits.global
-import scala.concurrent.Future
-import scala.util.{Failure, Success}
 
 /**
   * Created by andrea on 09/12/16.
@@ -42,15 +39,12 @@ class SessionServceSpecs extends Specification  {
     "save and load session to db" in {
       val mac = "123"
       
-     // val sessionId = SessionService.getOrCreate(mac).futureValue
-     // val Some(session) = SessionService.byMac(mac).future.futureValue
+      val sessionId = SessionService.getOrCreate(mac).futureValue
+      val Some(session) = SessionService.byMac(mac).future.futureValue
       
-     // session.id === sessionId
-     // session.clientMac === mac
+      session.id === sessionId
+      session.clientMac === mac
       
-      Thread.sleep(2000)
-      
-      SessionService.getOrCreate(mac).futureValue === 1
     }
     
   }
