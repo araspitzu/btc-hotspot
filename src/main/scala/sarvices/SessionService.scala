@@ -22,10 +22,8 @@ import com.typesafe.scalalogging.slf4j.LazyLogging
 import protocol.Repository.SessionRepository._
 import protocol.domain.{Offer, Session}
 import commons.AppExecutionContextRegistry.context._
-import iptables.IpTablesService
-import watchdog.Scheduler
-
-import scala.concurrent.duration.{Duration, FiniteDuration, SECONDS}
+import commons.Helpers.FutureOption
+import scala.concurrent.duration._
 import scala.concurrent.{Await, Future}
 
 /**
@@ -36,41 +34,23 @@ object SessionService extends LazyLogging {
   def enableSessionFor(session: Session, offer:Offer) = {
         
     for {
-      clientEnabled <- IpTablesService.enableClient(session.clientMac)
-      sessionUpdated <- updateSessionWithOffer(session, Some(offer))
+      sessionWithOffer <- updateSessionWithOffer(session, Some(offer))
     } yield {
-      logger.info(s"Enabled ${session.clientMac} for offer ${offer.offerId}")
-      val offerRemainingTime = FiniteDuration(offer.qty, SECONDS)
-      Scheduler.schedule(session.id, offerRemainingTime) {
-        IpTablesService.disableClient(session.clientMac)
-      }
-      
+      logger.info(s"Enabling session ${session.id} for offer ${session.offerId}")
+      sessionWithOffer.start
     }
   
   }
   
   def disableSession(session: Session) = {
-    Scheduler.tasks.get(session.id) match {
-      case None => ???
-      case Some(scheduledTask) => updateSessionWithOffer(session, None) map { _ =>
-        
-        Scheduler.tasks.get(session.id) match {
-          case None => ()
-          case Some(scheduled) =>
-            scheduled.cancellable.cancel
-            //remove from IpTables?
-        }
-        
-  
-      }
-    }
+    session.stop
   }
 
-  def byMac(mac: String): Future[Option[Session]] = byMacAddress(mac)
+  def byMac(mac: String): FutureOption[Session] = byMacAddress(mac)
 
   //TODO fucking remove!
   def byMacSync(mac: String): Option[Session] = {
-    Await.result(byMac(mac), Duration(10, "seconds"))
+    Await.result(byMac(mac).future, 10 seconds)
   }
 
   /*
@@ -78,7 +58,7 @@ object SessionService extends LazyLogging {
     no session can be found, ids are created from the database
    */
   def getOrCreate(mac:String):Future[Long] = {
-    byMac(mac) flatMap {
+    byMac(mac).future flatMap {
       case Some(session) =>
         Future.successful(session.id)
       case None => insert(Session(clientMac = mac)) map { sessionId =>

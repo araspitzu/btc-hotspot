@@ -63,6 +63,21 @@ package object Helpers {
 
   }
   
+  implicit class FutureOption[+T](val future: Future[Option[T]]) extends AnyVal {
+    def flatMap[U](f: T => FutureOption[U])(implicit ec: ExecutionContext): FutureOption[U] = {
+      FutureOption {
+        future.flatMap { optA =>
+          optA.map { a =>
+            f(a).future
+          } getOrElse Future.successful(None)
+        }
+      }
+    }
+    
+    def map[U](f: T => U)(implicit ec: ExecutionContext): FutureOption[U] = FutureOption(future.map(_ map f))
+    
+  }
+  
   implicit class CmdExecutor(cmd:String) {
     def exec:Future[String] = Future {
       

@@ -19,6 +19,7 @@
 package sarvices
 
 import commons.AppExecutionContextRegistry.context._
+import commons.Helpers.FutureOption
 import protocol.Repository.OfferRepository
 import protocol.domain.Offer
 import protocol.webDto.WebOfferDto
@@ -34,7 +35,7 @@ object OfferService {
     OfferRepository.allOffers.map( xs => xs.map(WebOfferDto(_)) )
   }
   
-  def offerById(id:Long):Future[Option[Offer]] = OfferRepository.byId(id)
+  def offerById(id:Long):FutureOption[Offer] = OfferRepository.byId(id)
   
 
 }

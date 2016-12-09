@@ -75,21 +75,23 @@ trait WalletServiceComponent extends LazyLogging {
 
     def generatePaymentRequest(session: Session, offerId: Long): Future[PaymentRequest] = {
       logger.info(s"Issuing payment request for session ${session.id} and offer $offerId")
-
-      OfferService.offerById(offerId) map {
-        case None => throw new IllegalArgumentException("")
-        case Some(offer) =>
-            PaymentProtocol.createPaymentRequest(
-              networkParams,
-              outputsForOffer(offer).asJava,
-              s"Please pay ${offer.price} satoshis for ${offer.description}",
-              s"http://$miniPortalHost:$miniPortalPort/api/pay/${session.id}",
-              Array.emptyByteArray
-            ).build
-      }
-
+  
+      (OfferService.offerById(offerId).map { asd =>
+    
+    
+        //        case None => throw new IllegalArgumentException("")
+        //        case Some(offer) =>
+        //            PaymentProtocol.createPaymentRequest(
+        //              networkParams,
+        //              outputsForOffer(offer).asJava,
+        //              s"Please pay ${offer.price} satoshis for ${offer.description}",
+        //              s"http://$miniPortalHost:$miniPortalPort/api/pay/${session.id}",
+        //              Array.emptyByteArray
+        //            ).build
+        ???
+      })
+      ???
     }
-
     def validatePayment(session: Session, offerId:Long, payment: Protos.Payment): Future[Protos.PaymentACK] = {
 
       if(payment.getTransactionsCount != 1)
@@ -97,18 +99,9 @@ trait WalletServiceComponent extends LazyLogging {
 
       val txBytes = payment.getTransactions(0).toByteArray
       val tx = new Transaction(networkParams, txBytes)
-
-      for {
-        Some(offer) <- OfferService.offerById(offerId)
-        br <- peerGroup.broadcastTransaction(tx).future.asScala
-      } yield {
-        
-        if(offer.qtyUnit != QtyUnit.minutes)
-           throw new NotImplementedError(s"${QtyUnit.MB} not yet implemented")
-
-        SessionService.enableSessionFor(session, offer)
-        PaymentProtocol.createPaymentAck(payment, s"Enjoy, your session will last for ${offer.qty} ${offer.qtyUnit}")
-
+  
+      Future {
+        PaymentProtocol.createPaymentAck(payment, s"Enjoy, your session will last for ")
       }
 
     }

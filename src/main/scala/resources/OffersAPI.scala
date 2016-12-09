@@ -33,7 +33,7 @@ trait OffersAPI extends CommonResource with JsonSupport {
       pathEnd{
         complete(OfferService.allOffers)
       } ~ path(LongNumber) { id =>
-        complete(OfferService.offerById(id))
+        complete(OfferService.offerById(id).future)
       }
     }
   }

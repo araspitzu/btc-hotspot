@@ -20,6 +20,7 @@ package protocol
 
 import java.time.LocalDateTime
 
+import com.typesafe.scalalogging.slf4j.LazyLogging
 import protocol.domain.QtyUnit.QtyUnit
 import sarvices.OfferService
 import watchdog.StopWatch
@@ -30,7 +31,7 @@ import scala.concurrent.duration._
 /**
   * Created by andrea on 15/11/16.
   */
-package object domain {
+package object domain extends LazyLogging {
 
   case class Session(
     id:Long = -1,
@@ -40,21 +41,29 @@ package object domain {
     offerId: Option[Long] = None
   ) {
     
+    
     private def stopWatchOrFail:StopWatch = stopwatch match {
       case None => throw new IllegalAccessException(s"Unable to use session without a stopwatch, offerId is $offerId")
       case Some(stopWatch) => stopWatch
     }
     
-    private lazy val stopwatch:Option[StopWatch] = offerId map { id =>
-      Await.result(OfferService.offerById(id), 5 seconds) map {
-        StopWatch.forOffer(this, _)
-      }
-    } flatten
+    private lazy val stopwatch:Option[StopWatch] = ???
+//      offerId flatMap { id =>
+//      Await.result(OfferService.offerById(id), 5 seconds) map {
+//        StopWatch.forOffer(this, _)
+//      }
+//    }
     
     
-    def start = stopWatchOrFail.start
+    def start = {
+      logger.info(s"Starting session $id")
+      stopWatchOrFail.start
+    }
     
-    def stop = stopWatchOrFail.stop
+    def stop = {
+      logger.info(s"Stopping session $id")
+      stopWatchOrFail.stop
+    }
     
   }
 

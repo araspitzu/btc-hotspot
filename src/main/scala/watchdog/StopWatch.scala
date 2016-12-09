@@ -19,8 +19,13 @@
 package watchdog
 
 import com.typesafe.scalalogging.slf4j.LazyLogging
+import iptables.IpTablesService
+import protocol.Repository.SessionRepository
 import protocol.domain.{Offer, Session}
 import protocol.domain.QtyUnit._
+import sarvices.SessionService
+
+import scala.concurrent.duration.Duration
 
 /**
   * Created by andrea on 07/12/16.
@@ -53,8 +58,14 @@ case class TimebasedStopWatch(session: Session, offer: Offer) extends StopWatch 
   
   override def start: Unit = {
     //alter iptables
+    IpTablesService.enableClient(session.clientMac)
     //start scheduler
+    Scheduler.schedule(session.id, Duration(offer.qty, "seconds")) {
+      IpTablesService.disableClient(session.clientMac)
+    }
+    
     //update remaining time in session
+    SessionRepository.upsert(session.copy(remainingUnits = offer.qty))
   }
   
   override def stop: Unit = {

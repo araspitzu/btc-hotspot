@@ -96,12 +96,25 @@ object Repository extends LazyLogging {
       (sessionsTable returning sessionsTable.map(_.id)) += session
     }
     
-    def updateSessionWithOffer(session: Session, offer: Option[Offer]):Future[Int] = db.run {
-      sessionsTable
-        .update(session.copy(offerId = offer.map(_.offerId)))
+    def upsert(session: Session):FutureOption[Session] = db.run {
+      (sessionsTable returning sessionsTable)
+        .insertOrUpdate(session)
     }
     
-    def byId(id:Long):Future[Option[Session]] = db.run {
+    def updateSessionWithOffer(session: Session, offer: Option[Offer]):FutureOption[Session] = db.run {
+      (sessionsTable returning sessionsTable)
+        .insertOrUpdate(session.copy(offerId = offer.map(_.offerId)))
+    }
+    
+    def byIdWithOffer(id:Long):FutureOption[(Session, Offer)] = db.run {
+      sessionsTable
+        .filter(_.id === id)
+        .join(OfferRepository.offersTable).on( (s,o) => s.offerId.map(_ === o.offerId) )
+        .result
+        .headOption
+    }
+    
+    def byId(id:Long):FutureOption[Session] = db.run {
       sessionsTable
         .filter(_.id === id)
         .result
@@ -114,7 +127,7 @@ object Repository extends LazyLogging {
         .result
     }
 
-    def byMacAddress(mac:String):Future[Option[Session]] = db.run {
+    def byMacAddress(mac:String):FutureOption[Session] = db.run {
       sessionsTable
         .filter(_.clientMac === mac)
         .map(identity)
@@ -152,7 +165,7 @@ object Repository extends LazyLogging {
 
     val offersTable = TableQuery[OfferTable]
 
-    def byId(id:Long):Future[Option[Offer]] = db.run {
+    def byId(id:Long):FutureOption[Offer] = db.run {
       offersTable
         .filter(_.offerId === id)
         .map(identity)
