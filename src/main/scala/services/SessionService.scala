@@ -16,7 +16,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package sarvices
+package services
 
 import com.typesafe.scalalogging.slf4j.LazyLogging
 import protocol.domain.{Offer, Session}

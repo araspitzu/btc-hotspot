@@ -20,7 +20,7 @@ package resources
 
 import akka.http.scaladsl.server.Route
 import commons.JsonSupport
-import sarvices.OfferService
+import services.OfferService
 
 /**
   * Created by andrea on 13/11/16.

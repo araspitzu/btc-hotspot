@@ -16,32 +16,34 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package resources
+package service
 
-import akka.http.scaladsl.server.{AuthorizationFailedRejection, Route}
-import commons.JsonSupport
-import services.SessionService
+import org.specs2.mutable.{BeforeAfter, Specification}
+import protocol.{DatabaseComponent, SessionRepository}
+import services.{OfferService, SessionService}
+import util.CleanRepository.CleanSessionRepository
+import util.Helpers._
+
 
 /**
-  * Created by andrea on 01/12/16.
+  * Created by andrea on 09/12/16.
   */
-trait SessionAPI extends CommonResource with JsonSupport with ExtraDirectives {
+class SessionServiceSpecs extends Specification {
+   
   
-  def statusRoute:Route =
-    path("api" / "session" / LongNumber) { sessionId =>
-      sessionOrReject { session =>
-        if(session.id != sessionId)
-          reject(AuthorizationFailedRejection)
-        else {
-          get {
-            complete(session)
-          } ~ delete {
-            complete(session)
-          }
-          
-        }
+  "SessionService" should {
+    
+    "save and load session to db" in new CleanSessionRepository {
+      val mac = "123"
+      
+      val sessionId = SessionService.getOrCreate(mac).futureValue
+      val Some(session) = SessionService.byMac(mac).future.futureValue
+      
+      session.id === sessionId
+      session.clientMac === mac
+      
     }
+    
   }
-  
   
 }

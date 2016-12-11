@@ -23,7 +23,7 @@ import iptables.IpTablesService
 import protocol.SessionRepository
 import protocol.domain.{Offer, Session}
 import protocol.domain.QtyUnit._
-import sarvices.SessionService
+import services.SessionService
 
 import scala.concurrent.duration.Duration
 

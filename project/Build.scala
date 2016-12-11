@@ -176,7 +176,6 @@ object Dependencies {
   val db = Seq(
     "com.typesafe.slick" %% "slick" % "3.0.3",
     "com.h2database" % "h2" % "1.4.+"
- //   "com.zaxxer" % "HikariCP" % "2.5.+"
   )
   
   val testing = Seq(

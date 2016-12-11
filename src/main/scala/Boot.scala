@@ -25,7 +25,8 @@ object Boot extends App with LazyLogging {
   logger.info(s"Starting btc-hotspot")
   val miniPortalStarted = MiniPortalRegistry.start
   val databaseStarted = DatabaseRegistry.start
- 
+  logger.info(s"Done booting.")
+
 }
 
 

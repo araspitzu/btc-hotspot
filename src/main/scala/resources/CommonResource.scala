@@ -21,7 +21,7 @@ package resources
 import akka.http.scaladsl.server.{Directive1, Directives, Route}
 import akka.util.Timeout
 import protocol.domain.Session
-import sarvices.SessionService
+import services.SessionService
 import scala.compat.java8.OptionConverters._
 import iptables.ArpService._
 import scala.concurrent.duration._

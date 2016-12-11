@@ -33,7 +33,7 @@ import org.bitcoinj.kits.WalletAppKit
 import org.bitcoinj.protocols.payments.PaymentProtocol
 import org.bitcoinj.wallet.KeyChain.KeyPurpose
 import protocol.domain.{Offer, QtyUnit, Session}
-import sarvices.{OfferService, SessionService}
+import services.{OfferService, SessionService}
 
 import scala.collection.JavaConverters._
 import commons.AppExecutionContextRegistry.context._

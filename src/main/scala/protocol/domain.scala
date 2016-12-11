@@ -22,7 +22,7 @@ import java.time.LocalDateTime
 
 import com.typesafe.scalalogging.slf4j.LazyLogging
 import protocol.domain.QtyUnit.QtyUnit
-import sarvices.OfferService
+import services.OfferService
 import watchdog.StopWatch
 import scala.concurrent.Await
 import scala.concurrent.duration._

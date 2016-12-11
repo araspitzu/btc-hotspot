@@ -29,7 +29,7 @@ import scala.concurrent.{Await, Future}
   * Created by andrea on 17/11/16.
   */
 trait DatabaseComponent extends LazyLogging {
-
+  
   val database:Database
   
   class Database {
@@ -38,7 +38,7 @@ trait DatabaseComponent extends LazyLogging {
     
       if(webUI) {
         logger.info(s"Creating web ui @ localhost:8888")
-        org.h2.tools.Server.createWebServer( "-webPort", "8888").start()
+        org.h2.tools.Server.createWebServer("-webAllowOthers", "-webPort", "8888").start()
       }
       
       Database.forConfig(configPath)

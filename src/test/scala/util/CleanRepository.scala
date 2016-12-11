@@ -16,37 +16,27 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package service
-
-import org.specs2.mutable.{BeforeAfter, Specification}
-import org.specs2.specification.Scope
-import protocol.DatabaseComponent
-import sarvices.{OfferService, SessionService}
-import util.Helpers._
-
+package util
+import Helpers._
+import org.specs2.mutable.BeforeAfter
+import protocol.SessionRepository
+import slick.driver.H2Driver.api._
 
 /**
-  * Created by andrea on 09/12/16.
+  * Created by andrea on 10/12/16.
   */
-class SessionServceSpecs extends Specification  {
+object CleanRepository {
   
- // def before = Repository.setupDb.futureValue
- // def after = Repository.db.shutdown
+  trait CleanSessionRepository extends BeforeAfter {
   
+    override def before = registry.DatabaseRegistry.database.db.run {
+      SessionRepository
+        .sessionsTable
+        .drop(500)
+        .result
+    } futureValue
   
-  "SessionService" should {
-    
-    "save and load session to db" in {
-      val mac = "123"
-      
-      val sessionId = SessionService.getOrCreate(mac).futureValue
-      val Some(session) = SessionService.byMac(mac).future.futureValue
-      
-      session.id === sessionId
-      session.clientMac === mac
-      
-    }
-    
+    override def after = before
   }
   
 }
