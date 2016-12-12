@@ -18,11 +18,9 @@
 
 package services
 
-import commons.AppExecutionContextRegistry.context._
 import commons.Helpers.FutureOption
 import protocol.OfferRepository
 import protocol.domain.Offer
-import protocol.webDto.WebOfferDto
 
 import scala.concurrent.Future
 
@@ -31,8 +29,8 @@ import scala.concurrent.Future
   */
 object OfferService {
 
-  def allOffers:Future[Seq[WebOfferDto]] = {
-    OfferRepository.allOffers.map( xs => xs.map(WebOfferDto(_)) )
+  def allOffers:Future[Seq[Offer]] = {
+    OfferRepository.allOffers
   }
   
   def offerById(id:Long):FutureOption[Offer] = OfferRepository.byId(id)

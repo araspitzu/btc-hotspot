@@ -36,6 +36,8 @@ package util
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+import commons.Helpers.FutureOption
+
 import scala.concurrent.duration._
 import scala.concurrent.{Await, Future}
 
@@ -48,6 +50,12 @@ object Helpers {
     
     def futureValue: T = Await.result(f, 30 seconds)
         
+  }
+  
+  implicit class FutureOptionWait[T](f: FutureOption[T]) {
+    
+    def futureValue: Option[T] = Await.result(f.future, 30 seconds)
+    
   }
   
 }

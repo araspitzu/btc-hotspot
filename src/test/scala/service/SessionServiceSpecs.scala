@@ -18,7 +18,8 @@
 
 package service
 
-import org.specs2.mutable.{BeforeAfter, Specification}
+import org.specs2.mutable._
+import org.specs2.specification.Scope
 import protocol.{DatabaseComponent, SessionRepository}
 import services.{OfferService, SessionService}
 import util.CleanRepository.CleanSessionRepository
@@ -28,20 +29,42 @@ import util.Helpers._
 /**
   * Created by andrea on 09/12/16.
   */
-class SessionServiceSpecs extends Specification {
+class SessionServiceSpecs extends Specification with CleanSessionRepository {
+  sequential
+  
+  //trait CleanSessionRepositoryScope extends Scope with CleanSessionRepository
    
   
   "SessionService" should {
+  
+    val mac = "123"
     
-    "save and load session to db" in new CleanSessionRepository {
-      val mac = "123"
-      
+    "save and load session to db" in {
+
       val sessionId = SessionService.getOrCreate(mac).futureValue
-      val Some(session) = SessionService.byMac(mac).future.futureValue
-      
+      val Some(session) = SessionService.byMac(mac).futureValue
+
       session.id === sessionId
       session.clientMac === mac
+
+    }
+    
+    
+    "enable a session for an offer" in {
       
+      val sessionId = SessionService.getOrCreate(mac).futureValue
+      val Some(session) = SessionService.byMac(mac).futureValue
+
+      session.offerId must beNone
+
+      val offer = OfferService.allOffers.futureValue.head
+
+      SessionService.enableSessionFor(session, offer).futureValue
+
+      val Some(enabledSession) = SessionService.byMac(mac).futureValue
+
+      enabledSession.offerId === Some(offer.offerId)
+
     }
     
   }

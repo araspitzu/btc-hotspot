@@ -19,6 +19,7 @@
 package util
 import Helpers._
 import org.specs2.mutable.BeforeAfter
+import org.specs2.specification.BeforeAfterEach
 import protocol.SessionRepository
 import slick.driver.H2Driver.api._
 
@@ -27,16 +28,25 @@ import slick.driver.H2Driver.api._
   */
 object CleanRepository {
   
-  trait CleanSessionRepository extends BeforeAfter {
+  trait CleanSessionRepository extends BeforeAfterEach {
   
-    override def before = registry.DatabaseRegistry.database.db.run {
-      SessionRepository
-        .sessionsTable
-        .drop(500)
-        .result
-    } futureValue
+    override def before = {
+      println("[Before] Dropping sessionsTable")
+      registry.DatabaseRegistry.database.db.run {
+        SessionRepository
+          .sessionsTable
+          .delete
+      } futureValue
+    }
   
-    override def after = before
+    override def after = {
+      println("[After] Dropping sessionsTable")
+      registry.DatabaseRegistry.database.db.run {
+        SessionRepository
+          .sessionsTable
+          .delete
+      } futureValue
+    }
   }
   
 }

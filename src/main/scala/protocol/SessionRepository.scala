@@ -65,9 +65,9 @@ object SessionRepository {
       .insertOrUpdate(session)
   }
   
-  def updateSessionWithOffer(session: Session, offer: Option[Offer]):FutureOption[Session] = db.run {
+  def updateSessionWithOffer(session: Session, offer:Offer):FutureOption[Session] = db.run {
     (sessionsTable returning sessionsTable)
-      .insertOrUpdate(session.copy(offerId = offer.map(_.offerId)))
+      .insertOrUpdate(session.copy(offerId = Some(offer.offerId)))
   }
   
   def byIdWithOffer(id:Long):FutureOption[(Session, Offer)] = db.run {
@@ -78,7 +78,7 @@ object SessionRepository {
       .headOption
   }
   
-  def byId(id:Long):FutureOption[Session] = db.run {
+  def bySessionId(id:Long):FutureOption[Session] = db.run {
     sessionsTable
       .filter(_.id === id)
       .result

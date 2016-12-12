@@ -17,12 +17,19 @@
  */
 
 package stopwatch
-
+import org.specs2.mutable.Specification
 
 /**
   * Created by andrea on 09/12/16.
   */
-class StopWatchSpecs {
- 
+class StopWatchSpecs extends Specification {
+  
+  "This spec" should {
+
+    "fail here" in {
+      2 + 2 === 5
+    }.pendingUntilFixed
+
+  }
   
 }

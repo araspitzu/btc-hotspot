@@ -31,10 +31,10 @@ import scala.concurrent.{Await, Future}
   */
 object SessionService extends LazyLogging {
   
-  def enableSessionFor(session: Session, offer:Offer) = {
+  def enableSessionFor(session: Session, offer:Offer):FutureOption[Unit] = {
         
     for {
-      sessionWithOffer <- updateSessionWithOffer(session, Some(offer))
+      sessionWithOffer <- updateSessionWithOffer(session, offer)
     } yield {
       logger.info(s"Enabling session ${session.id} for offer ${session.offerId}")
       sessionWithOffer.start
@@ -46,6 +46,8 @@ object SessionService extends LazyLogging {
     session.stop
   }
 
+  def byId(id:Long):FutureOption[Session] = bySessionId(id)
+  
   def byMac(mac: String): FutureOption[Session] = byMacAddress(mac)
 
   //TODO fucking remove!

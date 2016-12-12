@@ -20,7 +20,9 @@ package resources
 
 import akka.http.scaladsl.server.Route
 import commons.JsonSupport
+import protocol.webDto.WebOfferDto
 import services.OfferService
+import commons.AppExecutionContextRegistry.context._
 
 /**
   * Created by andrea on 13/11/16.
@@ -31,7 +33,7 @@ trait OffersAPI extends CommonResource with JsonSupport {
   def offersRoute:Route = get {
     pathPrefix("api" / "offer"){
       pathEnd{
-        complete(OfferService.allOffers)
+        complete(OfferService.allOffers.map(xs => xs.map(WebOfferDto(_))))
       } ~ path(LongNumber) { id =>
         complete(OfferService.offerById(id).future)
       }

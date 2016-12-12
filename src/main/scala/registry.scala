@@ -10,6 +10,9 @@ import slick.driver.H2Driver.api._
 import commons.AppExecutionContextRegistry.context._
 import akka.http.scaladsl.Http
 
+import scala.concurrent.Await
+import scala.concurrent.duration._
+
 /*
  * btc-hotspot
  * Copyright (C) 2016  Andrea Raspitzu
@@ -64,7 +67,10 @@ package object registry {
   object DatabaseRegistry extends Registry with DatabaseComponent {
     override val database = new Database
   
-    database.db.run({
+    Await.result(setupDb, 5 seconds)
+    
+    
+    def setupDb = database.db.run({
       logger.info(s"Setting up schemas and populating tables")
       DBIO.seq (
         (OfferRepository.offersTable.schema ++

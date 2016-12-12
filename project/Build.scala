@@ -46,7 +46,6 @@ object ThisBuild extends Build {
     version := buildVersion,
     scalaVersion := buildScalaVersion,
     scalacOptions ++= Seq("-unchecked", "-deprecation", "-encoding", "utf8"),
-    scalacOptions in Test ++= Seq("-Yrangepos"),
     fork in Test := true,
     shellPrompt := ShellPrompt.buildShellPrompt,
     resolvers := repositories,
@@ -175,13 +174,14 @@ object Dependencies {
 
   val db = Seq(
     "com.typesafe.slick" %% "slick" % "3.0.3",
-    "com.h2database" % "h2" % "1.4.+"
+    "com.h2database" % "h2" % "1.4.+",
+    "com.zaxxer" % "HikariCP" % "2.5.+" % "test"
   )
   
   val testing = Seq(
-    "org.specs2" %% "specs2-core" % "3.8.+" % "test",
-    "org.specs2" %% "specs2-mock" % "3.8.+" % "test",
-    "org.specs2" %% "specs2-matcher-extra" % "3.8.+" % "test",
+    "org.specs2" %% "specs2-core" % "3.8.6" % "test",
+    "org.specs2" %% "specs2-mock" % "3.8.6" % "test",
+    "org.specs2" %% "specs2-matcher-extra" % "3.8.6" % "test",
     "org.mockito" % "mockito-core" % "2.2.+" % "test"
   )
   
