@@ -18,10 +18,13 @@
 
 package commons
 
-import java.io.{BufferedReader, InputStreamReader}
+import java.io.{BufferedReader, File, InputStreamReader}
+import java.lang.ProcessBuilder.Redirect
+
 import Configuration._
 import akka.actor.ActorSystem
-import com.google.common.util.concurrent.{ FutureCallback, Futures, ListenableFuture }
+import com.google.common.util.concurrent.{FutureCallback, Futures, ListenableFuture}
+
 import scala.collection.JavaConverters._
 import scala.concurrent._
 import scala.reflect.ClassTag
@@ -77,11 +80,12 @@ package object Helpers {
     def map[U](f: T => U)(implicit ec: ExecutionContext): FutureOption[U] = FutureOption(future.map(_ map f))
     
   }
-  
+    
   implicit class CmdExecutor(cmd:String) {
     def exec:Future[String] = Future {
       
       val proc = Runtime.getRuntime.exec(cmd)
+      
       val exitValue = proc.waitFor
       if(exitValue != 0)
         throw new IllegalStateException(s"\'$cmd\' exited with code $exitValue")

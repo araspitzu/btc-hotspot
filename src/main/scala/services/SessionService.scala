@@ -31,13 +31,14 @@ import scala.concurrent.{Await, Future}
   */
 object SessionService extends LazyLogging {
   
-  def enableSessionFor(session: Session, offer:Offer):FutureOption[Unit] = {
+  def enableSessionFor(session: Session, offer:Offer):Future[Unit] = {
         
     for {
-      sessionWithOffer <- updateSessionWithOffer(session, offer)
+      optSess <- upsert(session.copy(offerId = Some(offer.offerId))).future
     } yield {
-      logger.info(s"Enabling session ${session.id} for offer ${session.offerId}")
-      sessionWithOffer.start
+      val sessionId = optSess getOrElse (throw new IllegalArgumentException(s"Unable to enable $session"))
+      logger.info(s"Enabling session ${sessionId} for offer ${offer.offerId}")
+      sessionId.start
     }
   
   }

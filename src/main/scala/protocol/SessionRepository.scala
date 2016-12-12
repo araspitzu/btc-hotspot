@@ -25,7 +25,7 @@ import commons.Helpers.FutureOption
 import protocol.domain.{Offer, Session}
 import registry.DatabaseRegistry._
 import slick.driver.H2Driver.api._
-
+import commons.AppExecutionContextRegistry.context._
 import scala.concurrent.Future
 
 /**
@@ -61,13 +61,13 @@ object SessionRepository {
   }
   
   def upsert(session: Session):FutureOption[Session] = db.run {
-    (sessionsTable returning sessionsTable)
-      .insertOrUpdate(session)
-  }
-  
-  def updateSessionWithOffer(session: Session, offer:Offer):FutureOption[Session] = db.run {
-    (sessionsTable returning sessionsTable)
-      .insertOrUpdate(session.copy(offerId = Some(offer.offerId)))
+    sessionsTable
+      .filter(_.id === session.id)
+      .update(session) map {
+        case 0 => None
+        case _ => Some(session)
+    }
+      
   }
   
   def byIdWithOffer(id:Long):FutureOption[(Session, Offer)] = db.run {
@@ -87,14 +87,12 @@ object SessionRepository {
   
   def allSession:Future[Seq[Session]] = db.run {
     sessionsTable
-      .map(identity)
       .result
   }
   
   def byMacAddress(mac:String):FutureOption[Session] = db.run {
     sessionsTable
       .filter(_.clientMac === mac)
-      .map(identity)
       .result
       .headOption
   }
@@ -102,7 +100,6 @@ object SessionRepository {
   def activeSessions:Future[Seq[Session]] = db.run {
     sessionsTable
       .filter(_.remainingUnits > 0L)
-      .map(identity)
       .result
   }
   

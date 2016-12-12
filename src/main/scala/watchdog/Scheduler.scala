@@ -27,7 +27,7 @@ import commons.AppExecutionContextRegistry.context._
   */
 object Scheduler {
   
-  case class Schedule(createdAt:LocalDateTime, cancellable: Cancellable)
+  private case class Schedule(createdAt:LocalDateTime, cancellable: Cancellable)
   
   val tasks = new scala.collection.mutable.HashMap[Long, Schedule]
   
@@ -36,9 +36,12 @@ object Scheduler {
     val cancellable = actorSystem.scheduler.scheduleOnce(delay)(task)
     val schedule = Schedule(LocalDateTime.now, cancellable)
     
-    tasks += ((sessionId, schedule))
+    tasks += sessionId -> schedule
   }
   
+  def scheduledAt(sessionId:Long):Option[LocalDateTime] = {
+    tasks.get(sessionId).map(_.createdAt)
+  }
   
-  
+   
 }

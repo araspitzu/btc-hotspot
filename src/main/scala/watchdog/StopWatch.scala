@@ -18,14 +18,18 @@
 
 package watchdog
 
+import java.util.concurrent.TimeoutException
 import com.typesafe.scalalogging.slf4j.LazyLogging
 import iptables.IpTablesService
 import protocol.SessionRepository
 import protocol.domain.{Offer, Session}
 import protocol.domain.QtyUnit._
 import services.SessionService
+import commons.AppExecutionContextRegistry.context._
 
-import scala.concurrent.duration.Duration
+import scala.concurrent.Await
+import scala.concurrent.duration._
+import scala.util.{Failure, Success, Try}
 
 /**
   * Created by andrea on 07/12/16.
@@ -58,7 +62,16 @@ case class TimebasedStopWatch(session: Session, offer: Offer) extends StopWatch 
   
   override def start: Unit = {
     //alter iptables
-    IpTablesService.enableClient(session.clientMac)
+    Try {
+      Await.result(IpTablesService.enableClient(session.clientMac), 2 seconds)
+    } match {
+      case Success(iptablesOutput) => ()
+      case Failure(thr) => thr match {
+        case err:TimeoutException => throw new TimeoutException("Timeout doing iptables op")
+        case err => throw err
+      }
+    }
+    
     //start scheduler
     Scheduler.schedule(session.id, Duration(offer.qty, "seconds")) {
       IpTablesService.disableClient(session.clientMac)

@@ -30,23 +30,14 @@ object CleanRepository {
   
   trait CleanSessionRepository extends BeforeAfterEach {
   
-    override def before = {
-      println("[Before] Dropping sessionsTable")
-      registry.DatabaseRegistry.database.db.run {
-        SessionRepository
-          .sessionsTable
-          .delete
-      } futureValue
-    }
-  
-    override def after = {
-      println("[After] Dropping sessionsTable")
-      registry.DatabaseRegistry.database.db.run {
-        SessionRepository
-          .sessionsTable
-          .delete
-      } futureValue
-    }
+    override def before = registry.DatabaseRegistry.database.db.run {
+      SessionRepository
+        .sessionsTable
+        .delete
+    } futureValue
+    
+    override def after = before
+    
   }
   
 }
