@@ -29,7 +29,7 @@ object Scheduler {
   
   private case class Schedule(createdAt:LocalDateTime, cancellable: Cancellable)
   
-  val tasks = new scala.collection.mutable.HashMap[Long, Schedule]
+  private val tasks = new scala.collection.mutable.HashMap[Long, Schedule]
   
   def schedule(sessionId:Long, delay: FiniteDuration)(task: Unit):Unit = {
     
@@ -42,6 +42,12 @@ object Scheduler {
   def scheduledAt(sessionId:Long):Option[LocalDateTime] = {
     tasks.get(sessionId).map(_.createdAt)
   }
-  
+
+  def cancel(sessionId:Long):Boolean = {
+    tasks.get(sessionId) match {
+      case None => false
+      case Some(schedule) => schedule.cancellable.cancel
+    }
+  }
    
 }

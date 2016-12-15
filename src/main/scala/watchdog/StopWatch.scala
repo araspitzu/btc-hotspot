@@ -18,13 +18,15 @@
 
 package watchdog
 
+import java.time.LocalDateTime
+import java.time.temporal.ChronoUnit
 import java.util.concurrent.TimeoutException
+
 import com.typesafe.scalalogging.slf4j.LazyLogging
 import iptables.IpTablesService
 import protocol.SessionRepository
 import protocol.domain.{Offer, Session}
 import protocol.domain.QtyUnit._
-import services.SessionService
 import commons.AppExecutionContextRegistry.context._
 
 import scala.concurrent.Await
@@ -35,7 +37,7 @@ import scala.util.{Failure, Success, Try}
   * Created by andrea on 07/12/16.
   */
 object StopWatch {
- 
+  
   def forOffer(session: Session, offer:Offer):StopWatch = offer.qtyUnit match {
     case MB => ???
     case minutes => TimebasedStopWatch(session, offer)
@@ -61,6 +63,8 @@ sealed trait StopWatch extends LazyLogging {
 case class TimebasedStopWatch(session: Session, offer: Offer) extends StopWatch {
   
   override def start: Unit = {
+    val remainingMillis = if(session.remainingUnits < 0) offer.qty else session.remainingUnits
+    
     //alter iptables
     Try {
       Await.result(IpTablesService.enableClient(session.clientMac), 2 seconds)
@@ -72,29 +76,42 @@ case class TimebasedStopWatch(session: Session, offer: Offer) extends StopWatch 
       }
     }
     
-    //start scheduler
-    Scheduler.schedule(session.id, Duration(offer.qty, "seconds")) {
-      IpTablesService.disableClient(session.clientMac)
+    
+    //start countdown
+    Scheduler.schedule(session.id, Duration(remainingMillis, "seconds")) {
+      this.onLimitReach
     }
     
     //update remaining time in session
-    SessionRepository.upsert(session.copy(remainingUnits = offer.qty))
+    SessionRepository.upsert(session.copy(remainingUnits = remainingMillis))
   }
   
   override def stop: Unit = {
-    //alter iptables
-    //abort scheduled task
-    //update remaining time in session
+    val remainingMillis:Long = this.remainingTime
+    
+    // alter iptables
+    IpTablesService.disableClient(session.clientMac)
+    
+    // abort scheduled task
+    Scheduler.cancel(session.id)
+    
+    // update remaining time in session WAIT FOR FUTURE?
+    SessionRepository.upsert(session.copy(
+      remainingUnits = remainingMillis
+    ))
+    
   }
   
   override def remainingTime: Long = {
-    //check scheduler
-    //update remaining time in session?
-    ???
+    Scheduler.scheduledAt(session.id) match {
+      case Some(scheduledAt) => ChronoUnit.MILLIS.between(scheduledAt, LocalDateTime.now)
+      case None => throw new IllegalArgumentException(s"Could not find schedule for $session")
+    }
   }
   
   override def onLimitReach: Unit = {
-    //stop session
+    logger.info(s"Reached offer limit for session ${session.id}")
+    IpTablesService.disableClient(session.clientMac)
   }
   
 }

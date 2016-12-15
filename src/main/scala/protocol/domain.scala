@@ -38,15 +38,17 @@ package object domain extends LazyLogging {
     remainingUnits:Long = -1,
     offerId: Option[Long] = None
   ) {
-    
-    
-    private lazy val stopwatch:StopWatch = offerId match {
-      case None => throw new IllegalAccessException(s"Unable to use session without a stopwatch, no offerId is $offerId")
-      case Some(id) => Await.result(OfferService.offerById(id).future, 5 seconds) match {
-        case None => throw new IllegalAccessException(s"Unable to use session without a stopwatch, offer NOT FOUND! offerId = $offerId")
-        case Some(offer) => StopWatch.forOffer(this, offer)
-      }
+  
+  
+    private lazy val stopwatch: StopWatch = {
+      (for {
+        id <- offerId
+        offer <- Await.result(OfferService.offerById(id).future, 5 seconds)
+      } yield {
+        StopWatch.forOffer(this, offer)
+      }) getOrElse (throw new IllegalAccessException(s"Unable to use session without a stopwatch, offer NOT FOUND! offerId = $offerId"))
     }
+
     
     
     
