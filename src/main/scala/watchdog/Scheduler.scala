@@ -31,12 +31,11 @@ object Scheduler {
   
   private val tasks = new scala.collection.mutable.HashMap[Long, Schedule]
   
-  def schedule(sessionId:Long, delay: FiniteDuration)(task: Unit):Unit = {
+  def schedule(sessionId:Long, delay: FiniteDuration)(task: => Unit):Unit = {
     
     val cancellable = actorSystem.scheduler.scheduleOnce(delay)(task)
-    val schedule = Schedule(LocalDateTime.now, cancellable)
     
-    tasks += sessionId -> schedule
+    tasks += sessionId -> Schedule(LocalDateTime.now, cancellable)
   }
   
   def scheduledAt(sessionId:Long):Option[LocalDateTime] = {

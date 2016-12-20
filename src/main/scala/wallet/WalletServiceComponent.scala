@@ -19,6 +19,7 @@
 package wallet
 
 import java.io.File
+import java.util.Date
 
 import com.google.protobuf.ByteString
 import com.typesafe.scalalogging.slf4j.LazyLogging
@@ -38,8 +39,12 @@ import services.{OfferService, SessionService}
 import scala.collection.JavaConverters._
 import commons.AppExecutionContextRegistry.context._
 
-import scala.concurrent.Future
+import scala.concurrent.{Future, Promise}
 import commons.Helpers.ScalaConversions._
+import org.bitcoinj.core.TransactionBroadcast.ProgressCallback
+import org.bitcoinj.core.listeners.DownloadProgressTracker
+
+import scala.util.Success
 
 /**
   * Created by andrea on 16/11/16.
@@ -57,7 +62,11 @@ trait WalletServiceComponent extends LazyLogging {
         wallet.importKey(new ECKey)
       }
     }.setAutoStop(true)
-     .setUserAgent("paypercom", "0.0.1-alpha")
+     .setDownloadListener(new DownloadProgressTracker{
+       override def progress(pct:Double,blocksSoFar:Int, date:Date) = {
+         logger.info(s"Chain sync ${pct * 100}%")
+       }
+     })
     
     addShutDownHook {
       kit.peerGroup.stop
@@ -76,22 +85,18 @@ trait WalletServiceComponent extends LazyLogging {
     def generatePaymentRequest(session: Session, offerId: Long): Future[PaymentRequest] = {
       logger.info(s"Issuing payment request for session ${session.id} and offer $offerId")
   
-      (OfferService.offerById(offerId).map { asd =>
-    
-    
-        //        case None => throw new IllegalArgumentException("")
-        //        case Some(offer) =>
-        //            PaymentProtocol.createPaymentRequest(
-        //              networkParams,
-        //              outputsForOffer(offer).asJava,
-        //              s"Please pay ${offer.price} satoshis for ${offer.description}",
-        //              s"http://$miniPortalHost:$miniPortalPort/api/pay/${session.id}",
-        //              Array.emptyByteArray
-        //            ).build
-        ???
-      })
-      ???
+      (for {
+        offer <- OfferService.offerById(offerId)
+      } yield PaymentProtocol.createPaymentRequest(
+        networkParams,
+        outputsForOffer(offer).asJava,
+        s"Please pay ${offer.price} satoshis for ${offer.description}",
+        s"http://$miniPortalHost:$miniPortalPort/api/pay/${session.id}",
+        Array.emptyByteArray
+      ).build).future.map(_.getOrElse(throw new IllegalArgumentException(s"Offer $offerId not found")))
+
     }
+    
     def validatePayment(session: Session, offerId:Long, payment: Protos.Payment): Future[Protos.PaymentACK] = {
 
       if(payment.getTransactionsCount != 1)
@@ -99,11 +104,26 @@ trait WalletServiceComponent extends LazyLogging {
 
       val txBytes = payment.getTransactions(0).toByteArray
       val tx = new Transaction(networkParams, txBytes)
-  
-      Future {
-        PaymentProtocol.createPaymentAck(payment, s"Enjoy, your session will last for ")
-      }
-
+      val broadcast = peerGroup.broadcastTransaction(tx)
+      
+      val promise = Promise[Protos.PaymentACK]
+      
+      broadcast.setProgressCallback(new ProgressCallback {
+        override def onBroadcastProgress(progress: Double) = {
+          if(progress == 1.0){
+            promise.complete(
+              Success{
+                SessionService.enableSessionFor(session, offerId)
+                PaymentProtocol.createPaymentAck(payment, s"Enjoy, your session will last for ")
+              }
+            )
+          } else {
+            logger.info(s"Tx broadcast for sessionId: ${session.id}")
+          }
+        }
+      })
+      
+      promise.future
     }
 
     def p2pubKeyHash(value:Long, to:Address):ByteString = {
@@ -124,8 +144,8 @@ trait WalletServiceComponent extends LazyLogging {
     def outputsForOffer(offer:Offer):List[Protos.Output] = {
       def outputBuilder = Protos.Output.newBuilder
 
-      if(isDust(offer.price))
-        throw new IllegalArgumentException(s"Price ${offer.price} is too low, considered dust")
+    //  if(isDust(offer.price))
+    //    throw new IllegalArgumentException(s"Price ${offer.price} is too low, considered dust")
 
 
       val ownerOutput =

@@ -45,21 +45,21 @@ object TestData {
 
   val offers = Seq(
     Offer(
-      qty = 10,
+      qty = 2,
       qtyUnit = QtyUnit.minutes,
-      price = 350000,
-      description =  "10 minutes"
+      price = 950000,
+      description =  "2 minutes"
     ),
     Offer(
       qty = 20,
       qtyUnit = QtyUnit.minutes,
-      price = 450000,
+      price = 1500000,
       description =  "20 minutes"
     ),
     Offer(
       qty = 30,
       qtyUnit = QtyUnit.minutes,
-      price = 500000,
+      price = 5000000,
       description =  "30 minutes"
     )
   )

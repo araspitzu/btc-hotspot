@@ -34,6 +34,7 @@ object ThisBuild extends Build {
   import Resolvers._
   import PackageSetting._
   import DebianSetting._
+  
 
   val buildOrganization = "andrea"
   val buildVersion = "0.0.1"

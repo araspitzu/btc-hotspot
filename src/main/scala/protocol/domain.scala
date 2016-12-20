@@ -52,14 +52,14 @@ package object domain extends LazyLogging {
     
     
     
-    def start = {
+    def start() = {
       logger.info(s"Starting session $id")
-      stopwatch.start
+      stopwatch.start()
     }
     
     def stop = {
       logger.info(s"Stopping session $id")
-      stopwatch.stop
+      stopwatch.stop()
     }
     
   }
@@ -73,7 +73,8 @@ package object domain extends LazyLogging {
   )
 
   case object QtyUnit extends Enumeration {
-    type QtyUnit = Value
+    type QtyUnit = Value with Either[FiniteDuration, Long]
+    
     val MB = Value("MB")
     val minutes = Value("minutes")
   }

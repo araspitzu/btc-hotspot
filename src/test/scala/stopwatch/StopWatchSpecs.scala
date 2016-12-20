@@ -17,18 +17,50 @@
  */
 
 package stopwatch
+import commons.TestData
+import iptables.IpTablesService
+import org.specs2.mock.Mockito
 import org.specs2.mutable.Specification
+import org.specs2.specification.Scope
+import protocol.SessionRepository
+import protocol.domain.{Offer, Session}
+import watchdog.{Scheduler, StopWatch, TimebasedStopWatch}
+
+import scala.concurrent.Future
+import scala.concurrent.duration.FiniteDuration
 
 /**
   * Created by andrea on 09/12/16.
   */
-class StopWatchSpecs extends Specification {
+class StopWatchSpecs extends Specification with Mockito {
+  
+  trait MockStopWatch extends StopWatch {
+    override val ipTablesService = mock[IpTablesService.type]
+    override val sessionRepository = mock[SessionRepository.type]
+    override val scheduler = mock[Scheduler.type]
+  }
   
   "This spec" should {
 
-    "fail here" in {
-      2 + 2 === 5
-    }.pendingUntilFixed
+    "mock iptables" in {
+      
+      val myMac = "thisIsMyMac"
+      
+      val session = Session(clientMac = myMac)
+      val offer = TestData.offers.head
+      
+      val timeStopWatch = new TimebasedStopWatch(session, offer) with MockStopWatch {
+        ipTablesService.enableClient(myMac) returns Future.successful("Yeah")
+        //scheduler.schedule(session.id, any[FiniteDuration])
+        sessionRepository.upsert(any[Session]) returns Future.successful(None)
+      }
+
+      timeStopWatch.start
+      there was one(timeStopWatch.sessionRepository).upsert(session)
+      
+      success
+      
+    }
 
   }
   
