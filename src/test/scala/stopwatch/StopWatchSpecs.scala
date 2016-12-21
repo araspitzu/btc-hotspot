@@ -23,7 +23,7 @@ import org.specs2.mock.Mockito
 import org.specs2.mutable.Specification
 import org.specs2.specification.Scope
 import protocol.domain.{Offer, Session}
-import watchdog.{Scheduler, StopWatch, TimebasedStopWatch}
+import watchdog.{StopWatch, TimebasedStopWatch}
 
 import scala.concurrent.Future
 import scala.concurrent.duration.FiniteDuration

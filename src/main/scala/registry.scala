@@ -10,6 +10,7 @@ import slick.driver.H2Driver.api._
 import commons.AppExecutionContextRegistry.context._
 import akka.http.scaladsl.Http
 import iptables.{IpTablesServiceComponent, IpTablesServiceImpl}
+import watchdog.SchedulerComponent
 
 import scala.concurrent.Await
 import scala.concurrent.duration._
@@ -86,6 +87,10 @@ package object registry {
   
   object SessionRepositoryRegistry extends Registry with SessionRepositoryComponent {
     override val sessionRepositoryImpl:SessionRepositoryImpl = new SessionRepositoryImpl
+  }
+  
+  object SchedulerRegistry extends Registry with SchedulerComponent {
+    override val schedulerImpl = new SchedulerImpl
   }
   
   object IpTablesServiceRegistry extends Registry with IpTablesServiceComponent {

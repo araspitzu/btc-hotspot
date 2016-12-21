@@ -26,7 +26,7 @@ import com.typesafe.scalalogging.slf4j.LazyLogging
 import protocol.domain.{Offer, QtyUnit, Session}
 import protocol.domain.QtyUnit._
 import commons.AppExecutionContextRegistry.context._
-import registry.{IpTablesServiceRegistry, SessionRepositoryRegistry}
+import registry.{IpTablesServiceRegistry, SchedulerRegistry, SessionRepositoryRegistry}
 
 import scala.concurrent.Await
 import scala.concurrent.duration._
@@ -48,7 +48,7 @@ trait StopWatch extends LazyLogging {
   
   val ipTablesService = IpTablesServiceRegistry.ipTablesServiceImpl
   val sessionRepository = SessionRepositoryRegistry.sessionRepositoryImpl
-  val scheduler = Scheduler
+  val scheduler = SchedulerRegistry.schedulerImpl
   
   val session:Session
   val offer:Offer
@@ -100,7 +100,7 @@ case class TimebasedStopWatch(session: Session, offer: Offer) extends StopWatch 
     ipTablesService.disableClient(session.clientMac)
     
     // abort scheduled task
-    if (isActive) Scheduler.cancel(session.id)
+    if (isActive) scheduler.cancel(session.id)
     
     // update remaining time in session WAIT FOR FUTURE?
     sessionRepository.upsert(session.copy(
@@ -110,7 +110,7 @@ case class TimebasedStopWatch(session: Session, offer: Offer) extends StopWatch 
   }
   
   override def remainingUnits(): Long = {
-    Scheduler.scheduledAt(session.id) match {
+    scheduler.scheduledAt(session.id) match {
       case Some(scheduledAt) => ChronoUnit.MILLIS.between(scheduledAt, LocalDateTime.now)
       case None => throw new IllegalArgumentException(s"Could not find schedule for $session")
     }
