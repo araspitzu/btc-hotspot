@@ -9,6 +9,7 @@ import wallet.WalletServiceComponent
 import slick.driver.H2Driver.api._
 import commons.AppExecutionContextRegistry.context._
 import akka.http.scaladsl.Http
+import iptables.{IpTablesServiceComponent, IpTablesServiceImpl}
 
 import scala.concurrent.Await
 import scala.concurrent.duration._
@@ -81,6 +82,10 @@ package object registry {
       )
     })
     
+  }
+  
+  object IpTablesServiceRegistry extends Registry with IpTablesServiceComponent {
+    override val ipTablesServiceImpl = new IpTablesServiceImpl
   }
   
 }

@@ -26,7 +26,6 @@ import com.typesafe.scalalogging.slf4j.LazyLogging
 import commons.Configuration.WalletConfig._
 import commons.Configuration.MiniPortalConfig._
 import commons.Helpers._
-import iptables.IpTablesService
 import org.bitcoin.protocols.payments.Protos
 import org.bitcoin.protocols.payments.Protos.PaymentRequest
 import org.bitcoinj.core._

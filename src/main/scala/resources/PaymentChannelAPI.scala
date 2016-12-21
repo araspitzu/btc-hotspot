@@ -22,21 +22,22 @@ import akka.http.scaladsl.model._
 import akka.http.scaladsl.server._
 import akka.http.scaladsl.server.directives.LoggingMagnet
 import akka.http.scaladsl.unmarshalling._
-import akka.util.{ByteString}
-import commons.{AppExecutionContextRegistry}
-import iptables.IpTablesService._
+import akka.util.ByteString
+import commons.AppExecutionContextRegistry
 import org.bitcoin.protocols.payments.Protos
 import org.bitcoin.protocols.payments.Protos._
 import protocol.domain.Session
 import wallet.WalletServiceComponent
 import ExtraHttpHeaders._
 import AppExecutionContextRegistry.context._
+import registry.IpTablesServiceRegistry
 
 /**
   * Created by andrea on 15/09/16.
   */
 trait PaymentChannelAPI extends CommonResource with ExtraDirectives {
   this:WalletServiceComponent  =>
+  
 
   def headerLogger:LoggingMagnet[HttpRequest ⇒ Unit] = LoggingMagnet { loggingAdapter => request =>
      loggingAdapter.debug(s"Headers: ${request._3.toString()}")
@@ -77,9 +78,9 @@ trait PaymentChannelAPI extends CommonResource with ExtraDirectives {
 
   def enableMe(macAddress:String) = get {
     path("api" / "enableme") {
-      complete(enableClient(macAddress))
+      complete(IpTablesServiceRegistry.ipTablesServiceImpl.enableClient(macAddress))
     } ~ path("api" / "disableme") {
-      complete(disableClient(macAddress))
+      complete(IpTablesServiceRegistry.ipTablesServiceImpl.disableClient(macAddress))
     }
   }
 

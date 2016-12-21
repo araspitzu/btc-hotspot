@@ -26,10 +26,9 @@ import commons.AppExecutionContextRegistry.context._
 import iptables.domain.ChainEntry
 
 /**
-  * Created by andrea on 09/11/16.
-  *
+  * Created by andrea on 21/12/16.
   */
-object IpTablesService extends LazyLogging {
+class IpTablesServiceImpl {
   
   private def iptables(params:String) = {
     s"sudo /sbin/iptables $params"
@@ -37,23 +36,23 @@ object IpTablesService extends LazyLogging {
   
   def report:Future[Seq[ChainEntry]] = {
     iptables("-t mangle -nvxL internet").exec.map {
-       _.lines
+      _.lines
         .drop(2)     //drop header and column header
         .map { r =>  //iterate over each rule
-           val words = r.split(" ").filter(_ != "")  //extract words
-           ChainEntry(
-             pkts = words(0).toLong,
-             bytes = words(1).toLong,
-             target = words(2),
-             prot = words(3),
-             opt = words(4),
-             in = words(5),
-             out = words(6),
-             source = words(7),
-             destination = words(8),
-             rule = words.drop(8).fold("")(_ + " "+ _)
-           )
-        }.toSeq
+        val words = r.split(" ").filter(_ != "")  //extract words
+        ChainEntry(
+          pkts = words(0).toLong,
+          bytes = words(1).toLong,
+          target = words(2),
+          prot = words(3),
+          opt = words(4),
+          in = words(5),
+          out = words(6),
+          source = words(7),
+          destination = words(8),
+          rule = words.drop(8).fold("")(_ + " "+ _)
+        )
+      }.toSeq
     }
     
   }
@@ -61,11 +60,11 @@ object IpTablesService extends LazyLogging {
   def enableClient(mac:String):Future[String] = {
     iptables(s"-I internet 1 -t mangle -m mac --mac-source $mac -j RETURN").exec
   }
-
+  
   def disableClient(mac:String):Future[String] = {
     iptables(s"-D internet -t mangle -m mac --mac-source $mac -j RETURN").exec
   }
-
+  
+  
 }
-
 
