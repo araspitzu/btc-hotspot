@@ -20,11 +20,13 @@ package protocol
 
 import java.sql.Timestamp
 import java.time.LocalDateTime
+
 import commons.AppExecutionContextRegistry.context._
 import commons.Helpers.FutureOption
 import protocol.domain.{Offer, Session}
-import registry.DatabaseRegistry
+import registry.{DatabaseRegistry, OfferRepositoryRegistry}
 import slick.driver.H2Driver.api._
+
 import scala.concurrent.Future
 
 /**
@@ -51,7 +53,7 @@ trait SessionRepositoryComponent {
       def remainingUnits = column[Long]("remainingUnits")
       def offerId = column[Option[Long]]("offerId")
     
-      def offer = foreignKey("offerFK", offerId, OfferRepository.offersTable)(_.offerId.?)
+      def offer = foreignKey("offerFK", offerId, OfferRepositoryRegistry.offerRepositoryImpl.offersTable)(_.offerId.?)
     
       override def * = (id, createdAt, clientMac, remainingUnits, offerId) <> (Session.tupled, Session.unapply)
     }
@@ -75,7 +77,7 @@ trait SessionRepositoryComponent {
     def byIdWithOffer(id:Long):FutureOption[(Session, Offer)] = db.run {
       sessionsTable
         .filter(_.id === id)
-        .join(OfferRepository.offersTable).on( (s,o) => s.offerId.map(_ === o.offerId) )
+        .join(OfferRepositoryRegistry.offerRepositoryImpl.offersTable).on( (s,o) => s.offerId.map(_ === o.offerId) )
         .result
         .headOption
     }

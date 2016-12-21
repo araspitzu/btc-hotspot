@@ -19,8 +19,8 @@
 package services
 
 import commons.Helpers.FutureOption
-import protocol.OfferRepository
 import protocol.domain.Offer
+import registry.OfferRepositoryRegistry
 
 import scala.concurrent.Future
 
@@ -30,10 +30,10 @@ import scala.concurrent.Future
 object OfferService {
 
   def allOffers:Future[Seq[Offer]] = {
-    OfferRepository.allOffers
+    OfferRepositoryRegistry.offerRepositoryImpl.allOffers
   }
   
-  def offerById(id:Long):FutureOption[Offer] = OfferRepository.byId(id)
+  def offerById(id:Long):FutureOption[Offer] = OfferRepositoryRegistry.offerRepositoryImpl.byId(id)
   
 
 }
