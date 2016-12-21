@@ -38,6 +38,8 @@ object Scheduler {
     tasks += sessionId -> Schedule(LocalDateTime.now, cancellable)
   }
   
+  def isScheduled(sessionId:Long):Boolean = tasks.get(sessionId).isDefined
+  
   def scheduledAt(sessionId:Long):Option[LocalDateTime] = {
     tasks.get(sessionId).map(_.createdAt)
   }

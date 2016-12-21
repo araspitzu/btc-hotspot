@@ -36,23 +36,21 @@ class StopWatchSpecs extends Specification with Mockito {
   
   trait MockStopWatch extends StopWatch {
     override val ipTablesService = mock[IpTablesService.type]
-    override val sessionRepository = mock[SessionRepository.type]
-    override val scheduler = mock[Scheduler.type]
+//    override val sessionRepository = mock[SessionRepository.type]
+//    override val scheduler = mock[Scheduler.type]
   }
   
-  "This spec" should {
+  "TimeBasedS stop watch" should {
 
-    "mock iptables" in {
+    "wait the correct time before calling onLimitReach" in {
       
-      val myMac = "thisIsMyMac"
-      
-      val session = Session(clientMac = myMac)
+      val session = Session(clientMac = "thisIsMyMac")
       val offer = TestData.offers.head
       
       val timeStopWatch = new TimebasedStopWatch(session, offer) with MockStopWatch {
-        ipTablesService.enableClient(myMac) returns Future.successful("Yeah")
+        ipTablesService.enableClient(anyString) returns Future.successful("Yeah")
         //scheduler.schedule(session.id, any[FiniteDuration])
-        sessionRepository.upsert(any[Session]) returns Future.successful(None)
+        //sessionRepository.upsert(any[Session]) returns Future.successful(None)
       }
 
       timeStopWatch.start

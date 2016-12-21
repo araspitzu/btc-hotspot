@@ -62,6 +62,8 @@ package object domain extends LazyLogging {
       stopwatch.stop()
     }
     
+    def isActive() = stopwatch.remainingUnits() > 0
+    
   }
 
   case class Offer(
@@ -73,10 +75,10 @@ package object domain extends LazyLogging {
   )
 
   case object QtyUnit extends Enumeration {
-    type QtyUnit = Value with Either[FiniteDuration, Long]
+    type QtyUnit = Value
     
     val MB = Value("MB")
-    val minutes = Value("minutes")
+    val millis = Value("millis")
   }
   
 }

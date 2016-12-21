@@ -54,7 +54,7 @@ class SessionServiceSpecs extends Specification with CleanSessionRepository {
 
       val offer = OfferService.allOffers.futureValue.head
 
-      SessionService.enableSessionFor(session, offer).futureValue
+      SessionService.enableSessionFor(session, offer.offerId).futureValue
 
       val Some(enabledSession) = SessionService.byId(session.id).futureValue
 
