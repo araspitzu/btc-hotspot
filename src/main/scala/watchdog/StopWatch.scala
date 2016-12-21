@@ -26,8 +26,7 @@ import com.typesafe.scalalogging.slf4j.LazyLogging
 import protocol.domain.{Offer, QtyUnit, Session}
 import protocol.domain.QtyUnit._
 import commons.AppExecutionContextRegistry.context._
-import protocol.SessionRepository
-import registry.IpTablesServiceRegistry
+import registry.{IpTablesServiceRegistry, SessionRepositoryRegistry}
 
 import scala.concurrent.Await
 import scala.concurrent.duration._
@@ -48,7 +47,7 @@ object StopWatch {
 trait StopWatch extends LazyLogging {
   
   val ipTablesService = IpTablesServiceRegistry.ipTablesServiceImpl
-  val sessionRepository = SessionRepository
+  val sessionRepository = SessionRepositoryRegistry.sessionRepositoryImpl
   val scheduler = Scheduler
   
   val session:Session

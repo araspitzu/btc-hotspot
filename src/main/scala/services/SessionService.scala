@@ -20,9 +20,10 @@ package services
 
 import com.typesafe.scalalogging.slf4j.LazyLogging
 import protocol.domain.{Offer, Session}
-import protocol.SessionRepository
 import commons.AppExecutionContextRegistry.context._
 import commons.Helpers.FutureOption
+import registry.SessionRepositoryRegistry
+
 import scala.concurrent.duration._
 import scala.concurrent.{Await, Future}
 
@@ -31,10 +32,12 @@ import scala.concurrent.{Await, Future}
   */
 object SessionService extends LazyLogging {
   
+  val sessionRepository = SessionRepositoryRegistry.sessionRepositoryImpl
+  
   def enableSessionFor(session: Session, offerId:Long):Future[Unit] = {
         
     for {
-      optSess <- SessionRepository.upsert(session.copy(offerId = Some(offerId))).future
+      optSess <- sessionRepository.upsert(session.copy(offerId = Some(offerId))).future
     } yield {
       val sessionId = optSess getOrElse (throw new IllegalArgumentException(s"Unable to enable $session"))
       logger.info(s"Enabling session ${sessionId} for offer ${offerId}")
@@ -47,9 +50,9 @@ object SessionService extends LazyLogging {
     session.stop
   }
 
-  def byId(id:Long):FutureOption[Session] = SessionRepository.bySessionId(id)
+  def byId(id:Long):FutureOption[Session] = sessionRepository.bySessionId(id)
   
-  def byMac(mac: String): FutureOption[Session] = SessionRepository.byMacAddress(mac)
+  def byMac(mac: String): FutureOption[Session] = sessionRepository.byMacAddress(mac)
 
   //TODO fucking remove!
   def byMacSync(mac: String): Option[Session] = {
@@ -64,7 +67,7 @@ object SessionService extends LazyLogging {
     byMac(mac).future flatMap {
       case Some(session) =>
         Future.successful(session.id)
-      case None => SessionRepository.insert(Session(clientMac = mac)) map { sessionId =>
+      case None => sessionRepository.insert(Session(clientMac = mac)) map { sessionId =>
           logger.info(s"Created session $sessionId for $mac")
           sessionId
         }

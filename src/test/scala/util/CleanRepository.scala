@@ -20,7 +20,7 @@ package util
 import Helpers._
 import org.specs2.mutable.BeforeAfter
 import org.specs2.specification.BeforeAfterEach
-import protocol.SessionRepository
+import registry.SessionRepositoryRegistry
 import slick.driver.H2Driver.api._
 
 /**
@@ -31,7 +31,8 @@ object CleanRepository {
   trait CleanSessionRepository extends BeforeAfterEach {
   
     override def before = registry.DatabaseRegistry.database.db.run {
-      SessionRepository
+      SessionRepositoryRegistry
+        .sessionRepositoryImpl
         .sessionsTable
         .delete
     } futureValue

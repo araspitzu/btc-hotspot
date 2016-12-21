@@ -3,7 +3,7 @@ import akka.http.scaladsl.Http
 import akka.http.scaladsl.server.Route
 import commons.Configuration.MiniPortalConfig.{miniPortalHost, miniPortalPort}
 import commons.TestData
-import protocol.{DatabaseComponent, OfferRepository, SessionRepository}
+import protocol.{DatabaseComponent, OfferRepository, SessionRepositoryComponent}
 import resources.{MiniPortal, PaymentChannelAPI}
 import wallet.WalletServiceComponent
 import slick.driver.H2Driver.api._
@@ -75,13 +75,17 @@ package object registry {
       logger.info(s"Setting up schemas and populating tables")
       DBIO.seq (
         (OfferRepository.offersTable.schema ++
-          SessionRepository.sessionsTable.schema).create,
+          SessionRepositoryRegistry.sessionRepositoryImpl.sessionsTable.schema).create,
       
         //Insert some offers
         OfferRepository.offersTable ++= TestData.offers
       )
     })
     
+  }
+  
+  object SessionRepositoryRegistry extends Registry with SessionRepositoryComponent {
+    override val sessionRepositoryImpl:SessionRepositoryImpl = new SessionRepositoryImpl
   }
   
   object IpTablesServiceRegistry extends Registry with IpTablesServiceComponent {
