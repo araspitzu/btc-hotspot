@@ -46,9 +46,9 @@ object StopWatch {
 
 trait StopWatch extends LazyLogging {
   
-  val ipTablesService = IpTablesServiceRegistry.ipTablesServiceImpl
-  val sessionRepository = SessionRepositoryRegistry.sessionRepositoryImpl
-  val scheduler = SchedulerRegistry.schedulerImpl
+  def ipTablesService = IpTablesServiceRegistry.ipTablesServiceImpl
+  def sessionRepository = SessionRepositoryRegistry.sessionRepositoryImpl
+  def scheduler = SchedulerRegistry.schedulerImpl
   
   val session:Session
   val offer:Offer

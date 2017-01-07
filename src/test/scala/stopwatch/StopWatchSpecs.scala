@@ -17,46 +17,52 @@
  */
 
 package stopwatch
+import commons.Helpers.FutureOption
 import commons.TestData
 import iptables.IpTablesServiceImpl
+import slick.driver.H2Driver.api.Database
 import org.specs2.mock.Mockito
 import org.specs2.mutable.Specification
 import org.specs2.specification.Scope
+import protocol.SessionRepositoryImpl
 import protocol.domain.{Offer, Session}
-import watchdog.{StopWatch, TimebasedStopWatch}
-
-import scala.concurrent.Future
-import scala.concurrent.duration.FiniteDuration
+import watchdog.{SchedulerImpl, StopWatch, TimebasedStopWatch}
+import scala.concurrent.ExecutionContext.Implicits.global
+import scala.concurrent.{Await, Future}
+import scala.concurrent.duration._
 
 /**
   * Created by andrea on 09/12/16.
   */
 class StopWatchSpecs extends Specification with Mockito {
   
-  trait MockStopWatch extends StopWatch {
-    override val ipTablesService = mock[IpTablesServiceImpl]
-//    override val sessionRepository = mock[SessionRepository.type]
-//    override val scheduler = mock[Scheduler.type]
+  
+  def waitForOfferMillis(offer: Offer) = {
+    val nop = Future {
+      Thread.sleep(offer.qty)
+  
+    }
+    Await.result(nop, offer.qty + 1L millis)
   }
   
-  "TimeBasedS stop watch" should {
+  "TimeBased stop watch" should {
 
     "wait the correct time before calling onLimitReach" in {
       
       val session = Session(clientMac = "thisIsMyMac")
       val offer = TestData.offers.head
-      
-      val timeStopWatch = new TimebasedStopWatch(session, offer) with MockStopWatch {
-        ipTablesService.enableClient(anyString) returns Future.successful("Yeah")
-        //scheduler.schedule(session.id, any[FiniteDuration])
-        //sessionRepository.upsert(any[Session]) returns Future.successful(None)
+      val mockIpTable = mock[IpTablesServiceImpl]
+      mockIpTable.enableClient(anyString) returns Future.successful("Yeah")
+  
+      val timeStopWatch = new TimebasedStopWatch(session, offer) {
+        override def ipTablesService = mockIpTable
       }
 
-      //timeStopWatch.start
-      //there was one(timeStopWatch.sessionRepository).upsert(session)
-      
-      success
-      
+      timeStopWatch.start()
+      waitForOfferMillis(offer)
+  
+//      there was one(timeStopWatch).onLimitReach()
+      1 === 1
     }
 
   }

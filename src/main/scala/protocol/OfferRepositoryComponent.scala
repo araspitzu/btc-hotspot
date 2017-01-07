@@ -31,45 +31,45 @@ trait OfferRepositoryComponent {
   
   val offerRepositoryImpl:OfferRepositoryImpl
   
-  class OfferRepositoryImpl {
-    val db = DatabaseRegistry.database.db
+}
+
+class OfferRepositoryImpl {
+  val db = DatabaseRegistry.database.db
   
-    class OfferTable(tag:Tag) extends Table[Offer](tag,"OFFERS"){
+  class OfferTable(tag:Tag) extends Table[Offer](tag,"OFFERS"){
     
-      implicit val qtyUnitMapper = MappedColumnType.base[QtyUnit, String](
-        e => e.toString,
-        s => QtyUnit.withName(s)
-      )
+    implicit val qtyUnitMapper = MappedColumnType.base[QtyUnit, String](
+      e => e.toString,
+      s => QtyUnit.withName(s)
+    )
     
-      def offerId = column[Long]("offerId", O.PrimaryKey, O.AutoInc)
-      def qty = column[Long]("qty")
-      def qtyUnit = column[QtyUnit]("qtyUnit")
-      def price = column[Long]("price")
-      def description = column[String]("description")
+    def offerId = column[Long]("offerId", O.PrimaryKey, O.AutoInc)
+    def qty = column[Long]("qty")
+    def qtyUnit = column[QtyUnit]("qtyUnit")
+    def price = column[Long]("price")
+    def description = column[String]("description")
     
-      override def * = (offerId, qty, qtyUnit, price, description) <> (Offer.tupled, Offer.unapply)
-    }
-  
-    val offersTable = TableQuery[OfferTable]
-  
-    def byId(id:Long):FutureOption[Offer] = db.run {
-      offersTable
-        .filter(_.offerId === id)
-        .map(identity)
-        .result
-        .headOption
-    }
-  
-    def insert(offer: Offer):Future[Int] = db.run {
-      offersTable
-        .insertOrUpdate(offer)
-    }
-  
-    def allOffers:Future[Seq[Offer]] = db.run {
-      offersTable.map(identity).result
-    }
-  
-  
+    override def * = (offerId, qty, qtyUnit, price, description) <> (Offer.tupled, Offer.unapply)
   }
+  
+  val offersTable = TableQuery[OfferTable]
+  
+  def byId(id:Long):FutureOption[Offer] = db.run {
+    offersTable
+      .filter(_.offerId === id)
+      .map(identity)
+      .result
+      .headOption
+  }
+  
+  def insert(offer: Offer):Future[Int] = db.run {
+    offersTable
+      .insertOrUpdate(offer)
+  }
+  
+  def allOffers:Future[Seq[Offer]] = db.run {
+    offersTable.map(identity).result
+  }
+  
   
 }

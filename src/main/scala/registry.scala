@@ -1,20 +1,3 @@
-import Boot.logger
-import akka.http.scaladsl.Http
-import akka.http.scaladsl.server.Route
-import commons.Configuration.MiniPortalConfig.{miniPortalHost, miniPortalPort}
-import commons.TestData
-import protocol.{DatabaseComponent, OfferRepositoryComponent, SessionRepositoryComponent}
-import resources.{MiniPortal, PaymentChannelAPI}
-import wallet.WalletServiceComponent
-import slick.driver.H2Driver.api._
-import commons.AppExecutionContextRegistry.context._
-import akka.http.scaladsl.Http
-import iptables.{IpTablesServiceComponent, IpTablesServiceImpl}
-import watchdog.SchedulerComponent
-
-import scala.concurrent.Await
-import scala.concurrent.duration._
-
 /*
  * btc-hotspot
  * Copyright (C) 2016  Andrea Raspitzu
@@ -32,6 +15,23 @@ import scala.concurrent.duration._
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
+
+
+import akka.http.scaladsl.server.Route
+import commons.Configuration.MiniPortalConfig.{miniPortalHost, miniPortalPort}
+import commons.TestData
+import protocol._
+import resources.{MiniPortal, PaymentChannelAPI}
+import wallet.WalletServiceComponent
+import slick.driver.H2Driver.api._
+import commons.AppExecutionContextRegistry.context._
+import akka.http.scaladsl.Http
+import iptables.{IpTablesServiceComponent, IpTablesServiceImpl}
+import watchdog.{SchedulerComponent, SchedulerImpl}
+
+import scala.concurrent.Await
+import scala.concurrent.duration._
+
 
 /**
   * Created by andrea on 09/12/16.
@@ -86,7 +86,7 @@ package object registry {
   }
   
   object SessionRepositoryRegistry extends Registry with SessionRepositoryComponent {
-    override val sessionRepositoryImpl:SessionRepositoryImpl = new SessionRepositoryImpl
+    override val sessionRepositoryImpl = new SessionRepositoryImpl
   }
   
   object OfferRepositoryRegistry extends Registry with OfferRepositoryComponent {

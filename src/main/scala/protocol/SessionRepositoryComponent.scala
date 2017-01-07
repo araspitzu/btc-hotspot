@@ -34,79 +34,81 @@ import scala.concurrent.Future
   */
 trait SessionRepositoryComponent {
   
-  val sessionRepositoryImpl:SessionRepositoryImpl
+  val sessionRepositoryImpl: SessionRepositoryImpl
   
-  class SessionRepositoryImpl {
+}
+
+class SessionRepositoryImpl {
+
+  lazy val db:Database = DatabaseRegistry.database.db
+
+  class SessionTable(tag: Tag) extends Table[Session](tag, "SESSIONS"){
   
-    val db = DatabaseRegistry.database.db
+    implicit val localDateTimeMapper = MappedColumnType.base[LocalDateTime,Timestamp](
+      localDateTime => Timestamp.valueOf(localDateTime),
+      date => date.toLocalDateTime
+    )
   
-    class SessionTable(tag: Tag) extends Table[Session](tag, "SESSIONS"){
-    
-      implicit val localDateTimeMapper = MappedColumnType.base[LocalDateTime,Timestamp](
-        localDateTime => Timestamp.valueOf(localDateTime),
-        date => date.toLocalDateTime
-      )
-    
-      def id = column[Long]("id", O.PrimaryKey, O.AutoInc)
-      def createdAt = column[LocalDateTime]("createdAt", O.SqlType("DATETIME")) //mapped via java.time.LocalDateTime -> java.sql.Timestamp -> DATATYPE(DATETIME)
-      def clientMac = column[String]("clientMac")
-      def remainingUnits = column[Long]("remainingUnits")
-      def offerId = column[Option[Long]]("offerId")
-    
-      def offer = foreignKey("offerFK", offerId, OfferRepositoryRegistry.offerRepositoryImpl.offersTable)(_.offerId.?)
-    
-      override def * = (id, createdAt, clientMac, remainingUnits, offerId) <> (Session.tupled, Session.unapply)
+    def id = column[Long]("id", O.PrimaryKey, O.AutoInc)
+    def createdAt = column[LocalDateTime]("createdAt", O.SqlType("DATETIME")) //mapped via java.time.LocalDateTime -> java.sql.Timestamp -> DATATYPE(DATETIME)
+    def clientMac = column[String]("clientMac")
+    def remainingUnits = column[Long]("remainingUnits")
+    def offerId = column[Option[Long]]("offerId")
+  
+    def offer = foreignKey("offerFK", offerId, OfferRepositoryRegistry.offerRepositoryImpl.offersTable)(_.offerId.?)
+  
+    override def * = (id, createdAt, clientMac, remainingUnits, offerId) <> (Session.tupled, Session.unapply)
+  }
+
+  val sessionsTable = TableQuery[SessionTable]
+
+  def insert(session: Session):Future[Long] = db.run {
+    (sessionsTable returning sessionsTable.map(_.id)) += session
+  }
+
+  def upsert(session: Session):FutureOption[Session] = db.run {
+    sessionsTable
+      .filter(_.id === session.id)
+      .update(session) map {
+      case 0 => None
+      case _ => Some(session)
     }
-  
-    val sessionsTable = TableQuery[SessionTable]
-  
-    def insert(session: Session):Future[Long] = db.run {
-      (sessionsTable returning sessionsTable.map(_.id)) += session
-    }
-  
-    def upsert(session: Session):FutureOption[Session] = db.run {
-      sessionsTable
-        .filter(_.id === session.id)
-        .update(session) map {
-        case 0 => None
-        case _ => Some(session)
-      }
-    
-    }
-  
-    def byIdWithOffer(id:Long):FutureOption[(Session, Offer)] = db.run {
-      sessionsTable
-        .filter(_.id === id)
-        .join(OfferRepositoryRegistry.offerRepositoryImpl.offersTable).on( (s,o) => s.offerId.map(_ === o.offerId) )
-        .result
-        .headOption
-    }
-  
-    def bySessionId(id:Long):FutureOption[Session] = db.run {
-      sessionsTable
-        .filter(_.id === id)
-        .result
-        .headOption
-    }
-  
-    def allSession:Future[Seq[Session]] = db.run {
-      sessionsTable
-        .result
-    }
-  
-    def byMacAddress(mac:String):FutureOption[Session] = db.run {
-      sessionsTable
-        .filter(_.clientMac === mac)
-        .result
-        .headOption
-    }
-  
-    def activeSessions:Future[Seq[Session]] = db.run {
-      sessionsTable
-        .filter(_.remainingUnits > 0L)
-        .result
-    }
-  
   
   }
+
+  def byIdWithOffer(id:Long):FutureOption[(Session, Offer)] = db.run {
+    sessionsTable
+      .filter(_.id === id)
+      .join(OfferRepositoryRegistry.offerRepositoryImpl.offersTable).on( (s,o) => s.offerId.map(_ === o.offerId) )
+      .result
+      .headOption
+  }
+
+  def bySessionId(id:Long):FutureOption[Session] = db.run {
+    sessionsTable
+      .filter(_.id === id)
+      .result
+      .headOption
+  }
+
+  def allSession:Future[Seq[Session]] = db.run {
+    sessionsTable
+      .result
+  }
+
+  def byMacAddress(mac:String):FutureOption[Session] = db.run {
+    sessionsTable
+      .filter(_.clientMac === mac)
+      .result
+      .headOption
+  }
+
+  def activeSessions:Future[Seq[Session]] = db.run {
+    sessionsTable
+      .filter(_.remainingUnits > 0L)
+      .result
+  }
+
+
 }
+
