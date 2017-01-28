@@ -22,9 +22,6 @@ import akka.http.scaladsl.server.Route
 import commons.Configuration.MiniPortalConfig._
 import wallet.WalletServiceComponent
 
-/**
-  * Created by andrea on 09/09/16.
-  */
 trait MiniPortal extends
   PaymentChannelAPI with
   CaptiveResource with

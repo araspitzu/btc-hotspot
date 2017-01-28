@@ -18,21 +18,21 @@
 
 package iptables
 
+import com.typesafe.scalalogging.slf4j.LazyLogging
 import commons.Helpers._
+
 import scala.concurrent.Future
 import commons.AppExecutionContextRegistry.context._
 import iptables.domain.ChainEntry
 
-/**
-  * Created by andrea on 21/12/16.
-  */
+
 trait IpTablesServiceComponent {
   
-  val ipTablesServiceImpl:IpTablesServiceImpl
+  val ipTablesServiceImpl = new IpTablesServiceImpl
   
 }
 
-class IpTablesServiceImpl {
+class IpTablesServiceImpl extends LazyLogging {
   
   private def iptables(params:String) = {
     s"sudo /sbin/iptables $params"
@@ -62,12 +62,15 @@ class IpTablesServiceImpl {
   }
   
   def enableClient(mac:String):Future[String] = {
+    logger.info("IPTABLES ENABLE CLIENT")
     Future.successful("IPTABLES EXECUTED")
     //iptables(s"-I internet 1 -t mangle -m mac --mac-source $mac -j RETURN").exec
   }
   
   def disableClient(mac:String):Future[String] = {
-    iptables(s"-D internet -t mangle -m mac --mac-source $mac -j RETURN").exec
+    logger.info("IPTABLES DISABLE CLIENT")
+    Future.successful("lol")
+  //  iptables(s"-D internet -t mangle -m mac --mac-source $mac -j RETURN").exec
   }
   
   

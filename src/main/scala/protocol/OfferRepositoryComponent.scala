@@ -24,9 +24,8 @@ import protocol.domain.{Offer, QtyUnit}
 import protocol.domain.QtyUnit.QtyUnit
 import slick.driver.H2Driver.api._
 import scala.concurrent.Future
-/**
-  * Created by andrea on 21/12/16.
-  */
+
+
 trait OfferRepositoryComponent {
   
   val offerRepositoryImpl:OfferRepositoryImpl

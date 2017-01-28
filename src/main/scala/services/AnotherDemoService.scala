@@ -18,19 +18,19 @@
 
 package services
 
-import commons.Helpers.FutureOption
-import protocol.domain.Offer
-import registry.OfferRepositoryRegistry
+/**
+  * Created by andrea on 19/01/17.
+  */
+trait AnotherDemoServiceComponent {
+  
+}
 
-import scala.concurrent.Future
-
-object OfferService {
-
-  def allOffers:Future[Seq[Offer]] = {
-    OfferRepositoryRegistry.offerRepositoryImpl.allOffers
+class AnotherDemoServiceImpl {
+  self:DemoServiceComponent =>
+  
+  def fooBar:Int = {
+    val dup = demoService.strDup("return 20")
+    dup.length
   }
   
-  def offerById(id:Long):FutureOption[Offer] = OfferRepositoryRegistry.offerRepositoryImpl.byId(id)
-  
-
 }

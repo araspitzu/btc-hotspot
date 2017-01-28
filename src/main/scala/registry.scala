@@ -33,9 +33,6 @@ import scala.concurrent.Await
 import scala.concurrent.duration._
 
 
-/**
-  * Created by andrea on 09/12/16.
-  */
 package object registry {
   
   trait Registry {

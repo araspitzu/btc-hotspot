@@ -26,7 +26,8 @@ import com.typesafe.scalalogging.slf4j.LazyLogging
 import protocol.domain.{Offer, QtyUnit, Session}
 import protocol.domain.QtyUnit._
 import commons.AppExecutionContextRegistry.context._
-import registry.{IpTablesServiceRegistry, SchedulerRegistry, SessionRepositoryRegistry}
+import iptables.{IpTablesServiceComponent, IpTablesServiceImpl}
+import registry.{SchedulerRegistry, SessionRepositoryRegistry}
 
 import scala.concurrent.Await
 import scala.concurrent.duration._
@@ -39,14 +40,16 @@ object StopWatch {
   
   def forOffer(session: Session, offer:Offer):StopWatch = offer.qtyUnit match {
     case MB => ???
-    case minutes => TimebasedStopWatch(session, offer)
+    case minutes => new TimebasedStopWatch(session, offer) with IpTablesServiceComponent
   }
   
 }
 
+
+
 trait StopWatch extends LazyLogging {
   
-  def ipTablesService = IpTablesServiceRegistry.ipTablesServiceImpl
+  //def ipTablesService = ???
   def sessionRepository = SessionRepositoryRegistry.sessionRepositoryImpl
   def scheduler = SchedulerRegistry.schedulerImpl
   
@@ -65,14 +68,16 @@ trait StopWatch extends LazyLogging {
   
 }
 
-case class TimebasedStopWatch(session: Session, offer: Offer) extends StopWatch {
+class TimebasedStopWatch(val session: Session, val offer: Offer) extends StopWatch {
+  self: IpTablesServiceComponent =>
+  
   require(offer.qtyUnit == QtyUnit.millis, s"Time based stopwatch can only be used with offers in milliseconds, offer id ${offer.offerId}")
   
   override def start(): Unit = {
     
     //alter iptables
     Try {
-      Await.result(ipTablesService.enableClient(session.clientMac), 2 seconds)
+      Await.result(ipTablesServiceImpl.enableClient(session.clientMac), 2 seconds)
     } match {
       case Success(iptablesOutput) => ()
       case Failure(thr) => thr match {
@@ -84,8 +89,7 @@ case class TimebasedStopWatch(session: Session, offer: Offer) extends StopWatch 
     val remainingMillis = if(session.remainingUnits < 0) offer.qty else session.remainingUnits
 
     //start countdown
-    val d = Duration(remainingMillis, "minutes")
-    scheduler.schedule(session.id, d) {
+    scheduler.schedule(session.id, remainingMillis millisecond) {
       this.onLimitReach()
     }
     
@@ -97,7 +101,7 @@ case class TimebasedStopWatch(session: Session, offer: Offer) extends StopWatch 
     logger.debug(s"Stopping $session")
     
     // alter iptables
-    ipTablesService.disableClient(session.clientMac)
+    ipTablesServiceImpl.disableClient(session.clientMac)
     
     // abort scheduled task
     if (isActive) scheduler.cancel(session.id)
@@ -111,14 +115,14 @@ case class TimebasedStopWatch(session: Session, offer: Offer) extends StopWatch 
   
   override def remainingUnits(): Long = {
     scheduler.scheduledAt(session.id) match {
-      case Some(scheduledAt) => ChronoUnit.MILLIS.between(scheduledAt, LocalDateTime.now)
+      case Some(scheduledAt) => ChronoUnit.MILLIS.between(LocalDateTime.now, scheduledAt)
       case None => throw new IllegalArgumentException(s"Could not find schedule for $session")
     }
   }
   
   override def onLimitReach(): Unit = {
     logger.info(s"Reached offer limit for session ${session.id}")
-    stop()
+    this.stop()
   }
   
 }

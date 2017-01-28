@@ -17,24 +17,29 @@
  */
 
 package stopwatch
+
 import commons.Helpers.FutureOption
 import commons.TestData
-import iptables.IpTablesServiceImpl
-import slick.driver.H2Driver.api.Database
-import org.specs2.mock.Mockito
+import iptables.{IpTablesServiceComponent, IpTablesServiceImpl}
+//import org.mockito.Mockito
+import org.specs2.mock.{Mockito => Specs2Mockito}
 import org.specs2.mutable.Specification
 import org.specs2.specification.Scope
 import protocol.SessionRepositoryImpl
-import protocol.domain.{Offer, Session}
+import protocol.domain.{Offer, QtyUnit, Session}
 import watchdog.{SchedulerImpl, StopWatch, TimebasedStopWatch}
+
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.{Await, Future}
 import scala.concurrent.duration._
 
-/**
-  * Created by andrea on 09/12/16.
-  */
-class StopWatchSpecs extends Specification with Mockito {
+
+trait MockIptablesComponent extends IpTablesServiceComponent {
+  import org.mockito.Mockito._
+  override val ipTablesServiceImpl = mock[IpTablesServiceImpl](classOf[IpTablesServiceImpl])
+}
+
+class StopWatchSpecs extends Specification with Specs2Mockito {
   
   
   def waitForOfferMillis(offer: Offer) = {
@@ -42,27 +47,34 @@ class StopWatchSpecs extends Specification with Mockito {
       Thread.sleep(offer.qty)
   
     }
-    Await.result(nop, offer.qty + 1L millis)
+    Await.result(nop, offer.qty + 100L millis )
   }
+  
+
   
   "TimeBased stop watch" should {
 
     "wait the correct time before calling onLimitReach" in {
       
       val session = Session(clientMac = "thisIsMyMac")
-      val offer = TestData.offers.head
-      val mockIpTable = mock[IpTablesServiceImpl]
-      mockIpTable.enableClient(anyString) returns Future.successful("Yeah")
+      val offer = Offer(
+        qty = 5000,
+        qtyUnit = QtyUnit.millis,
+        price = 950000,
+        description =  "1 second"
+      )
   
-      val timeStopWatch = new TimebasedStopWatch(session, offer) {
-        override def ipTablesService = mockIpTable
-      }
 
-      timeStopWatch.start()
+      val timeStopWatch = new TimebasedStopWatch(session, offer) with MockIptablesComponent
+      
+      spy(timeStopWatch.ipTablesServiceImpl).enableClient(anyString) returns Future.successful("Yo")
+
+      timeStopWatch.start
+
       waitForOfferMillis(offer)
+
+      timeStopWatch.remainingUnits === 0
   
-//      there was one(timeStopWatch).onLimitReach()
-      1 === 1
     }
 
   }
