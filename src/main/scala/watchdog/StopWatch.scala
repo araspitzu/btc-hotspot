@@ -26,32 +26,28 @@ import com.typesafe.scalalogging.slf4j.LazyLogging
 import protocol.domain.{Offer, QtyUnit, Session}
 import protocol.domain.QtyUnit._
 import commons.AppExecutionContextRegistry.context._
-import iptables.{IpTablesServiceComponent, IpTablesServiceImpl}
-import registry.{SchedulerRegistry, SessionRepositoryRegistry}
+import iptables.{IpTablesInterface, IpTablesServiceComponent, IpTablesServiceImpl}
+import protocol.SessionRepositoryImpl
+import registry.{IpTablesServiceRegistry, SchedulerRegistry, SessionRepositoryRegistry}
 
-import scala.concurrent.Await
+import scala.concurrent.{Await, Future}
 import scala.concurrent.duration._
 import scala.util.{Failure, Success, Try}
 
-/**
-  * Created by andrea on 07/12/16.
-  */
 object StopWatch {
   
-  def forOffer(session: Session, offer:Offer):StopWatch = offer.qtyUnit match {
-    case MB => ???
-    case minutes => new TimebasedStopWatch(session, offer) with IpTablesServiceComponent
-  }
+  lazy val ipTablesServiceImpl = IpTablesServiceRegistry.ipTablesServiceImpl
+  
+//  def forOffer(session: Session, offer:Offer):StopWatch = offer.qtyUnit match {
+//    case MB => ???
+//    case minutes => new TimebasedStopWatch(this, session, offer)
+//  }
   
 }
 
 
 
 trait StopWatch extends LazyLogging {
-  
-  //def ipTablesService = ???
-  def sessionRepository = SessionRepositoryRegistry.sessionRepositoryImpl
-  def scheduler = SchedulerRegistry.schedulerImpl
   
   val session:Session
   val offer:Offer
@@ -62,18 +58,26 @@ trait StopWatch extends LazyLogging {
   
   def remainingUnits():Long
   
-  def isActive():Boolean = scheduler.isScheduled(session.id)
+  def isActive():Boolean
 
   def onLimitReach():Unit
   
 }
 
-class TimebasedStopWatch(val session: Session, val offer: Offer) extends StopWatch {
-  self: IpTablesServiceComponent =>
+class TimebasedStopWatch(dependencies:{
+   val ipTablesServiceImpl:IpTablesServiceImpl
+   val sessionRepository: SessionRepositoryImpl
+   val scheduler: SchedulerImpl
+   val ipTableFun: IpTablesInterface
+}, val session: Session, val offer: Offer) extends StopWatch {
+  
+  import dependencies._
   
   require(offer.qtyUnit == QtyUnit.millis, s"Time based stopwatch can only be used with offers in milliseconds, offer id ${offer.offerId}")
   
   override def start(): Unit = {
+    
+    ipTableFun.enableClientFun(session.clientMac)
     
     //alter iptables
     Try {
@@ -124,6 +128,8 @@ class TimebasedStopWatch(val session: Session, val offer: Offer) extends StopWat
     logger.info(s"Reached offer limit for session ${session.id}")
     this.stop()
   }
+  
+  override def isActive() = scheduler.isScheduled(session.id)
   
 }
 //class DatabasedStopWatch extends StopWatch

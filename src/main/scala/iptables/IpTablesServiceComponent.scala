@@ -28,11 +28,19 @@ import iptables.domain.ChainEntry
 
 trait IpTablesServiceComponent {
   
-  val ipTablesServiceImpl = new IpTablesServiceImpl
+  val ipTablesServiceImpl:IpTablesInterface
   
 }
 
-class IpTablesServiceImpl extends LazyLogging {
+trait IpTablesInterface {
+  
+  def enableClientFun: String => Future[String]
+  
+  def disableClientFun: String => Future[String]
+  
+}
+
+class IpTablesServiceImpl extends IpTablesInterface with LazyLogging {
   
   private def iptables(params:String) = {
     s"sudo /sbin/iptables $params"
@@ -67,11 +75,21 @@ class IpTablesServiceImpl extends LazyLogging {
     //iptables(s"-I internet 1 -t mangle -m mac --mac-source $mac -j RETURN").exec
   }
   
+  override def enableClientFun = { mac =>
+    iptables(s"-I internet 1 -t mangle -m mac --mac-source $mac -j RETURN").exec
+  }
+  
+  override def disableClientFun = { mac =>
+    iptables(s"-D internet -t mangle -m mac --mac-source $mac -j RETURN").exec
+  }
+  
   def disableClient(mac:String):Future[String] = {
     logger.info("IPTABLES DISABLE CLIENT")
     Future.successful("lol")
   //  iptables(s"-D internet -t mangle -m mac --mac-source $mac -j RETURN").exec
   }
+  
+  
   
   
 }

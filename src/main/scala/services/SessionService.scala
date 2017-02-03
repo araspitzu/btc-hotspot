@@ -61,7 +61,7 @@ object SessionService extends LazyLogging {
 
   /*
     Returns the id of the existing session for this mac, create a new one if
-    no session can be found, ids are created from the database
+    no session can be found, ids are created by the database
    */
   def getOrCreate(mac:String):Future[Long] = {
     byMac(mac).future flatMap {

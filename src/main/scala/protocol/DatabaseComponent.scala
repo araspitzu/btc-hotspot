@@ -25,9 +25,7 @@ import slick.driver.H2Driver.api._
 import scala.concurrent.duration.Duration
 import scala.concurrent.{Await, Future}
 
-/**
-  * Created by andrea on 17/11/16.
-  */
+// see http://www.lightbend.com/activator/template/slick-multidb-3.0 for multi db conf
 trait DatabaseComponent extends LazyLogging {
   
   val database:Database

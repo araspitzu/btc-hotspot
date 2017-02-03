@@ -22,7 +22,7 @@ import akka.http.scaladsl.server.Route
 import commons.JsonSupport
 import protocol.webDto.WebOfferDto
 import services.OfferService
-//import commons.AppExecutionContextRegistry.context._
+import commons.AppExecutionContextRegistry.context._
 
 trait OffersAPI extends CommonResource with JsonSupport {
 

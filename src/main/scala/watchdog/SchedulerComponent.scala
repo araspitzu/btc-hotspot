@@ -23,9 +23,6 @@ import akka.actor.Cancellable
 import commons.AppExecutionContextRegistry.context._
 import scala.concurrent.duration.FiniteDuration
 
-/**
-  * Created by andrea on 21/12/16.
-  */
 trait SchedulerComponent {
   
   val schedulerImpl: SchedulerImpl

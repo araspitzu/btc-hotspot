@@ -34,11 +34,6 @@ import scala.concurrent.{Await, Future}
 import scala.concurrent.duration._
 
 
-trait MockIptablesComponent extends IpTablesServiceComponent {
-  import org.mockito.Mockito._
-  override val ipTablesServiceImpl = mock[IpTablesServiceImpl](classOf[IpTablesServiceImpl])
-}
-
 class StopWatchSpecs extends Specification with Specs2Mockito {
   
   
@@ -63,11 +58,11 @@ class StopWatchSpecs extends Specification with Specs2Mockito {
         price = 950000,
         description =  "1 second"
       )
-  
-
-      val timeStopWatch = new TimebasedStopWatch(session, offer) with MockIptablesComponent
       
-      spy(timeStopWatch.ipTablesServiceImpl).enableClient(anyString) returns Future.successful("Yo")
+
+      val timeStopWatch = new TimebasedStopWatch(this, session, offer)
+      
+      //spy(timeStopWatch.ipTablesServiceImpl).enableClient(anyString) returns Future.successful("Yo")
 
       timeStopWatch.start
 

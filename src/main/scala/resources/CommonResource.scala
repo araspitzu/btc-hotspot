@@ -18,16 +18,23 @@
 
 package resources
 
-import akka.http.scaladsl.server.{Directive1, Directives, Route}
+import akka.http.scaladsl.server.{Directive, Directive1, Directives, Route}
 import akka.util.Timeout
 import protocol.domain.Session
 import services.SessionService
+
 import scala.compat.java8.OptionConverters._
 import iptables.ArpService._
+
 import scala.concurrent.duration._
 import com.typesafe.scalalogging.slf4j.LazyLogging
 import de.heikoseeberger.akkahttpjson4s.Json4sSupport
 import akka.http.scaladsl.model._
+import akka.shapeless.HNil
+import commons.AppExecutionContextRegistry.context._
+
+import scala.concurrent.Future
+import scala.util.{Failure, Success}
 
 /**
   * Created by andrea on 09/09/16.
@@ -58,15 +65,15 @@ trait ExtraDirectives extends Directives with LazyLogging {
       macAddr <- arpLookup(ipAddr)
     } yield macAddr
   }
-
+  
   def extractSessionForMac:Directive1[Option[Session]] = extractClientMAC map { someMac =>
-    someMac map SessionService.byMacSync flatten
+    someMac map SessionService.byMacSync flatten //FIXME
   }
 
 
   def sessionOrReject:Directive1[Session] = extractSessionForMac map {
     _ match {
-      case None => throw new IllegalArgumentException("Session not found")
+      case None => throw new IllegalArgumentException("Session not found") //FIXME
       case Some(session) => session
     }
   }
