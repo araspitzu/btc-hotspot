@@ -21,8 +21,8 @@ package stopwatch
 import commons.Helpers.FutureOption
 import commons.TestData
 import iptables.{IpTablesServiceComponent, IpTablesServiceImpl}
-//import org.mockito.Mockito
-import org.specs2.mock.{Mockito => Specs2Mockito}
+import mocks.IpTablesServiceMock
+import registry.{SchedulerRegistry, SessionRepositoryRegistry}
 import org.specs2.mutable.Specification
 import org.specs2.specification.Scope
 import protocol.SessionRepositoryImpl
@@ -34,8 +34,21 @@ import scala.concurrent.{Await, Future}
 import scala.concurrent.duration._
 
 
-class StopWatchSpecs extends Specification with Specs2Mockito {
+class StopWatchSpecs extends Specification {
+
+  trait MockEnv extends Scope {
+    val sessionRepository: SessionRepositoryImpl = SessionRepositoryRegistry.sessionRepositoryImpl
+    val scheduler: SchedulerImpl = SchedulerRegistry.schedulerImpl
+    val ipTableFun = new {} with IpTablesServiceMock {
+      override def enableClient: (String) => Future[String] = { mac =>
+        Future.successful("DONE")
+      }
   
+      override def disableClient: (String) => Future[String] = { mac =>
+        Future.successful("Done again")
+      }
+    }
+  }
   
   def waitForOfferMillis(offer: Offer) = {
     val nop = Future {
@@ -49,7 +62,7 @@ class StopWatchSpecs extends Specification with Specs2Mockito {
   
   "TimeBased stop watch" should {
 
-    "wait the correct time before calling onLimitReach" in {
+    "wait the correct time before calling onLimitReach" in new MockEnv {
       
       val session = Session(clientMac = "thisIsMyMac")
       val offer = Offer(
@@ -62,8 +75,6 @@ class StopWatchSpecs extends Specification with Specs2Mockito {
 
       val timeStopWatch = new TimebasedStopWatch(this, session, offer)
       
-      //spy(timeStopWatch.ipTablesServiceImpl).enableClient(anyString) returns Future.successful("Yo")
-
       timeStopWatch.start
 
       waitForOfferMillis(offer)

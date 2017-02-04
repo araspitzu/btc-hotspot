@@ -34,16 +34,16 @@ trait IpTablesServiceComponent {
 
 trait IpTablesInterface {
   
-  def enableClientFun: String => Future[String]
+  def enableClient: String => Future[String]
   
-  def disableClientFun: String => Future[String]
+  def disableClient: String => Future[String]
   
 }
 
 class IpTablesServiceImpl extends IpTablesInterface with LazyLogging {
   
   private def iptables(params:String) = {
-    s"sudo /sbin/iptables $params"
+    s"/sbin/iptables $params"
   }
   
   def report:Future[Seq[ChainEntry]] = {
@@ -69,28 +69,13 @@ class IpTablesServiceImpl extends IpTablesInterface with LazyLogging {
     
   }
   
-  def enableClient(mac:String):Future[String] = {
-    logger.info("IPTABLES ENABLE CLIENT")
-    Future.successful("IPTABLES EXECUTED")
-    //iptables(s"-I internet 1 -t mangle -m mac --mac-source $mac -j RETURN").exec
-  }
-  
-  override def enableClientFun = { mac =>
+  override def enableClient = { mac =>
     iptables(s"-I internet 1 -t mangle -m mac --mac-source $mac -j RETURN").exec
   }
   
-  override def disableClientFun = { mac =>
+  override def disableClient = { mac =>
     iptables(s"-D internet -t mangle -m mac --mac-source $mac -j RETURN").exec
   }
-  
-  def disableClient(mac:String):Future[String] = {
-    logger.info("IPTABLES DISABLE CLIENT")
-    Future.successful("lol")
-  //  iptables(s"-D internet -t mangle -m mac --mac-source $mac -j RETURN").exec
-  }
-  
-  
-  
   
 }
 

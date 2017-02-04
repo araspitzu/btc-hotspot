@@ -36,12 +36,17 @@ import scala.util.{Failure, Success, Try}
 
 object StopWatch {
   
-  lazy val ipTablesServiceImpl = IpTablesServiceRegistry.ipTablesServiceImpl
+  val env = new {
+    val sessionRepository: SessionRepositoryImpl = SessionRepositoryRegistry.sessionRepositoryImpl
+    val scheduler: SchedulerImpl = SchedulerRegistry.schedulerImpl
+    val ipTableFun = IpTablesServiceRegistry.ipTablesServiceImpl
+  }
+
   
-//  def forOffer(session: Session, offer:Offer):StopWatch = offer.qtyUnit match {
-//    case MB => ???
-//    case minutes => new TimebasedStopWatch(this, session, offer)
-//  }
+  def forOffer(session: Session, offer:Offer):StopWatch = offer.qtyUnit match {
+    case MB => ???
+    case minutes => new TimebasedStopWatch(env, session, offer)
+  }
   
 }
 
@@ -65,7 +70,6 @@ trait StopWatch extends LazyLogging {
 }
 
 class TimebasedStopWatch(dependencies:{
-   val ipTablesServiceImpl:IpTablesServiceImpl
    val sessionRepository: SessionRepositoryImpl
    val scheduler: SchedulerImpl
    val ipTableFun: IpTablesInterface
@@ -77,11 +81,9 @@ class TimebasedStopWatch(dependencies:{
   
   override def start(): Unit = {
     
-    ipTableFun.enableClientFun(session.clientMac)
-    
     //alter iptables
     Try {
-      Await.result(ipTablesServiceImpl.enableClient(session.clientMac), 2 seconds)
+      Await.result(ipTableFun.enableClient(session.clientMac), 2 seconds)
     } match {
       case Success(iptablesOutput) => ()
       case Failure(thr) => thr match {
@@ -105,7 +107,7 @@ class TimebasedStopWatch(dependencies:{
     logger.debug(s"Stopping $session")
     
     // alter iptables
-    ipTablesServiceImpl.disableClient(session.clientMac)
+    ipTableFun.disableClient(session.clientMac)
     
     // abort scheduled task
     if (isActive) scheduler.cancel(session.id)
