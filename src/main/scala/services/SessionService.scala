@@ -37,11 +37,12 @@ object SessionService extends LazyLogging {
   def enableSessionFor(session: Session, offerId:Long):Future[Unit] = {
         
     for {
-      optSess <- sessionRepository.upsert(session.copy(offerId = Some(offerId))).future
+      updatedSession <- sessionRepository.upsert(session.copy(offerId = Some(offerId))).future
     } yield {
-      val sessionId = optSess getOrElse (throw new IllegalArgumentException(s"Unable to enable $session"))
-      logger.info(s"Enabling session ${sessionId} for offer ${offerId}")
-      sessionId.start()
+//      val sessionId = optSess getOrElse (throw new IllegalArgumentException(s"Unable to enable $session"))
+//      logger.info(s"Enabling session ${sessionId} for offer ${offerId}")
+//      sessionId.start()
+      ()
     }
   
   }

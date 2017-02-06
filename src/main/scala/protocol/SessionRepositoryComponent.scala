@@ -63,14 +63,8 @@ class SessionRepositoryImpl {
     (sessionsTable returning sessionsTable.map(_.id)) += session
   }
 
-  def upsert(session: Session):FutureOption[Session] = db.run {
-    sessionsTable
-      .filter(_.id === session.id)
-      .update(session) map {
-      case 0 => None
-      case _ => Some(session)
-    }
-  
+  def upsert(session: Session):FutureOption[Long] = db.run {
+    (sessionsTable returning sessionsTable.map(_.id)).insertOrUpdate(session)
   }
 
   def byIdWithOffer(id:Long):FutureOption[(Session, Offer)] = db.run {

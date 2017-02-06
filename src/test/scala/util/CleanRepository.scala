@@ -23,9 +23,7 @@ import org.specs2.specification.BeforeAfterEach
 import registry.SessionRepositoryRegistry
 import slick.driver.H2Driver.api._
 
-/**
-  * Created by andrea on 10/12/16.
-  */
+
 object CleanRepository {
   
   trait CleanSessionRepository extends BeforeAfterEach {

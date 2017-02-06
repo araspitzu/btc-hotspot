@@ -18,9 +18,8 @@
 
 package stopwatch
 
-import commons.Helpers.FutureOption
-import commons.TestData
-import iptables.{IpTablesServiceComponent, IpTablesServiceImpl}
+import com.typesafe.scalalogging.slf4j.LazyLogging
+import iptables.IpTablesInterface
 import mocks.IpTablesServiceMock
 import registry.{SchedulerRegistry, SessionRepositoryRegistry}
 import org.specs2.mutable.Specification
@@ -34,17 +33,18 @@ import scala.concurrent.{Await, Future}
 import scala.concurrent.duration._
 
 
-class StopWatchSpecs extends Specification {
+class StopWatchSpecs extends Specification with LazyLogging {
 
   trait MockEnv extends Scope {
     val sessionRepository: SessionRepositoryImpl = SessionRepositoryRegistry.sessionRepositoryImpl
     val scheduler: SchedulerImpl = SchedulerRegistry.schedulerImpl
-    val ipTableFun = new {} with IpTablesServiceMock {
+    val ipTableFun = new IpTablesInterface {
       override def enableClient: (String) => Future[String] = { mac =>
+        logger.info(s"IPTABLES enabled $mac")
         Future.successful("DONE")
       }
-  
       override def disableClient: (String) => Future[String] = { mac =>
+        logger.info(s"IPTABLES disabled $mac")
         Future.successful("Done again")
       }
     }
@@ -66,7 +66,7 @@ class StopWatchSpecs extends Specification {
       
       val session = Session(clientMac = "thisIsMyMac")
       val offer = Offer(
-        qty = 5000,
+        qty = 10000,
         qtyUnit = QtyUnit.millis,
         price = 950000,
         description =  "1 second"

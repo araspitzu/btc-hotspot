@@ -26,3 +26,5 @@ trait IpTablesServiceMock extends IpTablesInterface {
   override def enableClient: (String) => Future[String] = ???
   override def disableClient: (String) => Future[String] = ???
 }
+
+

@@ -67,7 +67,7 @@ class OfferRepositoryImpl {
   }
   
   def allOffers:Future[Seq[Offer]] = db.run {
-    offersTable.map(identity).result
+    offersTable.result
   }
   
   

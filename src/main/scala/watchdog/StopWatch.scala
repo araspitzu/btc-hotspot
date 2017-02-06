@@ -20,19 +20,14 @@ package watchdog
 
 import java.time.LocalDateTime
 import java.time.temporal.ChronoUnit
-import java.util.concurrent.TimeoutException
-
 import com.typesafe.scalalogging.slf4j.LazyLogging
 import protocol.domain.{Offer, QtyUnit, Session}
 import protocol.domain.QtyUnit._
 import commons.AppExecutionContextRegistry.context._
-import iptables.{IpTablesInterface, IpTablesServiceComponent, IpTablesServiceImpl}
+import iptables.IpTablesInterface
 import protocol.SessionRepositoryImpl
 import registry.{IpTablesServiceRegistry, SchedulerRegistry, SessionRepositoryRegistry}
-
-import scala.concurrent.{Await, Future}
 import scala.concurrent.duration._
-import scala.util.{Failure, Success, Try}
 
 object StopWatch {
   
@@ -80,31 +75,23 @@ class TimebasedStopWatch(dependencies:{
   require(offer.qtyUnit == QtyUnit.millis, s"Time based stopwatch can only be used with offers in milliseconds, offer id ${offer.offerId}")
   
   override def start(): Unit = {
-    
-    //alter iptables
-    Try {
-      Await.result(ipTableFun.enableClient(session.clientMac), 2 seconds)
-    } match {
-      case Success(iptablesOutput) => ()
-      case Failure(thr) => thr match {
-        case err:TimeoutException => throw new TimeoutException("Timeout doing iptables op")
-        case err => throw err
-      }
-    }
-  
-    val remainingMillis = if(session.remainingUnits < 0) offer.qty else session.remainingUnits
-
-    //start countdown
-    scheduler.schedule(session.id, remainingMillis millisecond) {
-      this.onLimitReach()
+    logger.info(s"Starting session ${session.id}")
+    for {
+     ipTablesOut <- ipTableFun.enableClient(session.clientMac)                              //alter iptables
+     remainingMillis = if(session.remainingUnits < 0) offer.qty else session.remainingUnits //select remaining units
+     _ = scheduler.schedule(session.id, remainingMillis millisecond) {                      //start countdown
+       this.onLimitReach()
+     }
+     upsertSession <- sessionRepository.upsert(session.copy(remainingUnits = remainingMillis)).future  //update remaining time in session
+    } yield {
+      logger.info(s"Upserted session is $upsertSession")
+      upsertSession
     }
     
-    //update remaining time in session
-    sessionRepository.upsert(session.copy(remainingUnits = remainingMillis))
   }
   
   override def stop(): Unit = {
-    logger.debug(s"Stopping $session")
+    logger.info(s"Stopping ${session.id}")
     
     // alter iptables
     ipTableFun.disableClient(session.clientMac)
