@@ -26,9 +26,8 @@ import services.OfferService
 import watchdog.StopWatch
 import scala.concurrent.Await
 import scala.concurrent.duration._
-/**
-  * Created by andrea on 15/11/16.
-  */
+
+
 package object domain extends LazyLogging {
 
   case class Session(

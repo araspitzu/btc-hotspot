@@ -54,7 +54,7 @@ object Helpers {
   
   implicit class FutureOptionWait[T](f: FutureOption[T]) {
     
-    def futureValue: Option[T] = Await.result(f.future, 30 seconds)
+    def futureValue: Option[T] = f.future.futureValue
     
   }
   

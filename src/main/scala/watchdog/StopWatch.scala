@@ -20,13 +20,17 @@ package watchdog
 
 import java.time.LocalDateTime
 import java.time.temporal.ChronoUnit
+
 import com.typesafe.scalalogging.slf4j.LazyLogging
 import protocol.domain.{Offer, QtyUnit, Session}
 import protocol.domain.QtyUnit._
 import commons.AppExecutionContextRegistry.context._
+import commons.Helpers.FutureOption
 import iptables.IpTablesInterface
 import protocol.SessionRepositoryImpl
 import registry.{IpTablesServiceRegistry, SchedulerRegistry, SessionRepositoryRegistry}
+
+import scala.concurrent.Future
 import scala.concurrent.duration._
 
 object StopWatch {
@@ -52,7 +56,7 @@ trait StopWatch extends LazyLogging {
   val session:Session
   val offer:Offer
   
-  def start():Unit
+  def start():Future[Option[Long]]
   
   def stop():Unit
   
@@ -74,7 +78,7 @@ class TimebasedStopWatch(dependencies:{
   
   require(offer.qtyUnit == QtyUnit.millis, s"Time based stopwatch can only be used with offers in milliseconds, offer id ${offer.offerId}")
   
-  override def start(): Unit = {
+  override def start(): Future[Option[Long]] = {
     logger.info(s"Starting session ${session.id}")
     for {
      ipTablesOut <- ipTableFun.enableClient(session.clientMac)                              //alter iptables
@@ -82,10 +86,10 @@ class TimebasedStopWatch(dependencies:{
      _ = scheduler.schedule(session.id, remainingMillis millisecond) {                      //start countdown
        this.onLimitReach()
      }
-     upsertSession <- sessionRepository.upsert(session.copy(remainingUnits = remainingMillis)).future  //update remaining time in session
+     upsertSessionId <- sessionRepository.upsert(session.copy(remainingUnits = remainingMillis)).future  //update remaining time in session
     } yield {
-      logger.info(s"Upserted session is $upsertSession")
-      upsertSession
+      logger.info(s"Upserted session is $upsertSessionId")
+      upsertSessionId
     }
     
   }

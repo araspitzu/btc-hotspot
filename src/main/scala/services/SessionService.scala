@@ -22,29 +22,69 @@ import com.typesafe.scalalogging.slf4j.LazyLogging
 import protocol.domain.{Offer, Session}
 import commons.AppExecutionContextRegistry.context._
 import commons.Helpers.FutureOption
-import registry.SessionRepositoryRegistry
+import protocol.SessionRepositoryImpl
+import protocol.domain.QtyUnit.MB
+import registry.{IpTablesServiceRegistry, SchedulerRegistry, SessionRepositoryRegistry}
+import watchdog.{SchedulerImpl, StopWatch, TimebasedStopWatch}
 
 import scala.concurrent.duration._
 import scala.concurrent.{Await, Future}
 
-/**
-  * Created by andrea on 27/11/16.
-  */
-object SessionService extends LazyLogging {
+trait SessionServiceInterface {
+  
+  def enableSessionFor(session: Session, offerId:Long):FutureOption[Unit]
+  
+  def disableSession(session: Session)
+  
+  def byId(id:Long):FutureOption[Session]
+  
+  def byMac(mac: String): FutureOption[Session]
+  
+  def byMacSync(mac: String): Option[Session]
+  
+  def getOrCreate(mac:String):Future[Long]
+  
+}
+
+trait SessionServiceComponent {
+  
+  val sessionService:SessionServiceInterface
+  
+}
+
+
+object SessionService extends SessionServiceInterface with LazyLogging {
   
   val sessionRepository = SessionRepositoryRegistry.sessionRepositoryImpl
   
-  def enableSessionFor(session: Session, offerId:Long):Future[Unit] = {
-        
-    for {
-      updatedSession <- sessionRepository.upsert(session.copy(offerId = Some(offerId))).future
-    } yield {
-//      val sessionId = optSess getOrElse (throw new IllegalArgumentException(s"Unable to enable $session"))
-//      logger.info(s"Enabling session ${sessionId} for offer ${offerId}")
-//      sessionId.start()
-      ()
+  protected def selectStopwatchForSession(session: Session, offer: Offer):StopWatch = {
+    val env = new {
+      val sessionRepository: SessionRepositoryImpl = SessionRepositoryRegistry.sessionRepositoryImpl
+      val scheduler: SchedulerImpl = SchedulerRegistry.schedulerImpl
+      val ipTableFun = IpTablesServiceRegistry.ipTablesServiceImpl
     }
+    offer.qtyUnit match {
+      case MB => ???
+      case millis => new TimebasedStopWatch(env, session, offer)
+    }
+    
+  }
   
+  
+  
+  def enableSessionFor(session: Session, offerId:Long):FutureOption[Unit] = {
+    val sessionWithOffer = session.copy(offerId = Some(offerId))
+    
+    for {
+//      offer <-
+      upsertedId <- sessionRepository.upsert(sessionWithOffer)
+      updatedSession <- sessionRepository.bySessionId(upsertedId)
+    } yield {
+      logger.info(s"Enabling session ${updatedSession.id} for offer $offerId")
+    //  val stopWatch = selectStopwatchForSession()
+      Await.result(updatedSession.start(), 20 seconds)
+    }
+    
   }
   
   def disableSession(session: Session) = {
