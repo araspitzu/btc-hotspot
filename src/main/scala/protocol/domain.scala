@@ -22,8 +22,9 @@ import java.time.LocalDateTime
 
 import com.typesafe.scalalogging.slf4j.LazyLogging
 import protocol.domain.QtyUnit.QtyUnit
-import services.OfferService
+import services.{OfferService, OfferServiceRegistry}
 import watchdog.StopWatch
+
 import scala.concurrent.Await
 import scala.concurrent.duration._
 
@@ -42,7 +43,7 @@ package object domain extends LazyLogging {
     private lazy val stopwatch: StopWatch = {
       (for {
         id <- offerId
-        offer <- Await.result(OfferService.offerById(id).future, 5 seconds)
+        offer <- Await.result(OfferServiceRegistry.offerService.offerById(id).future, 5 seconds)
       } yield {
         StopWatch.forOffer(this, offer)
       }) getOrElse (throw new IllegalAccessException(s"Unable to use session without a stopwatch, offer NOT FOUND! offerId = $offerId"))

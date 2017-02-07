@@ -21,7 +21,7 @@ package resources
 import akka.http.scaladsl.server.{Directive, Directive1, Directives, Route}
 import akka.util.Timeout
 import protocol.domain.Session
-import services.SessionService
+import services.{SessionService, SessionServiceRegistry}
 
 import scala.compat.java8.OptionConverters._
 import iptables.ArpService._
@@ -67,7 +67,7 @@ trait ExtraDirectives extends Directives with LazyLogging {
   }
   
   def extractSessionForMac:Directive1[Option[Session]] = extractClientMAC map { someMac =>
-    someMac map SessionService.byMacSync flatten //FIXME
+    someMac map SessionServiceRegistry.sessionService.byMacSync flatten //FIXME
   }
 
 

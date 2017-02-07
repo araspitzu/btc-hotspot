@@ -25,7 +25,7 @@ import akka.http.scaladsl.model.Uri.{Path, Query}
 import akka.http.scaladsl.server.Route
 import commons.AppExecutionContextRegistry.context._
 import commons.Configuration.MiniPortalConfig.{miniPortalHost, miniPortalPort}
-import services.SessionService
+import services.{SessionService, SessionServiceRegistry}
 
 /**
   * Created by andrea on 19/10/16.
@@ -49,7 +49,7 @@ trait CaptiveResource extends CommonResource with ExtraDirectives {
     path("prelogin") {
       extractClientMAC { clientMac =>
         complete {
-          SessionService.getOrCreate(clientMac.getOrElse("unknown")).map { _ =>
+          SessionServiceRegistry.sessionService.getOrCreate(clientMac.getOrElse("unknown")).map { _ =>
             HttpEntity(
               browserRedirectPage
             ).withContentType(`text/html`.toContentType(`UTF-8`))

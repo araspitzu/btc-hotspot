@@ -33,7 +33,7 @@ import org.bitcoinj.kits.WalletAppKit
 import org.bitcoinj.protocols.payments.PaymentProtocol
 import org.bitcoinj.wallet.KeyChain.KeyPurpose
 import protocol.domain.{Offer, QtyUnit, Session}
-import services.{OfferService, SessionService}
+import services.{OfferService, OfferServiceRegistry, SessionService, SessionServiceRegistry}
 
 import scala.collection.JavaConverters._
 import commons.AppExecutionContextRegistry.context._
@@ -85,7 +85,7 @@ trait WalletServiceComponent extends LazyLogging {
       logger.info(s"Issuing payment request for session ${session.id} and offer $offerId")
   
       (for {
-        offer <- OfferService.offerById(offerId)
+        offer <- OfferServiceRegistry.offerService.offerById(offerId)
       } yield PaymentProtocol.createPaymentRequest(
         networkParams,
         outputsForOffer(offer).asJava,
@@ -112,7 +112,7 @@ trait WalletServiceComponent extends LazyLogging {
           if(progress == 1.0){
             promise.complete(
               Success{
-                SessionService.enableSessionFor(session, offerId)
+                SessionServiceRegistry.sessionService.enableSessionFor(session, offerId)
                 PaymentProtocol.createPaymentAck(payment, s"Enjoy, your session will last for ")
               }
             )

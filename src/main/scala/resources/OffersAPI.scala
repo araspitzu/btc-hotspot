@@ -21,7 +21,7 @@ package resources
 import akka.http.scaladsl.server.Route
 import commons.JsonSupport
 import protocol.webDto.WebOfferDto
-import services.OfferService
+import services.{OfferService, OfferServiceRegistry}
 import commons.AppExecutionContextRegistry.context._
 
 trait OffersAPI extends CommonResource with JsonSupport {
@@ -30,9 +30,9 @@ trait OffersAPI extends CommonResource with JsonSupport {
   def offersRoute:Route = get {
     pathPrefix("api" / "offer"){
       pathEnd{
-        complete(OfferService.allOffers.map(xs => xs.map(WebOfferDto(_))))
+        complete(OfferServiceRegistry.offerService.allOffers.map(xs => xs.map(WebOfferDto(_))))
       } ~ path(LongNumber) { id =>
-        complete(OfferService.offerById(id).future)
+        complete(OfferServiceRegistry.offerService.offerById(id).future)
       }
     }
   }
