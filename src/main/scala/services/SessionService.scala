@@ -75,7 +75,7 @@ class SessionService protected (dependencies:{
     val ipTableFun: IpTablesInterface = IpTablesServiceRegistry.ipTablesServiceImpl
   })
   
-  def selectStopwatchForSession(session: Session, offer: Offer):StopWatch = {
+  def selectStopwatchForOffer(session: Session, offer: Offer):StopWatch = {
     offer.qtyUnit match {
       case MB => ???
       case millis => new TimebasedStopWatch(dependencies, session, offer)
@@ -91,7 +91,7 @@ class SessionService protected (dependencies:{
       updatedSession <- sessionRepository.bySessionId(upsertedId)
     } yield {
       logger.info(s"Enabling session ${updatedSession.id} for offer $offerId")
-      val stopWatch = selectStopwatchForSession(updatedSession, offer)
+      val stopWatch = selectStopwatchForOffer(updatedSession, offer)
       stopWatch.start()
     }
     

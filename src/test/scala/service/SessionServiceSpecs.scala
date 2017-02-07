@@ -18,16 +18,13 @@
 
 package service
 
-import iptables.IpTablesInterface
 import mocks.MockStopWatch
 import org.specs2.mutable._
-import protocol.SessionRepositoryImpl
 import protocol.domain.{Offer, QtyUnit, Session}
-import registry.{IpTablesServiceRegistry, SchedulerRegistry, SessionRepositoryRegistry}
-import services.{OfferService, OfferServiceInterface, OfferServiceRegistry, SessionService}
+import services.{OfferServiceRegistry, SessionService}
 import util.CleanRepository.CleanSessionRepository
 import util.Helpers._
-import watchdog.{SchedulerImpl, StopWatch, TimebasedStopWatch}
+import watchdog.{StopWatch, TimebasedStopWatch}
 
 import scala.concurrent.Future
 
@@ -52,9 +49,7 @@ class SessionServiceSpecs extends Specification with CleanSessionRepository {
     
     "select the correct stopwatch for an offer" in {
       
-      val mockSessionService = new MockSessionService {
-        override def selectStopwatchForSession(session: Session, offer: Offer): StopWatch = super.selectStopwatchForSession(session, offer)
-      }
+      val mockSessionService = new MockSessionService
       
       val session = Session(clientMac = macAddress)
       
@@ -65,7 +60,7 @@ class SessionServiceSpecs extends Specification with CleanSessionRepository {
         description = "Some offer"
       )
       
-      val timeBasedStopwatch = mockSessionService.selectStopwatchForSession(session, timeBasedOffer)
+      val timeBasedStopwatch = mockSessionService.selectStopwatchForOffer(session, timeBasedOffer)
       
       timeBasedStopwatch must haveClass[TimebasedStopWatch]
       
@@ -77,7 +72,7 @@ class SessionServiceSpecs extends Specification with CleanSessionRepository {
       val mockSessionService = new MockSessionService {
         var stopWatchStarted = false
   
-        override def selectStopwatchForSession(session: Session, offer: Offer):StopWatch = {
+        override def selectStopwatchForOffer(session: Session, offer: Offer):StopWatch = {
           new MockStopWatch(session, offer) {
             override def start() = {
               stopWatchStarted = true
