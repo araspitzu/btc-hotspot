@@ -18,74 +18,89 @@
 
 package service
 
+import iptables.IpTablesInterface
+import mocks.MockStopWatch
 import org.specs2.mutable._
-import protocol.domain.{Offer, Session}
-import services.{OfferService, OfferServiceRegistry, SessionService}
+import protocol.SessionRepositoryImpl
+import protocol.domain.{Offer, QtyUnit, Session}
+import registry.{IpTablesServiceRegistry, SchedulerRegistry, SessionRepositoryRegistry}
+import services.{OfferService, OfferServiceInterface, OfferServiceRegistry, SessionService}
 import util.CleanRepository.CleanSessionRepository
 import util.Helpers._
-import watchdog.StopWatch
+import watchdog.{SchedulerImpl, StopWatch, TimebasedStopWatch}
 
 import scala.concurrent.Future
 
 class SessionServiceSpecs extends Specification with CleanSessionRepository {
   sequential
   
-  class MockSessionService extends SessionService {
-    var stopWatchStarted = false
-    
-    override def selectStopwatchForSession(aSession: Session, anOffer: Offer):StopWatch = {
-      new {} with StopWatch {
-        override def stop() = ???
-        
-        override def remainingUnits() = ???
-        
-        override def isActive() = ???
-        
-        override def onLimitReach() = ???
-        
-        override def start() = {
-          stopWatchStarted = true
-          Future.successful(None)
-        }
-        
-        override val session: Session = aSession
-        override val offer: Offer = anOffer
-      }
-    }
-  }
+  class MockSessionService extends SessionService
   
   "SessionService" should {
   
-    val mac = "123"
+    val macAddress = "123"
     
     "save and load session to db" in {
       val mockSessionService = new MockSessionService
       
-      val sessionId = mockSessionService.getOrCreate(mac).futureValue
+      val sessionId = mockSessionService.getOrCreate(macAddress).futureValue
       val Some(session) = mockSessionService.byId(sessionId).futureValue
 
       session.id === sessionId
-      session.clientMac === mac
+      session.clientMac === macAddress
     }
     
+    "select the correct stopwatch for an offer" in {
+      
+      val mockSessionService = new MockSessionService {
+        override def selectStopwatchForSession(session: Session, offer: Offer): StopWatch = super.selectStopwatchForSession(session, offer)
+      }
+      
+      val session = Session(clientMac = macAddress)
+      
+      val timeBasedOffer = Offer(
+        qty = 25,
+        qtyUnit = QtyUnit.millis,
+        price = 1234,
+        description = "Some offer"
+      )
+      
+      val timeBasedStopwatch = mockSessionService.selectStopwatchForSession(session, timeBasedOffer)
+      
+      timeBasedStopwatch must haveClass[TimebasedStopWatch]
+      
+    }
     
-    "enable a session for an offer" in {
-      
-      val session = Session(clientMac = mac)
-      session.offerId must beNone
-      
-      val mockSessionService = new MockSessionService
-      
+    "enable session should bind the session with the offer and start the stopwatch" in {
+      val session = Session(clientMac = macAddress)
+  
+      val mockSessionService = new MockSessionService {
+        var stopWatchStarted = false
+  
+        override def selectStopwatchForSession(session: Session, offer: Offer):StopWatch = {
+          new MockStopWatch(session, offer) {
+            override def start() = {
+              stopWatchStarted = true
+              Future.successful(None)
+            }
+          }
+        }
+      }
+  
       val offer = OfferServiceRegistry.offerService.allOffers.futureValue.head
+      
+      session.offerId must beNone
   
       mockSessionService.enableSessionFor(session, offer.offerId).futureValue
 
-      val Some(enabledSession) = mockSessionService.byMac(mac).futureValue
+      val Some(enabledSession) = mockSessionService.byMac(macAddress).futureValue
+  
+      enabledSession.offerId === Some(offer.offerId)
       mockSessionService.stopWatchStarted must beTrue
 
-      enabledSession.offerId === Some(offer.offerId)
-
     }
+    
+    
     
   }
   

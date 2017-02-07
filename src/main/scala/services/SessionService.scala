@@ -75,7 +75,7 @@ class SessionService protected (dependencies:{
     val ipTableFun: IpTablesInterface = IpTablesServiceRegistry.ipTablesServiceImpl
   })
   
-  protected def selectStopwatchForSession(session: Session, offer: Offer):StopWatch = {
+  def selectStopwatchForSession(session: Session, offer: Offer):StopWatch = {
     offer.qtyUnit match {
       case MB => ???
       case millis => new TimebasedStopWatch(dependencies, session, offer)
