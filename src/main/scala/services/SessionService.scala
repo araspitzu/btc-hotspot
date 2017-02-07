@@ -33,12 +33,7 @@ import scala.concurrent.{Await, Future}
 
 object SessionServiceRegistry extends SessionServiceComponent {
   
-  val sessionService:SessionServiceInterface = new SessionService(new {
-    val sessionRepository: SessionRepositoryImpl = SessionRepositoryRegistry.sessionRepositoryImpl
-    val offerService:OfferServiceInterface = OfferServiceRegistry.offerService
-    val scheduler: SchedulerImpl = SchedulerRegistry.schedulerImpl
-    val ipTableFun: IpTablesInterface = IpTablesServiceRegistry.ipTablesServiceImpl
-  })
+  val sessionService:SessionServiceInterface = new SessionService()
   
 }
 
@@ -65,13 +60,20 @@ trait SessionServiceComponent {
 }
 
 
-class SessionService(dependencies:{
+class SessionService protected (dependencies:{
   val sessionRepository: SessionRepositoryImpl
   val offerService:OfferServiceInterface
   val scheduler: SchedulerImpl
   val ipTableFun: IpTablesInterface
 }) extends SessionServiceInterface with LazyLogging {
   import dependencies._
+  
+  def this() = this(new {
+    val sessionRepository: SessionRepositoryImpl = SessionRepositoryRegistry.sessionRepositoryImpl
+    val offerService:OfferServiceInterface = OfferServiceRegistry.offerService
+    val scheduler: SchedulerImpl = SchedulerRegistry.schedulerImpl
+    val ipTableFun: IpTablesInterface = IpTablesServiceRegistry.ipTablesServiceImpl
+  })
   
   protected def selectStopwatchForSession(session: Session, offer: Offer):StopWatch = {
     offer.qtyUnit match {
