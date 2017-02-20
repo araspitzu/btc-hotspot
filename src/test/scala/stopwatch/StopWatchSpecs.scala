@@ -36,19 +36,8 @@ import scala.concurrent.duration._
 
 class StopWatchSpecs extends Specification with LazyLogging {
 
-  trait MockEnv extends Scope {
-    val sessionRepository: SessionRepositoryImpl = SessionRepositoryRegistry.sessionRepositoryImpl
+  trait MockStopWatchScope extends Scope {
     val scheduler: SchedulerImpl = SchedulerRegistry.schedulerImpl
-    val ipTableFun = new IpTablesInterface {
-      override def enableClient(mac:String):FutureOption[String] = {
-        logger.info(s"IPTABLES enabled $mac")
-        Future.successful(Some("DONE"))
-      }
-      override def disableClient(mac:String):FutureOption[String] = {
-        logger.info(s"IPTABLES disabled $mac")
-        Future.successful(Some("Done again"))
-      }
-    }
   }
   
   def waitForOfferMillis(offer: Offer) = {
@@ -56,18 +45,18 @@ class StopWatchSpecs extends Specification with LazyLogging {
       Thread.sleep(offer.qty)
   
     }
-    Await.result(nop, offer.qty + 100L millis )
+    Await.result(nop, offer.qty + 1000L millis )
   }
   
 
   
   "TimeBased stop watch" should {
 
-    "wait the correct time before calling onLimitReach" in new MockEnv {
+    "wait the correct time before calling onLimitReach" in new MockStopWatchScope {
       
       val session = Session(clientMac = "thisIsMyMac")
       val offer = Offer(
-        qty = 10000,
+        qty = 4000,
         qtyUnit = QtyUnit.millis,
         price = 950000,
         description =  "1 second"
@@ -76,7 +65,10 @@ class StopWatchSpecs extends Specification with LazyLogging {
 
       val timeStopWatch = new TimebasedStopWatch(this, session.id, offer.offerId)
       
-      timeStopWatch.start
+      timeStopWatch.start(onLimitReach = { () =>
+        logger.info("Doing something.")
+        throw new IllegalStateException("FUCK THAT")
+      })
 
       waitForOfferMillis(offer)
 

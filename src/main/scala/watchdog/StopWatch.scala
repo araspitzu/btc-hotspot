@@ -29,15 +29,13 @@ trait StopWatch extends LazyLogging {
   val sessionId:Long
   val duration: Long
   
-  def start():Unit
+  def start(onLimitReach: () => Unit):Unit
   
   def stop():Unit
   
   def remainingUnits():Long
   
   def isActive():Boolean
-
-  def onLimitReach():Unit
   
 }
 
@@ -48,19 +46,16 @@ class TimebasedStopWatch(dependencies:{
   import dependencies._
   
   
-  override def start(): Unit = {
-    scheduler.schedule(sessionId, duration millisecond) {                      //start countdown
-      this.onLimitReach()
-    }
-    
+  override def start(onLimitReach: () => Unit): Unit = {
+    scheduler.schedule(sessionId, duration millisecond)(onLimitReach)
   }
   
   override def stop(): Unit = {
-    logger.info(s"Stopping ${sessionId}")
     // abort scheduled task
-    if (isActive) scheduler.cancel(sessionId)
-    
-    
+    if (isActive) {
+      logger.info(s"Aborting scheduler for $sessionId")
+      scheduler.cancel(sessionId)
+    }
   }
   
   override def remainingUnits(): Long = {
@@ -68,11 +63,6 @@ class TimebasedStopWatch(dependencies:{
       case Some(scheduledAt) => ChronoUnit.MILLIS.between(LocalDateTime.now, scheduledAt)
       case None => throw new IllegalArgumentException(s"Could not find schedule for $sessionId")
     }
-  }
-  
-  override def onLimitReach(): Unit = {
-    logger.info(s"Reached offer limit for session $sessionId")
-    this.stop()
   }
   
   override def isActive() = scheduler.isScheduled(sessionId)

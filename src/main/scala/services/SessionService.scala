@@ -98,7 +98,10 @@ class SessionService(dependencies:{
     } yield {
       logger.info(s"Enabling session ${upsertedId} for offer $offerId")
       val stopWatch = selectStopwatchForOffer(upsertedId, offer)
-      stopWatch.start()
+      stopWatch.start({ () =>
+        logger.info(s"Reached limit for session $upsertedId")
+        disableSession(session)
+      })
     }
     
   }

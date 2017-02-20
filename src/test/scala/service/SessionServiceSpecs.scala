@@ -36,7 +36,7 @@ import scala.concurrent.Future
 class SessionServiceSpecs extends Specification with CleanSessionRepository with Mockito {
   sequential
   
-  trait SessionServiceScope extends Scope {
+  trait MockSessionServiceScope extends Scope {
     val sessionRepository: SessionRepositoryImpl = new SessionRepositoryImpl
     val offerService:OfferServiceInterface = new OfferService
     val ipTableService: IpTablesInterface = new {} with IpTablesServiceMock { }
@@ -46,7 +46,7 @@ class SessionServiceSpecs extends Specification with CleanSessionRepository with
   
     val macAddress = "123"
     
-    "save and load session to db" in new SessionServiceScope {
+    "save and load session to db" in new MockSessionServiceScope {
       val sessionService = new SessionService(this)
       
       val sessionId = sessionService.getOrCreate(macAddress).futureValue
@@ -56,7 +56,7 @@ class SessionServiceSpecs extends Specification with CleanSessionRepository with
       session.clientMac === macAddress
     }
     
-    "select the correct stopwatch for an offer" in new SessionServiceScope {
+    "select the correct stopwatch for an offer" in new MockSessionServiceScope {
       val sessionService = new SessionService(this)
       
       val session = Session(clientMac = macAddress)
@@ -74,7 +74,7 @@ class SessionServiceSpecs extends Specification with CleanSessionRepository with
       
     }
     
-    "enable session should bind the session with the offer and start the stopwatch" in new SessionServiceScope {
+    "enable session should bind the session with the offer and start the stopwatch" in new MockSessionServiceScope {
       //mock
       override val ipTableService = new IpTablesServiceMock {
         override def enableClient(mac: String): FutureOption[String] = FutureOption(
@@ -87,7 +87,7 @@ class SessionServiceSpecs extends Specification with CleanSessionRepository with
       //mock
       val sessionService = new SessionService(this){
         override def selectStopwatchForOffer(sessionId: Long, offer: Offer):StopWatch = new MockStopWatch(sessionId, offer.offerId){
-          override def start(): Unit = {
+          override def start(onLimitReach:() => Unit): Unit = {
             stopWatchStarted = true
             ()
           }

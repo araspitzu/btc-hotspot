@@ -35,7 +35,7 @@ class SchedulerImpl {
 
   private val tasks = new scala.collection.mutable.HashMap[Long, Schedule]
 
-  def schedule(sessionId:Long, delay: FiniteDuration)(task: => Unit):Unit = {
+  def schedule(sessionId:Long, delay: FiniteDuration)(task: () => Unit):Unit = {
   
     val cancellable = actorSystem.scheduler.scheduleOnce(delay)(task)
   
