@@ -37,13 +37,12 @@ import scala.concurrent.duration._
 class StopWatchSpecs extends Specification with LazyLogging {
 
   trait MockStopWatchScope extends Scope {
-    val scheduler: SchedulerImpl = SchedulerRegistry.schedulerImpl
+    val scheduler: SchedulerImpl = new SchedulerImpl
   }
   
   def waitForOfferMillis(offer: Offer) = {
     val nop = Future {
-      Thread.sleep(offer.qty)
-  
+      Thread.sleep(offer.qty + 500L)
     }
     Await.result(nop, offer.qty + 1000L millis )
   }
@@ -54,26 +53,31 @@ class StopWatchSpecs extends Specification with LazyLogging {
 
     "wait the correct time before calling onLimitReach" in new MockStopWatchScope {
       
+      val approximation = 500L //0.5s
+      
       val session = Session(clientMac = "thisIsMyMac")
       val offer = Offer(
-        qty = 4000,
+        qty = 2000,
         qtyUnit = QtyUnit.millis,
         price = 950000,
         description =  "1 second"
       )
       
 
-      val timeStopWatch = new TimebasedStopWatch(this, session.id, offer.offerId)
+      val timeStopWatch = new TimebasedStopWatch(this, session.id, offer.qty)
+ 
+      var t2 = -1L
+      val t1 = System.currentTimeMillis
       
-      timeStopWatch.start(onLimitReach = { () =>
-        logger.info("Doing something.")
-        throw new IllegalStateException("FUCK THAT")
+      timeStopWatch.start(onLimitReach = {
+        logger.info("calling onLimitReach")
+        t2 = System.currentTimeMillis
       })
 
       waitForOfferMillis(offer)
 
-      timeStopWatch.remainingUnits === 0
-  
+      t2 !== -1L
+      t2 - t1 - approximation must beCloseTo(offer.qty within 1.significantFigures)
     }
 
   }

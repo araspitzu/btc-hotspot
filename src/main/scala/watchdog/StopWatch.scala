@@ -29,7 +29,7 @@ trait StopWatch extends LazyLogging {
   val sessionId:Long
   val duration: Long
   
-  def start(onLimitReach: () => Unit):Unit
+  def start(onLimitReach: => Unit):Unit
   
   def stop():Unit
   
@@ -46,7 +46,7 @@ class TimebasedStopWatch(dependencies:{
   import dependencies._
   
   
-  override def start(onLimitReach: () => Unit): Unit = {
+  override def start(onLimitReach: => Unit): Unit = {
     scheduler.schedule(sessionId, duration millisecond)(onLimitReach)
   }
   

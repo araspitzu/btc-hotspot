@@ -19,8 +19,11 @@
 package watchdog
 
 import java.time.LocalDateTime
+
 import akka.actor.Cancellable
+import com.typesafe.scalalogging.slf4j.LazyLogging
 import commons.AppExecutionContextRegistry.context._
+
 import scala.concurrent.duration.FiniteDuration
 
 trait SchedulerComponent {
@@ -29,27 +32,27 @@ trait SchedulerComponent {
   
 }
 
-class SchedulerImpl {
+class SchedulerImpl extends LazyLogging{
   
   private case class Schedule(createdAt:LocalDateTime, cancellable: Cancellable)
 
-  private val tasks = new scala.collection.mutable.HashMap[Long, Schedule]
+  private val sessIdToScheduleMap = new scala.collection.mutable.HashMap[Long, Schedule]
 
-  def schedule(sessionId:Long, delay: FiniteDuration)(task: () => Unit):Unit = {
+  def schedule(sessionId:Long, delay: FiniteDuration)(task: => Unit):Unit = {
   
     val cancellable = actorSystem.scheduler.scheduleOnce(delay)(task)
   
-    tasks += sessionId -> Schedule(LocalDateTime.now, cancellable)
+    sessIdToScheduleMap += sessionId -> Schedule(LocalDateTime.now, cancellable)
   }
 
-  def isScheduled(sessionId:Long):Boolean = tasks.get(sessionId).isDefined
+  def isScheduled(sessionId:Long):Boolean = sessIdToScheduleMap.get(sessionId).isDefined
 
   def scheduledAt(sessionId:Long):Option[LocalDateTime] = {
-    tasks.get(sessionId).map(_.createdAt)
+    sessIdToScheduleMap.get(sessionId).map(_.createdAt)
   }
 
   def cancel(sessionId:Long):Boolean = {
-    tasks.get(sessionId) match {
+    sessIdToScheduleMap.get(sessionId) match {
       case None => false
       case Some(schedule) => schedule.cancellable.cancel
     }

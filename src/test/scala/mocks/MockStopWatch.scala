@@ -27,7 +27,7 @@ class MockStopWatch(aSession: Long, aDuration: Long) extends StopWatch {
   override val sessionId: Long= aSession
   override val duration: Long = aDuration
   
-  override def start(onLimitReach:() => Unit): Unit = ???
+  override def start(onLimitReach: => Unit): Unit = ???
   
   override def stop(): Unit = ???
   
