@@ -87,7 +87,7 @@ class SessionService(dependencies:{
   
   
   def enableSessionFor(session: Session, offerId:Long):FutureOption[Unit] = {
-    
+
     for {
       offer <- offerService.offerById(offerId)
       upsertedId <- sessionRepository.upsert(session.copy(

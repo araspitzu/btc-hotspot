@@ -49,7 +49,6 @@ class TimebasedStopWatch(dependencies:{
   
   
   override def start(): Unit = {
-    logger.info(s"Starting session ${sessionId}")
     scheduler.schedule(sessionId, duration millisecond) {                      //start countdown
       this.onLimitReach()
     }

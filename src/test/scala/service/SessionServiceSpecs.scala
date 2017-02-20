@@ -36,19 +36,17 @@ import scala.concurrent.Future
 class SessionServiceSpecs extends Specification with CleanSessionRepository with Mockito {
   sequential
   
-  trait MockedScope extends Scope {
+  trait SessionServiceScope extends Scope {
     val sessionRepository: SessionRepositoryImpl = new SessionRepositoryImpl
     val offerService:OfferServiceInterface = new OfferService
-    val scheduler: SchedulerImpl = mock[SchedulerImpl]
     val ipTableService: IpTablesInterface = new {} with IpTablesServiceMock { }
   }
-  
   
   "SessionService" should {
   
     val macAddress = "123"
     
-    "save and load session to db" in new MockedScope {
+    "save and load session to db" in new SessionServiceScope {
       val sessionService = new SessionService(this)
       
       val sessionId = sessionService.getOrCreate(macAddress).futureValue
@@ -58,7 +56,7 @@ class SessionServiceSpecs extends Specification with CleanSessionRepository with
       session.clientMac === macAddress
     }
     
-    "select the correct stopwatch for an offer" in new MockedScope {
+    "select the correct stopwatch for an offer" in new SessionServiceScope {
       val sessionService = new SessionService(this)
       
       val session = Session(clientMac = macAddress)
@@ -76,16 +74,23 @@ class SessionServiceSpecs extends Specification with CleanSessionRepository with
       
     }
     
-    "enable session should bind the session with the offer and start the stopwatch" in new MockedScope {
+    "enable session should bind the session with the offer and start the stopwatch" in new SessionServiceScope {
+      //mock
       override val ipTableService = new IpTablesServiceMock {
         override def enableClient(mac: String): FutureOption[String] = FutureOption(
           Future.successful(Some(""))
         )
       }
   
+      var stopWatchStarted = false
+      
+      //mock
       val sessionService = new SessionService(this){
         override def selectStopwatchForOffer(sessionId: Long, offer: Offer):StopWatch = new MockStopWatch(sessionId, offer.offerId){
-          override def start(): Unit = () => ()
+          override def start(): Unit = {
+            stopWatchStarted = true
+            ()
+          }
         }
       }
 
@@ -94,12 +99,15 @@ class SessionServiceSpecs extends Specification with CleanSessionRepository with
       val offer = OfferServiceRegistry.offerService.allOffers.futureValue.head
       
       session.offerId must beNone
+      session.remainingUnits must beLessThan(0L)
   
       sessionService.enableSessionFor(session, offer.offerId).futureValue
 
       val Some(enabledSession) = sessionService.byMac(macAddress).futureValue
   
+      stopWatchStarted must beTrue
       enabledSession.offerId === Some(offer.offerId)
+      enabledSession.remainingUnits === offer.qty
       
     }
     
