@@ -12,7 +12,7 @@ $IPTABLES -t mangle -A PREROUTING -j internet
 # mark non authorized packets with '99'
 $IPTABLES -t mangle -A internet_out -j MARK --set-mark 99
 
-# redirect non authorized http requests
+# redirect non authorized http/https requests
 $IPTABLES -t nat -A PREROUTING -m mark --mark 99 -p tcp --dport 80 -j DNAT --to-destination 192.168.0.1:8081
 $IPTABLES -t nat -A PREROUTING -m mark --mark 99 -p tcp --dport 443 -j DNAT --to-destination 192.168.0.1:8081
 

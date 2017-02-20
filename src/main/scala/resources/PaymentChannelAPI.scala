@@ -32,9 +32,7 @@ import ExtraHttpHeaders._
 import AppExecutionContextRegistry.context._
 import registry.IpTablesServiceRegistry
 
-/**
-  * Created by andrea on 15/09/16.
-  */
+
 trait PaymentChannelAPI extends CommonResource with ExtraDirectives {
   this:WalletServiceComponent  =>
   
@@ -78,9 +76,9 @@ trait PaymentChannelAPI extends CommonResource with ExtraDirectives {
 
   def enableMe(macAddress:String) = get {
     path("api" / "enableme") {
-      complete(IpTablesServiceRegistry.ipTablesServiceImpl.enableClient(macAddress))
+      complete(IpTablesServiceRegistry.ipTablesServiceImpl.enableClient(macAddress).future)
     } ~ path("api" / "disableme") {
-      complete(IpTablesServiceRegistry.ipTablesServiceImpl.disableClient(macAddress))
+      complete(IpTablesServiceRegistry.ipTablesServiceImpl.disableClient(macAddress).future)
     }
   }
 

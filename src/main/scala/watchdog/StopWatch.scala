@@ -20,43 +20,16 @@ package watchdog
 
 import java.time.LocalDateTime
 import java.time.temporal.ChronoUnit
-
 import com.typesafe.scalalogging.slf4j.LazyLogging
-import protocol.domain.{Offer, QtyUnit, Session}
-import protocol.domain.QtyUnit._
-import commons.AppExecutionContextRegistry.context._
-import commons.Helpers.FutureOption
-import iptables.IpTablesInterface
-import protocol.SessionRepositoryImpl
-import registry.{IpTablesServiceRegistry, SchedulerRegistry, SessionRepositoryRegistry}
-
-import scala.concurrent.Future
 import scala.concurrent.duration._
-
-object StopWatch {
-  
-  val env = new {
-    val sessionRepository: SessionRepositoryImpl = SessionRepositoryRegistry.sessionRepositoryImpl
-    val scheduler: SchedulerImpl = SchedulerRegistry.schedulerImpl
-    val ipTableFun = IpTablesServiceRegistry.ipTablesServiceImpl
-  }
-
-  
-  def forOffer(session: Session, offer:Offer):StopWatch = offer.qtyUnit match {
-    case MB => ???
-    case minutes => new TimebasedStopWatch(env, session, offer)
-  }
-  
-}
-
 
 
 trait StopWatch extends LazyLogging {
   
-  val session:Session
-  val offer:Offer
+  val sessionId:Long
+  val duration: Long
   
-  def start():Future[Option[Long]]
+  def start():Unit
   
   def stop():Unit
   
@@ -69,60 +42,41 @@ trait StopWatch extends LazyLogging {
 }
 
 class TimebasedStopWatch(dependencies:{
-   val sessionRepository: SessionRepositoryImpl
    val scheduler: SchedulerImpl
-   val ipTableFun: IpTablesInterface
-}, val session: Session, val offer: Offer) extends StopWatch {
+}, val sessionId: Long, val duration: Long) extends StopWatch {
   
   import dependencies._
   
-  require(offer.qtyUnit == QtyUnit.millis, s"Time based stopwatch can only be used with offers in milliseconds, offer id ${offer.offerId}")
   
-  override def start(): Future[Option[Long]] = {
-    logger.info(s"Starting session ${session.id}")
-    for {
-     ipTablesOut <- ipTableFun.enableClient(session.clientMac)                              //alter iptables
-     remainingMillis = if(session.remainingUnits < 0) offer.qty else session.remainingUnits //select remaining units
-     _ = scheduler.schedule(session.id, remainingMillis millisecond) {                      //start countdown
-       this.onLimitReach()
-     }
-     upsertSessionId <- sessionRepository.upsert(session.copy(remainingUnits = remainingMillis)).future  //update remaining time in session
-    } yield {
-      logger.info(s"Upserted session is $upsertSessionId")
-      upsertSessionId
+  override def start(): Unit = {
+    logger.info(s"Starting session ${sessionId}")
+    scheduler.schedule(sessionId, duration millisecond) {                      //start countdown
+      this.onLimitReach()
     }
     
   }
   
   override def stop(): Unit = {
-    logger.info(s"Stopping ${session.id}")
-    
-    // alter iptables
-    ipTableFun.disableClient(session.clientMac)
-    
+    logger.info(s"Stopping ${sessionId}")
     // abort scheduled task
-    if (isActive) scheduler.cancel(session.id)
+    if (isActive) scheduler.cancel(sessionId)
     
-    // update remaining time in session WAIT FOR FUTURE?
-    sessionRepository.upsert(session.copy(
-      remainingUnits = this.remainingUnits()
-    ))
     
   }
   
   override def remainingUnits(): Long = {
-    scheduler.scheduledAt(session.id) match {
+    scheduler.scheduledAt(sessionId) match {
       case Some(scheduledAt) => ChronoUnit.MILLIS.between(LocalDateTime.now, scheduledAt)
-      case None => throw new IllegalArgumentException(s"Could not find schedule for $session")
+      case None => throw new IllegalArgumentException(s"Could not find schedule for $sessionId")
     }
   }
   
   override def onLimitReach(): Unit = {
-    logger.info(s"Reached offer limit for session ${session.id}")
+    logger.info(s"Reached offer limit for session $sessionId")
     this.stop()
   }
   
-  override def isActive() = scheduler.isScheduled(session.id)
+  override def isActive() = scheduler.isScheduled(sessionId)
   
 }
 //class DatabasedStopWatch extends StopWatch

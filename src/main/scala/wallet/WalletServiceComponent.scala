@@ -42,12 +42,8 @@ import scala.concurrent.{Future, Promise}
 import commons.Helpers.ScalaConversions._
 import org.bitcoinj.core.TransactionBroadcast.ProgressCallback
 import org.bitcoinj.core.listeners.DownloadProgressTracker
-
 import scala.util.Success
 
-/**
-  * Created by andrea on 16/11/16.
-  */
 trait WalletServiceComponent extends LazyLogging {
 
   val walletService: WalletService

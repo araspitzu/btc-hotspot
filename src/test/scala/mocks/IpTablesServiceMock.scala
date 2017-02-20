@@ -18,13 +18,14 @@
 
 package mocks
 
+import commons.Helpers.FutureOption
 import iptables.IpTablesInterface
 
 import scala.concurrent.Future
 
 trait IpTablesServiceMock extends IpTablesInterface {
-  override def enableClient: (String) => Future[String] = ???
-  override def disableClient: (String) => Future[String] = ???
+  override def enableClient(mac:String): FutureOption[String] = ???
+  override def disableClient(mac:String): FutureOption[String] = ???
 }
 
 

@@ -31,19 +31,9 @@ import scala.reflect.ClassTag
 import scala.reflect._
 import commons.AppExecutionContextRegistry.context._
 
-/**
-  * Created by andrea on 21/10/16.
-  */
+
 package object Helpers {
-
-  private def actorPathFor[T:ClassTag] = {
-    s"${config.getString("akka.actorSystem")}/user/${classTag[T].runtimeClass.getSimpleName}$$"
-  }
-
-  def actorRefFor[T:ClassTag](implicit actorSystem:ActorSystem) = {
-    actorSystem.actorSelection(s"akka://${actorPathFor[T]}")
-  }
-
+  
   def addShutDownHook(hook: => Unit) = {
     Runtime.getRuntime.addShutdownHook(new Thread {
       override def run:Unit = hook

@@ -43,13 +43,13 @@ trait SessionServiceInterface {
   
   def disableSession(session: Session)
   
+  def getOrCreate(mac:String):Future[Long]
+  
   def byId(id:Long):FutureOption[Session]
   
   def byMac(mac: String): FutureOption[Session]
   
   def byMacSync(mac: String): Option[Session]
-  
-  def getOrCreate(mac:String):Future[Long]
   
 }
 
@@ -60,25 +60,28 @@ trait SessionServiceComponent {
 }
 
 
-class SessionService protected (dependencies:{
+class SessionService(dependencies:{
   val sessionRepository: SessionRepositoryImpl
   val offerService:OfferServiceInterface
-  val scheduler: SchedulerImpl
-  val ipTableFun: IpTablesInterface
+  val ipTableService: IpTablesInterface
 }) extends SessionServiceInterface with LazyLogging {
   import dependencies._
   
   def this() = this(new {
     val sessionRepository: SessionRepositoryImpl = SessionRepositoryRegistry.sessionRepositoryImpl
     val offerService:OfferServiceInterface = OfferServiceRegistry.offerService
-    val scheduler: SchedulerImpl = SchedulerRegistry.schedulerImpl
-    val ipTableFun: IpTablesInterface = IpTablesServiceRegistry.ipTablesServiceImpl
+    val ipTableService: IpTablesInterface = IpTablesServiceRegistry.ipTablesServiceImpl
   })
   
-  def selectStopwatchForOffer(session: Session, offer: Offer):StopWatch = {
+  def selectStopwatchForOffer(sessionId: Long, offer: Offer):StopWatch = {
+    
+    val stopWatchDependencies = new {
+      val scheduler: SchedulerImpl = SchedulerRegistry.schedulerImpl
+    }
+    
     offer.qtyUnit match {
       case MB => ???
-      case millis => new TimebasedStopWatch(dependencies, session, offer)
+      case millis => new TimebasedStopWatch(stopWatchDependencies, sessionId, offer.qty)
     }
   }
   
@@ -87,18 +90,21 @@ class SessionService protected (dependencies:{
     
     for {
       offer <- offerService.offerById(offerId)
-      upsertedId <- sessionRepository.upsert(session.copy(offerId = Some(offerId)))
-      updatedSession <- sessionRepository.bySessionId(upsertedId)
+      upsertedId <- sessionRepository.upsert(session.copy(
+        offerId = Some(offerId),
+        remainingUnits = if(session.remainingUnits < 0) offer.qty else session.remainingUnits
+      ))
+      ipTablesOut <- ipTableService.enableClient(session.clientMac)
     } yield {
-      logger.info(s"Enabling session ${updatedSession.id} for offer $offerId")
-      val stopWatch = selectStopwatchForOffer(updatedSession, offer)
+      logger.info(s"Enabling session ${upsertedId} for offer $offerId")
+      val stopWatch = selectStopwatchForOffer(upsertedId, offer)
       stopWatch.start()
     }
     
   }
   
   def disableSession(session: Session) = {
-    session.stop
+   // session.stop
   }
 
   def byId(id:Long):FutureOption[Session] = sessionRepository.bySessionId(id)

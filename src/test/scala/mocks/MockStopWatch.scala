@@ -23,11 +23,11 @@ import watchdog.StopWatch
 
 import scala.concurrent.Future
 
-class MockStopWatch(aSession: Session, anOffer: Offer) extends StopWatch {
-  override val session: Session = aSession
-  override val offer: Offer = anOffer
+class MockStopWatch(aSession: Long, aDuration: Long) extends StopWatch {
+  override val sessionId: Long= aSession
+  override val duration: Long = aDuration
   
-  override def start(): Future[Option[Long]] = ???
+  override def start(): Unit = ???
   
   override def stop(): Unit = ???
   

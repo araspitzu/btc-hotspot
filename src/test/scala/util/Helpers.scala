@@ -58,4 +58,6 @@ object Helpers {
     
   }
   
+  val futureNone = FutureOption(Future.successful(None))
+  
 }

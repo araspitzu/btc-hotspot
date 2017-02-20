@@ -19,6 +19,7 @@
 package stopwatch
 
 import com.typesafe.scalalogging.slf4j.LazyLogging
+import commons.Helpers.FutureOption
 import iptables.IpTablesInterface
 import mocks.IpTablesServiceMock
 import registry.{SchedulerRegistry, SessionRepositoryRegistry}
@@ -39,13 +40,13 @@ class StopWatchSpecs extends Specification with LazyLogging {
     val sessionRepository: SessionRepositoryImpl = SessionRepositoryRegistry.sessionRepositoryImpl
     val scheduler: SchedulerImpl = SchedulerRegistry.schedulerImpl
     val ipTableFun = new IpTablesInterface {
-      override def enableClient: (String) => Future[String] = { mac =>
+      override def enableClient(mac:String):FutureOption[String] = {
         logger.info(s"IPTABLES enabled $mac")
-        Future.successful("DONE")
+        Future.successful(Some("DONE"))
       }
-      override def disableClient: (String) => Future[String] = { mac =>
+      override def disableClient(mac:String):FutureOption[String] = {
         logger.info(s"IPTABLES disabled $mac")
-        Future.successful("Done again")
+        Future.successful(Some("Done again"))
       }
     }
   }
@@ -73,7 +74,7 @@ class StopWatchSpecs extends Specification with LazyLogging {
       )
       
 
-      val timeStopWatch = new TimebasedStopWatch(this, session, offer)
+      val timeStopWatch = new TimebasedStopWatch(this, session.id, offer.offerId)
       
       timeStopWatch.start
 
