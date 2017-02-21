@@ -35,7 +35,7 @@ trait StopWatch extends LazyLogging {
   
   def remainingUnits():Long
   
-  def isActive():Boolean
+  def isPending():Boolean
   
 }
 
@@ -47,13 +47,16 @@ class TimebasedStopWatch(dependencies:{
   
   
   override def start(onLimitReach: => Unit): Unit = {
-    scheduler.schedule(sessionId, duration millisecond)(onLimitReach)
+    scheduler.schedule(sessionId, duration millisecond){
+      scheduler.remove(sessionId)
+      onLimitReach
+    }
   }
   
   override def stop(): Unit = {
     // abort scheduled task
-    if (isActive) {
-      logger.info(s"Aborting scheduler for $sessionId")
+    if (isPending) {
+      logger.info(s"Aborting scheduled task for session $sessionId")
       scheduler.cancel(sessionId)
     }
   }
@@ -65,7 +68,7 @@ class TimebasedStopWatch(dependencies:{
     }
   }
   
-  override def isActive() = scheduler.isScheduled(sessionId)
+  override def isPending() = scheduler.isScheduled(sessionId)
   
 }
 //class DatabasedStopWatch extends StopWatch

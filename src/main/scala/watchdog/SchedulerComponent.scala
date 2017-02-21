@@ -50,6 +50,8 @@ class SchedulerImpl extends LazyLogging{
   def scheduledAt(sessionId:Long):Option[LocalDateTime] = {
     sessIdToScheduleMap.get(sessionId).map(_.createdAt)
   }
+  
+  def remove(sessionId: Long):Unit = sessIdToScheduleMap.remove(sessionId)
 
   def cancel(sessionId:Long):Boolean = {
     sessIdToScheduleMap.get(sessionId) match {

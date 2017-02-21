@@ -33,6 +33,6 @@ class MockStopWatch(aSession: Long, aDuration: Long) extends StopWatch {
   
   override def remainingUnits(): Long = ???
   
-  override def isActive(): Boolean = ???
+  override def isPending(): Boolean = ???
 
 }

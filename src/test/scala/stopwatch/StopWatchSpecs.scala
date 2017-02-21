@@ -35,16 +35,17 @@ import scala.concurrent.duration._
 
 
 class StopWatchSpecs extends Specification with LazyLogging {
-
+sequential
+  
   trait MockStopWatchScope extends Scope {
     val scheduler: SchedulerImpl = new SchedulerImpl
   }
   
-  def waitForOfferMillis(offer: Offer) = {
+  def waitForOfferMillis(waitDuration: Long) = {
     val nop = Future {
-      Thread.sleep(offer.qty + 500L)
+      Thread.sleep(waitDuration + 500L)
     }
-    Await.result(nop, offer.qty + 1000L millis )
+    Await.result(nop, waitDuration + 1000L millis )
   }
   
 
@@ -74,10 +75,35 @@ class StopWatchSpecs extends Specification with LazyLogging {
         t2 = System.currentTimeMillis
       })
 
-      waitForOfferMillis(offer)
+      waitForOfferMillis(offer.qty)
 
       t2 !== -1L
       t2 - t1 - approximation must beCloseTo(offer.qty within 1.significantFigures)
+    }
+    
+    "isPending should return true if the stopwatch is still running, false otherwise" in new MockStopWatchScope {
+  
+      val session = Session(clientMac = "thisIsMyMac")
+      
+      val offer = Offer(
+        qty = 2000,
+        qtyUnit = QtyUnit.millis,
+        price = 950000,
+        description =  "1 second"
+      )
+  
+  
+      val timeStopWatch = new TimebasedStopWatch(this, session.id, offer.qty)
+  
+      timeStopWatch.start(onLimitReach = {
+        logger.info("calling onLimitReach")
+      })
+      
+      timeStopWatch.isPending must beTrue
+  
+      waitForOfferMillis(offer.qty)
+  
+      timeStopWatch.isPending must beFalse
     }
 
   }
