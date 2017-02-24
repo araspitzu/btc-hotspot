@@ -60,4 +60,8 @@ object Helpers {
   
   val futureNone = FutureOption(Future.successful(None))
   
+  def futureSome[T]:T => FutureOption[T] = { t =>
+    FutureOption(Future.successful(Some(t)))
+  }
+  
 }

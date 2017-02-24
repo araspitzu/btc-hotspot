@@ -41,7 +41,7 @@ trait SessionServiceInterface {
   
   def enableSessionFor(session: Session, offerId:Long):FutureOption[Unit]
   
-  def disableSession(session: Session)
+  def disableSession(session: Session):FutureOption[Unit]
   
   def getOrCreate(mac:String):Future[Long]
   
@@ -73,6 +73,11 @@ class SessionService(dependencies:{
     val ipTableService: IpTablesInterface = IpTablesServiceRegistry.ipTablesServiceImpl
   })
   
+  
+  //<statefulness>
+  val sessionIdToStopwatch = new scala.collection.mutable.HashMap[Long, StopWatch]
+  //</statefulness>
+  
   def selectStopwatchForOffer(sessionId: Long, offer: Offer):StopWatch = {
     
     val stopWatchDependencies = new {
@@ -98,16 +103,22 @@ class SessionService(dependencies:{
     } yield {
       logger.info(s"Enabling session ${upsertedId} for offer $offerId")
       val stopWatch = selectStopwatchForOffer(upsertedId, offer)
+      sessionIdToStopwatch += upsertedId -> stopWatch
       stopWatch.start(onLimitReach = {
-        logger.info(s"Reached limit for session $upsertedId")
+        logger.info(s"Reached limit for session $upsertedId, disabling it")
         disableSession(session)
       })
     }
-    
   }
   
-  def disableSession(session: Session) = {
-   // session.stop
+  def disableSession(session: Session):FutureOption[Unit] = {
+    for {
+      stopWatch <- FutureOption(Future.successful(sessionIdToStopwatch.get(session.id)))
+      ipTablesOut <- ipTableService.disableClient(session.clientMac)
+    } yield {
+      stopWatch.stop
+      sessionIdToStopwatch.remove(session.id)
+    }
   }
 
   def byId(id:Long):FutureOption[Session] = sessionRepository.bySessionId(id)
