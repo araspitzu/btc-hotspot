@@ -65,7 +65,7 @@ sequential
       )
       
 
-      val timeStopWatch = new TimebasedStopWatch(this, session.id, offer.qty)
+      val timeStopWatch = new TimebasedStopWatch(this, session, offer.qty)
  
       var t2 = -1L
       val t1 = System.currentTimeMillis
@@ -93,7 +93,7 @@ sequential
       )
   
   
-      val timeStopWatch = new TimebasedStopWatch(this, session.id, offer.qty)
+      val timeStopWatch = new TimebasedStopWatch(this, session, offer.qty)
   
       timeStopWatch.start(onLimitReach = {
         logger.info("calling onLimitReach")

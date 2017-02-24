@@ -21,12 +21,14 @@ package watchdog
 import java.time.LocalDateTime
 import java.time.temporal.ChronoUnit
 import com.typesafe.scalalogging.slf4j.LazyLogging
+import protocol.domain.Session
+
 import scala.concurrent.duration._
 
 
 trait StopWatch extends LazyLogging {
   
-  val sessionId:Long
+  val session: Session
   val duration: Long
   
   def start(onLimitReach: => Unit):Unit
@@ -41,14 +43,14 @@ trait StopWatch extends LazyLogging {
 
 class TimebasedStopWatch(dependencies:{
    val scheduler: SchedulerImpl
-}, val sessionId: Long, val duration: Long) extends StopWatch {
+},val session: Session, val duration: Long) extends StopWatch {
   
   import dependencies._
   
   
   override def start(onLimitReach: => Unit): Unit = {
-    scheduler.schedule(sessionId, duration millisecond){
-      scheduler.remove(sessionId)
+    scheduler.schedule(session.id, duration millisecond){
+      scheduler.remove(session.id)
       onLimitReach
     }
   }
@@ -56,19 +58,19 @@ class TimebasedStopWatch(dependencies:{
   override def stop(): Unit = {
     // abort scheduled task
     if (isPending) {
-      logger.info(s"Aborting scheduled task for session $sessionId")
-      scheduler.cancel(sessionId)
+      logger.info(s"Aborting scheduled task for session ${session.id}")
+      scheduler.cancel(session.id)
     }
   }
   
   override def remainingUnits(): Long = {
-    scheduler.scheduledAt(sessionId) match {
+    scheduler.scheduledAt(session.id) match {
       case Some(scheduledAt) => ChronoUnit.MILLIS.between(LocalDateTime.now, scheduledAt)
-      case None => throw new IllegalArgumentException(s"Could not find schedule for $sessionId")
+      case None => throw new IllegalArgumentException(s"Could not find schedule for ${session.id}")
     }
   }
   
-  override def isPending() = scheduler.isScheduled(sessionId)
+  override def isPending() = scheduler.isScheduled(session.id)
   
 }
 //class DatabasedStopWatch extends StopWatch

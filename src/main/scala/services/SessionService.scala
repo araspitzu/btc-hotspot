@@ -78,7 +78,7 @@ class SessionService(dependencies:{
   val sessionIdToStopwatch = new scala.collection.mutable.HashMap[Long, StopWatch]
   //</statefulness>
   
-  def selectStopwatchForOffer(sessionId: Long, offer: Offer):StopWatch = {
+  def selectStopwatchForOffer(session: Session, offer: Offer):StopWatch = {
     
     val stopWatchDependencies = new {
       val scheduler: SchedulerImpl = SchedulerRegistry.schedulerImpl
@@ -86,7 +86,7 @@ class SessionService(dependencies:{
     
     offer.qtyUnit match {
       case MB => ???
-      case millis => new TimebasedStopWatch(stopWatchDependencies, sessionId, offer.qty)
+      case millis => new TimebasedStopWatch(stopWatchDependencies, session, offer.qty)
     }
   }
   
@@ -102,7 +102,7 @@ class SessionService(dependencies:{
       ipTablesOut <- ipTableService.enableClient(session.clientMac)
     } yield {
       logger.info(s"Enabling session ${upsertedId} for offer $offerId")
-      val stopWatch = selectStopwatchForOffer(upsertedId, offer)
+      val stopWatch = selectStopwatchForOffer(session, offer)
       sessionIdToStopwatch += upsertedId -> stopWatch
       stopWatch.start(onLimitReach = {
         logger.info(s"Reached limit for session $upsertedId, disabling it")

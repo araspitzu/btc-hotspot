@@ -68,7 +68,7 @@ class SessionServiceSpecs extends Specification with CleanSessionRepository with
         description = "Some offer"
       )
       
-      val timeBasedStopwatch = sessionService.selectStopwatchForOffer(session.id, timeBasedOffer)
+      val timeBasedStopwatch = sessionService.selectStopwatchForOffer(session, timeBasedOffer)
       
       timeBasedStopwatch must haveClass[TimebasedStopWatch]
       
@@ -90,7 +90,7 @@ class SessionServiceSpecs extends Specification with CleanSessionRepository with
       val newSession = Session(clientMac = macAddress)
       
       val sessionService = new SessionService(this){
-        override def selectStopwatchForOffer(sessionId: Long, offer: Offer):StopWatch = new MockStopWatch(sessionId, offer.offerId){
+        override def selectStopwatchForOffer(session: Session, offer: Offer):StopWatch = new MockStopWatch(session, offer.offerId){
           override def start(onLimitReach: => Unit): Unit = {
             stopWatchStarted = true
             ()

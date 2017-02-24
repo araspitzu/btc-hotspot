@@ -23,8 +23,8 @@ import watchdog.StopWatch
 
 import scala.concurrent.Future
 
-class MockStopWatch(aSession: Long, aDuration: Long) extends StopWatch {
-  override val sessionId: Long= aSession
+class MockStopWatch(aSession: Session, aDuration: Long) extends StopWatch {
+  override val session: Session= aSession
   override val duration: Long = aDuration
   
   override def start(onLimitReach: => Unit): Unit = ???
