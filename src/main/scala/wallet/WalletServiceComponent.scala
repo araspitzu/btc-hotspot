@@ -33,7 +33,7 @@ import org.bitcoinj.kits.WalletAppKit
 import org.bitcoinj.protocols.payments.PaymentProtocol
 import org.bitcoinj.wallet.KeyChain.KeyPurpose
 import protocol.domain.{Offer, QtyUnit, Session}
-import services.{OfferService, OfferServiceRegistry, SessionServiceImpl, SessionServiceRegistry}
+import services.{ OfferServiceRegistry, SessionServiceRegistry}
 
 import scala.collection.JavaConverters._
 import commons.AppExecutionContextRegistry.context._
@@ -113,7 +113,7 @@ trait WalletServiceComponent extends LazyLogging {
               }
             )
           } else {
-            logger.info(s"Tx broadcast for sessionId: ${session.id}")
+            logger.info(s"Tx broadcast for sessionId: ${session.id} at ${progress * 100}%")
           }
         }
       })

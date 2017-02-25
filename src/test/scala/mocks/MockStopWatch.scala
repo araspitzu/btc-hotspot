@@ -22,7 +22,7 @@ import iptables.IpTablesInterface
 import protocol.domain.Session
 import watchdog.StopWatch
 
-class MockStopWatch(val dep: {
+class MockStopWatch(val dependencies: {
   val ipTablesService:IpTablesInterface
 },aSession: Session, aDuration: Long) extends StopWatch {
   override val session: Session= aSession

@@ -20,21 +20,20 @@ package watchdog
 
 import java.time.LocalDateTime
 import java.time.temporal.ChronoUnit
-
 import com.typesafe.scalalogging.slf4j.LazyLogging
-import iptables.{IpTablesInterface, IpTablesServiceComponent}
+import commons.Helpers.FutureOption
+import iptables.IpTablesInterface
 import protocol.domain.Session
-
 import scala.concurrent.duration._
 
 
 trait StopWatch extends LazyLogging {
   
-  type Dependencies = {
+  type StopWatchDependency = {
       val ipTablesService:IpTablesInterface
   }
   
-  val dep: Dependencies
+  val dependencies: StopWatchDependency
   val session: Session
   val duration: Long
   
@@ -48,19 +47,18 @@ trait StopWatch extends LazyLogging {
   
 }
 
-class TimebasedStopWatch(val dep: {
+class TimebasedStopWatch(val dependencies: {
   val ipTablesService:IpTablesInterface
   val scheduler: SchedulerImpl
 },val session: Session, val duration: Long) extends StopWatch {
+  import dependencies._
   
-  import dep._
-  
-  def someScheduler = dep.scheduler
-
   
   override def start(onLimitReach: => Unit): Unit = {
-    dep.scheduler.schedule(session.id, duration millisecond){
-      someScheduler.remove(session.id)
+    ipTablesService.enableClient(session.clientMac)
+    
+    scheduler.schedule(session.id, duration millisecond){
+      scheduler.remove(session.id)
       onLimitReach
     }
   }
@@ -69,18 +67,20 @@ class TimebasedStopWatch(val dep: {
     // abort scheduled task
     if (isPending) {
       logger.info(s"Aborting scheduled task for session ${session.id}")
-      someScheduler.cancel(session.id)
+      scheduler.cancel(session.id)
     }
+    
+    ipTablesService.disableClient(session.clientMac)
   }
   
   override def remainingUnits(): Long = {
-    someScheduler.scheduledAt(session.id) match {
+    scheduler.scheduledAt(session.id) match {
       case Some(scheduledAt) => ChronoUnit.MILLIS.between(LocalDateTime.now, scheduledAt)
       case None => throw new IllegalArgumentException(s"Could not find schedule for ${session.id}")
     }
   }
   
-  override def isPending() = someScheduler.isScheduled(session.id)
+  override def isPending() = scheduler.isScheduled(session.id)
   
 }
 //class DatabasedStopWatch extends StopWatch

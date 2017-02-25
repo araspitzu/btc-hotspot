@@ -25,21 +25,26 @@ import mocks.IpTablesServiceMock
 import registry.{SchedulerRegistry, SessionRepositoryRegistry}
 import org.specs2.mutable.Specification
 import org.specs2.specification.Scope
-import protocol.SessionRepositoryImpl
 import protocol.domain.{Offer, QtyUnit, Session}
+import util.Helpers._
 import watchdog.{SchedulerImpl, StopWatch, TimebasedStopWatch}
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.{Await, Future}
 import scala.concurrent.duration._
 
-
 class StopWatchSpecs extends Specification with LazyLogging {
 sequential
   
   trait MockStopWatchScope extends Scope {
     val stopWatchDep = new {
-      val ipTablesService: IpTablesInterface = new IpTablesServiceMock {}
+      var ipTablesEnableClientCalled = false
+      var ipTablesDisableClientCalled = false
+      
+      val ipTablesService: IpTablesInterface = new IpTablesServiceMock {
+        override def enableClient(mac:String) = { ipTablesEnableClientCalled = true; futureSome("") }
+        override def disableClient(mac:String) = { ipTablesDisableClientCalled = true; futureSome("") }
+      }
       val scheduler: SchedulerImpl = new SchedulerImpl
     }
   }
@@ -57,7 +62,7 @@ sequential
 
     "wait the correct time before calling onLimitReach" in new MockStopWatchScope {
       
-      val approximation = 500L //0.5s
+      val approximation = 700L //TODO review 0.7s approximation during test
       
       val session = Session(clientMac = "thisIsMyMac")
       val offer = Offer(
@@ -66,6 +71,8 @@ sequential
         price = 950000,
         description =  "1 second"
       )
+      
+      stopWatchDep.ipTablesEnableClientCalled must beFalse
 
       val timeStopWatch = new TimebasedStopWatch(stopWatchDep, session, offer.qty)
  
@@ -76,9 +83,12 @@ sequential
         logger.info("calling onLimitReach")
         t2 = System.currentTimeMillis
       })
-
+  
+      stopWatchDep.ipTablesEnableClientCalled must beTrue
+  
       waitForOfferMillis(offer.qty)
 
+      //stopWatchDep.ipTablesDisableClientCalled must beTrue
       t2 !== -1L
       t2 - t1 - approximation must beCloseTo(offer.qty within 1.significantFigures)
     }
