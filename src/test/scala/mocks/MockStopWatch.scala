@@ -18,6 +18,7 @@
 
 package mocks
 
+import commons.Helpers.FutureOption
 import iptables.IpTablesInterface
 import protocol.domain.Session
 import watchdog.StopWatch
@@ -28,9 +29,9 @@ class MockStopWatch(val dependencies: {
   override val session: Session= aSession
   override val duration: Long = aDuration
   
-  override def start(onLimitReach: => Unit): Unit = ???
+  override def start(onLimitReach: => Unit): FutureOption[Unit] = ???
   
-  override def stop(): Unit = ???
+  override def stop(): FutureOption[Unit] = ???
   
   override def remainingUnits(): Long = ???
   

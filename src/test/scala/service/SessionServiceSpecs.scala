@@ -84,9 +84,9 @@ class SessionServiceSpecs extends Specification with CleanSessionRepository with
       
       val sessionService = new SessionServiceImpl(this){
         override def selectStopwatchForOffer(session: Session, offer: Offer):StopWatch = new MockStopWatch(stopWatchDepencencies, session, offer.offerId){
-          override def start(onLimitReach: => Unit): Unit = {
+          override def start(onLimitReach: => Unit): FutureOption[Unit] = {
             stopWatchStarted = true
-            ()
+            futureSome(Unit)
           }
         }
       }

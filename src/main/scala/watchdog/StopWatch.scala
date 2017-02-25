@@ -25,7 +25,7 @@ import commons.Helpers.FutureOption
 import iptables.IpTablesInterface
 import protocol.domain.Session
 import scala.concurrent.duration._
-
+import commons.AppExecutionContextRegistry.context._
 
 trait StopWatch extends LazyLogging {
   
@@ -37,9 +37,9 @@ trait StopWatch extends LazyLogging {
   val session: Session
   val duration: Long
   
-  def start(onLimitReach: => Unit):Unit
+  def start(onLimitReach: => Unit):FutureOption[Unit]
   
-  def stop():Unit
+  def stop():FutureOption[Unit]
   
   def remainingUnits():Long
   
@@ -54,23 +54,24 @@ class TimebasedStopWatch(val dependencies: {
   import dependencies._
   
   
-  override def start(onLimitReach: => Unit): Unit = {
-    ipTablesService.enableClient(session.clientMac)
-    
-    scheduler.schedule(session.id, duration millisecond){
-      scheduler.remove(session.id)
-      onLimitReach
+  override def start(onLimitReach: => Unit): FutureOption[Unit] = {
+    ipTablesService.enableClient(session.clientMac) map { ipTablesOut =>
+      scheduler.schedule(session.id, duration millisecond){
+        scheduler.remove(session.id)
+        this.stop()
+        onLimitReach
+      }
     }
   }
   
-  override def stop(): Unit = {
-    // abort scheduled task
-    if (isPending) {
-      logger.info(s"Aborting scheduled task for session ${session.id}")
-      scheduler.cancel(session.id)
+  override def stop(): FutureOption[Unit] = {
+    ipTablesService.disableClient(session.clientMac) map { ipTablesOut =>
+      // abort scheduled task
+      if (isPending) {
+        logger.info(s"Aborting scheduled task for session ${session.id}")
+        scheduler.cancel(session.id)
+      }
     }
-    
-    ipTablesService.disableClient(session.clientMac)
   }
   
   override def remainingUnits(): Long = {

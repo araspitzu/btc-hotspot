@@ -99,9 +99,10 @@ class SessionServiceImpl(dependencies:{
         remainingUnits = if(session.remainingUnits < 0) offer.qty else session.remainingUnits
       ))
     } yield {
-      logger.info(s"Enabling session ${upsertedId} for offer $offerId")
       val stopWatch = selectStopwatchForOffer(session, offer)
       sessionIdToStopwatch += upsertedId -> stopWatch
+
+      logger.info(s"Enabling session ${upsertedId} for offer $offerId")
       stopWatch.start(onLimitReach = {
         logger.info(s"Reached limit for session $upsertedId, disabling it")
         disableSession(session)
