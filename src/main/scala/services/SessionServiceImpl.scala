@@ -63,14 +63,12 @@ trait SessionServiceInterface {
 class SessionServiceImpl(dependencies:{
   val sessionRepository: SessionRepositoryImpl
   val offerService:OfferServiceInterface
-  val ipTableService: IpTablesInterface
 }) extends SessionServiceInterface with LazyLogging {
   import dependencies._
   
   def this() = this(new {
     val sessionRepository: SessionRepositoryImpl = SessionRepositoryRegistry.sessionRepositoryImpl
     val offerService:OfferServiceInterface = OfferServiceRegistry.offerService
-    val ipTableService: IpTablesInterface = IpTablesServiceRegistry.ipTablesServiceImpl
   })
   
   
@@ -81,8 +79,8 @@ class SessionServiceImpl(dependencies:{
   def selectStopwatchForOffer(session: Session, offer: Offer):StopWatch = {
     
     val stopWatchDependencies = new {
+      val ipTablesService = IpTablesServiceRegistry.ipTablesServiceImpl
       val scheduler: SchedulerImpl = SchedulerRegistry.schedulerImpl
-      val ipTablesService = dependencies.ipTableService
     }
     
     offer.qtyUnit match {
@@ -100,7 +98,6 @@ class SessionServiceImpl(dependencies:{
         offerId = Some(offerId),
         remainingUnits = if(session.remainingUnits < 0) offer.qty else session.remainingUnits
       ))
-      ipTablesOut <- ipTableService.enableClient(session.clientMac)
     } yield {
       logger.info(s"Enabling session ${upsertedId} for offer $offerId")
       val stopWatch = selectStopwatchForOffer(session, offer)
@@ -115,7 +112,6 @@ class SessionServiceImpl(dependencies:{
   def disableSession(session: Session):FutureOption[Unit] = {
     for {
       stopWatch <- FutureOption(Future.successful(sessionIdToStopwatch.get(session.id)))
-      ipTablesOut <- ipTableService.disableClient(session.clientMac)
     } yield {
       stopWatch.stop
       sessionIdToStopwatch.remove(session.id)
