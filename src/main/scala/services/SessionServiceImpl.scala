@@ -33,7 +33,13 @@ import scala.concurrent.{Await, Future}
 
 object SessionServiceRegistry extends SessionServiceComponent {
   
-  val sessionService:SessionServiceInterface = new SessionService()
+  val sessionService:SessionServiceInterface = new SessionServiceImpl()
+  
+}
+
+trait SessionServiceComponent {
+  
+  val sessionService:SessionServiceInterface
   
 }
 
@@ -53,14 +59,8 @@ trait SessionServiceInterface {
   
 }
 
-trait SessionServiceComponent {
-  
-  val sessionService:SessionServiceInterface
-  
-}
 
-
-class SessionService(dependencies:{
+class SessionServiceImpl(dependencies:{
   val sessionRepository: SessionRepositoryImpl
   val offerService:OfferServiceInterface
   val ipTableService: IpTablesInterface
@@ -82,6 +82,7 @@ class SessionService(dependencies:{
     
     val stopWatchDependencies = new {
       val scheduler: SchedulerImpl = SchedulerRegistry.schedulerImpl
+      val ipTablesService = dependencies.ipTableService
     }
     
     offer.qtyUnit match {

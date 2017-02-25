@@ -26,7 +26,7 @@ import org.specs2.mutable._
 import org.specs2.specification.Scope
 import protocol.SessionRepositoryImpl
 import protocol.domain.{Offer, QtyUnit, Session}
-import services.{OfferService, OfferServiceInterface, OfferServiceRegistry, SessionService}
+import services.{OfferService, OfferServiceInterface, OfferServiceRegistry, SessionServiceImpl}
 import util.CleanRepository.CleanSessionRepository
 import util.Helpers._
 import watchdog.{StopWatch, TimebasedStopWatch}
@@ -39,7 +39,7 @@ class SessionServiceSpecs extends Specification with CleanSessionRepository with
     
     val sessionRepository: SessionRepositoryImpl = new SessionRepositoryImpl
     val offerService:OfferServiceInterface = new OfferService
-    val ipTableService: IpTablesInterface = new {} with IpTablesServiceMock { }
+    val ipTableService: IpTablesInterface = new IpTablesServiceMock { }
   }
   
   "SessionService" should {
@@ -47,7 +47,7 @@ class SessionServiceSpecs extends Specification with CleanSessionRepository with
     val macAddress = "ab:12:cd:34:ef:56"
     
     "save and load session to db" in new MockSessionServiceScope {
-      val sessionService = new SessionService(this)
+      val sessionService = new SessionServiceImpl(this)
       
       val sessionId = sessionService.getOrCreate(macAddress).futureValue
       val Some(session) = sessionService.byId(sessionId).futureValue
@@ -57,7 +57,7 @@ class SessionServiceSpecs extends Specification with CleanSessionRepository with
     }
     
     "select the correct stopwatch for an offer" in new MockSessionServiceScope {
-      val sessionService = new SessionService(this)
+      val sessionService = new SessionServiceImpl(this)
       
       val session = Session(clientMac = macAddress)
       
@@ -89,8 +89,13 @@ class SessionServiceSpecs extends Specification with CleanSessionRepository with
       
       val newSession = Session(clientMac = macAddress)
       
-      val sessionService = new SessionService(this){
-        override def selectStopwatchForOffer(session: Session, offer: Offer):StopWatch = new MockStopWatch(session, offer.offerId){
+      val sessionService = new SessionServiceImpl(this){
+        
+        val stopWatchDep = new {
+          val ipTablesService: IpTablesInterface = new IpTablesServiceMock {}
+        }
+        
+        override def selectStopwatchForOffer(session: Session, offer: Offer):StopWatch = new MockStopWatch(stopWatchDep, session, offer.offerId){
           override def start(onLimitReach: => Unit): Unit = {
             stopWatchStarted = true
             ()
@@ -125,7 +130,7 @@ class SessionServiceSpecs extends Specification with CleanSessionRepository with
       }
   
   
-      val sessionService = new SessionService(this)
+      val sessionService = new SessionServiceImpl(this)
   
       val newSessionId = sessionService.getOrCreate(macAddress).futureValue
       

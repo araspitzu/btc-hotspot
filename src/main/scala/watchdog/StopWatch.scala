@@ -20,7 +20,9 @@ package watchdog
 
 import java.time.LocalDateTime
 import java.time.temporal.ChronoUnit
+
 import com.typesafe.scalalogging.slf4j.LazyLogging
+import iptables.{IpTablesInterface, IpTablesServiceComponent}
 import protocol.domain.Session
 
 import scala.concurrent.duration._
@@ -28,6 +30,11 @@ import scala.concurrent.duration._
 
 trait StopWatch extends LazyLogging {
   
+  type Dependencies = {
+      val ipTablesService:IpTablesInterface
+  }
+  
+  val dep: Dependencies
   val session: Session
   val duration: Long
   
@@ -41,16 +48,19 @@ trait StopWatch extends LazyLogging {
   
 }
 
-class TimebasedStopWatch(dependencies:{
-   val scheduler: SchedulerImpl
+class TimebasedStopWatch(val dep: {
+  val ipTablesService:IpTablesInterface
+  val scheduler: SchedulerImpl
 },val session: Session, val duration: Long) extends StopWatch {
   
-  import dependencies._
+  import dep._
   
+  def someScheduler = dep.scheduler
+
   
   override def start(onLimitReach: => Unit): Unit = {
-    scheduler.schedule(session.id, duration millisecond){
-      scheduler.remove(session.id)
+    dep.scheduler.schedule(session.id, duration millisecond){
+      someScheduler.remove(session.id)
       onLimitReach
     }
   }
@@ -59,18 +69,18 @@ class TimebasedStopWatch(dependencies:{
     // abort scheduled task
     if (isPending) {
       logger.info(s"Aborting scheduled task for session ${session.id}")
-      scheduler.cancel(session.id)
+      someScheduler.cancel(session.id)
     }
   }
   
   override def remainingUnits(): Long = {
-    scheduler.scheduledAt(session.id) match {
+    someScheduler.scheduledAt(session.id) match {
       case Some(scheduledAt) => ChronoUnit.MILLIS.between(LocalDateTime.now, scheduledAt)
       case None => throw new IllegalArgumentException(s"Could not find schedule for ${session.id}")
     }
   }
   
-  override def isPending() = scheduler.isScheduled(session.id)
+  override def isPending() = someScheduler.isScheduled(session.id)
   
 }
 //class DatabasedStopWatch extends StopWatch

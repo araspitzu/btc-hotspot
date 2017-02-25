@@ -20,7 +20,7 @@ package resources
 
 import akka.http.scaladsl.server.{AuthorizationFailedRejection, Route}
 import commons.JsonSupport
-import services.SessionService
+import services.SessionServiceImpl
 
 /**
   * Created by andrea on 01/12/16.

@@ -38,7 +38,10 @@ class StopWatchSpecs extends Specification with LazyLogging {
 sequential
   
   trait MockStopWatchScope extends Scope {
-    val scheduler: SchedulerImpl = new SchedulerImpl
+    val stopWatchDep = new {
+      val ipTablesService: IpTablesInterface = new IpTablesServiceMock {}
+      val scheduler: SchedulerImpl = new SchedulerImpl
+    }
   }
   
   def waitForOfferMillis(waitDuration: Long) = {
@@ -63,9 +66,8 @@ sequential
         price = 950000,
         description =  "1 second"
       )
-      
 
-      val timeStopWatch = new TimebasedStopWatch(this, session, offer.qty)
+      val timeStopWatch = new TimebasedStopWatch(stopWatchDep, session, offer.qty)
  
       var t2 = -1L
       val t1 = System.currentTimeMillis
@@ -92,8 +94,7 @@ sequential
         description =  "1 second"
       )
   
-  
-      val timeStopWatch = new TimebasedStopWatch(this, session, offer.qty)
+      val timeStopWatch = new TimebasedStopWatch(stopWatchDep, session, offer.qty)
   
       timeStopWatch.start(onLimitReach = {
         logger.info("calling onLimitReach")
