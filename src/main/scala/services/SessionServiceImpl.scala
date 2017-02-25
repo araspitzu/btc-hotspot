@@ -22,7 +22,6 @@ import com.typesafe.scalalogging.slf4j.LazyLogging
 import protocol.domain.{Offer, Session}
 import commons.AppExecutionContextRegistry.context._
 import commons.Helpers.FutureOption
-import iptables.IpTablesInterface
 import protocol.SessionRepositoryImpl
 import protocol.domain.QtyUnit.MB
 import registry.{IpTablesServiceRegistry, SchedulerRegistry, SessionRepositoryRegistry}

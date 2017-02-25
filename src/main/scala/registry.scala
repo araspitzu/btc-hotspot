@@ -73,7 +73,7 @@ package object registry {
       logger.info(s"Setting up schemas and populating tables")
       DBIO.seq (
         (OfferRepositoryRegistry.offerRepositoryImpl.offersTable.schema ++
-          SessionRepositoryRegistry.sessionRepositoryImpl.sessionsTable.schema).create,
+         SessionRepositoryRegistry.sessionRepositoryImpl.sessionsTable.schema).create,
       
         //Insert some offers
         OfferRepositoryRegistry.offerRepositoryImpl.offersTable ++= TestData.offers

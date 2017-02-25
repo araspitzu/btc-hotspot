@@ -38,29 +38,26 @@ package commons
 
 import protocol.domain.{Offer, QtyUnit}
 
-/**
-  * Created by andrea on 27/11/16.
-  */
 object TestData {
 
   val offers = Seq(
     Offer(
-      qty = 2,
+      qty = 60000,
       qtyUnit = QtyUnit.millis,
       price = 950000,
-      description =  "2 minutes"
+      description =  "1 minutes"
     ),
     Offer(
-      qty = 20,
+      qty = 600000,
       qtyUnit = QtyUnit.millis,
       price = 1500000,
-      description =  "20 minutes"
+      description =  "10 minutes"
     ),
     Offer(
-      qty = 30,
+      qty = 900000,
       qtyUnit = QtyUnit.millis,
       price = 5000000,
-      description =  "30 minutes"
+      description =  "15 minutes"
     )
   )
 
