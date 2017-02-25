@@ -88,7 +88,7 @@ sequential
   
       waitForOfferMillis(offer.qty)
 
-      //stopWatchDep.ipTablesDisableClientCalled must beTrue
+      stopWatchDep.ipTablesDisableClientCalled must beTrue
       t2 !== -1L
       t2 - t1 - approximation must beCloseTo(offer.qty within 1.significantFigures)
     }
