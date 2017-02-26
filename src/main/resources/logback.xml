@@ -16,7 +16,7 @@
     </rollingPolicy>
 
     <encoder>
-      <pattern>%d [%logger{1}] %5p - %m%n</pattern>
+      <pattern>%d [%logger{1}] [%thread] %5p - %m%n</pattern>
     </encoder>
   </appender>
 

@@ -85,7 +85,8 @@ trait PaymentChannelAPI extends CommonResource with ExtraDirectives {
   def paymentChannelRoute: Route = {
     path("api" / "pay" / LongNumber) { offerId =>
       sessionOrReject { session =>
-        paymentRequestForSession(session, offerId) ~ paymentDataForSession(session, offerId)
+        paymentRequestForSession(session, offerId) ~
+        paymentDataForSession(session, offerId)
       }
     }
   }

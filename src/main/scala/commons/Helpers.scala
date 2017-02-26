@@ -24,6 +24,7 @@ import java.lang.ProcessBuilder.Redirect
 import Configuration._
 import akka.actor.ActorSystem
 import com.google.common.util.concurrent.{FutureCallback, Futures, ListenableFuture}
+import com.typesafe.scalalogging.slf4j.LazyLogging
 
 import scala.collection.JavaConverters._
 import scala.concurrent._
@@ -71,9 +72,9 @@ package object Helpers {
     
   }
     
-  implicit class CmdExecutor(cmd:String) {
+  implicit class CmdExecutor(cmd:String) extends LazyLogging {
     def exec:Future[String] = Future {
-      
+      logger.info(s"Executing $cmd")
       val proc = Runtime.getRuntime.exec(cmd)
       
       val exitValue = proc.waitFor
@@ -84,7 +85,9 @@ package object Helpers {
         new InputStreamReader (proc.getInputStream )
       )
       
-      reader.lines.iterator.asScala.fold("")(_ + _)
+      val output = reader.lines.iterator.asScala.fold("")(_ + _)
+      logger.info(output)
+      output
     }
     
   }

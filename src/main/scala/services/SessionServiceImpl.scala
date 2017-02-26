@@ -90,22 +90,24 @@ class SessionServiceImpl(dependencies:{
   
   
   def enableSessionFor(session: Session, offerId:Long):FutureOption[Unit] = {
-
+    logger.warn(s"ENABLING SESSION ${session.id} FOR OFFER $offerId")
     for {
       offer <- offerService.offerById(offerId)
+      _ = logger.info("OFFER RETRIEVED")
       upsertedId <- sessionRepository.upsert(session.copy(
         offerId = Some(offerId),
         remainingUnits = if(session.remainingUnits < 0) offer.qty else session.remainingUnits
       ))
-    } yield {
-      val stopWatch = selectStopwatchForOffer(session, offer)
-      sessionIdToStopwatch += upsertedId -> stopWatch
-
-      logger.info(s"Enabling session ${upsertedId} for offer $offerId")
-      stopWatch.start(onLimitReach = {
+      _ = logger.warn("SESSION UPDATED, SELECTING THE STOPWATCH")
+      stopWatch = selectStopwatchForOffer(session, offer)
+      _ = logger.warn("GOING TO START THE STOPWATCH NOW")
+      res <- stopWatch.start(onLimitReach = {
         logger.info(s"Reached limit for session $upsertedId, disabling it")
         disableSession(session)
       })
+    } yield {
+      sessionIdToStopwatch += upsertedId -> stopWatch
+      logger.info(s"Enabled session ${upsertedId} for offer $offerId")
     }
   }
   

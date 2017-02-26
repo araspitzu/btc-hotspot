@@ -42,7 +42,6 @@ import scala.concurrent.{Future, Promise}
 import commons.Helpers.ScalaConversions._
 import org.bitcoinj.core.TransactionBroadcast.ProgressCallback
 import org.bitcoinj.core.listeners.DownloadProgressTracker
-import scala.util.Success
 
 trait WalletServiceComponent extends LazyLogging {
 
@@ -106,9 +105,11 @@ trait WalletServiceComponent extends LazyLogging {
       broadcast.setProgressCallback(new ProgressCallback {
         override def onBroadcastProgress(progress: Double) = {
           if(progress == 1.0){
-            promise.complete(
-              Success{
-                SessionServiceRegistry.sessionService.enableSessionFor(session, offerId)
+            promise.completeWith(
+              for {
+                _ <- SessionServiceRegistry.sessionService.enableSessionFor(session, offerId).future
+              } yield {
+                logger.info("SESSION SERVICE IS DONE")
                 PaymentProtocol.createPaymentAck(payment, s"Enjoy, your session will last for ")
               }
             )

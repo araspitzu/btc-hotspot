@@ -43,7 +43,7 @@ trait IpTablesInterface {
 class IpTablesServiceImpl extends IpTablesInterface with LazyLogging {
   
   private def iptables(params:String) = {
-    s"/sbin/iptables $params"
+    s"sudo iptables $params"
   }
   
   def report:Future[Seq[ChainEntry]] = {
@@ -70,11 +70,12 @@ class IpTablesServiceImpl extends IpTablesInterface with LazyLogging {
   }
   
   override def enableClient(mac:String) = {
-    iptables(s"-I internet 1 -t mangle -m mac --mac-source $mac -j RETURN").exec.map(Some(_))
+    logger.info("CALLING IPTABLES")
+    iptables(s"-t mangle -I internet 1 -m mac --mac-source $mac -j RETURN").exec.map(Some(_))
   }
   
   override def disableClient(mac:String) = {
-    iptables(s"-D internet -t mangle -m mac --mac-source $mac -j RETURN").exec.map(Some(_))
+    iptables(s"-t mangle -D internet -m mac --mac-source $mac -j RETURN").exec.map(Some(_))
   }
   
 }

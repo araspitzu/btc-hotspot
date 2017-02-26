@@ -21,6 +21,7 @@ package protocol
 import java.sql.Timestamp
 import java.time.LocalDateTime
 
+import com.typesafe.scalalogging.slf4j.LazyLogging
 import commons.AppExecutionContextRegistry.context._
 import commons.Helpers.FutureOption
 import protocol.domain.{Offer, Session}
@@ -35,7 +36,7 @@ trait SessionRepositoryComponent {
   
 }
 
-class SessionRepositoryImpl {
+class SessionRepositoryImpl extends LazyLogging {
 
   lazy val db:Database = DatabaseRegistry.database.db
 
@@ -63,8 +64,11 @@ class SessionRepositoryImpl {
     (sessionsTable returning sessionsTable.map(_.id)) += session
   }
 
-  def upsert(session: Session):FutureOption[Long] = db.run {
-    (sessionsTable returning sessionsTable.map(_.id)).insertOrUpdate(session)
+  def upsert(session: Session):FutureOption[Long] = {
+    logger.warn("DOING UPSERT")
+    db.run {
+      (sessionsTable returning sessionsTable.map(_.id)).insertOrUpdate(session)
+    }
   }
 
   def byIdWithOffer(id:Long):FutureOption[(Session, Offer)] = db.run {
