@@ -38,123 +38,130 @@ import scala.collection.JavaConverters._
 import commons.AppExecutionContextRegistry.context._
 import commons.Helpers
 import scala.concurrent.{Future, Promise}
-import org.bitcoinj.core.TransactionBroadcast.ProgressCallback
 import org.bitcoinj.core.listeners.DownloadProgressTracker
 
-trait WalletServiceComponent extends LazyLogging {
+trait WalletServiceComponent {
 
   val walletService: WalletService
 
-  class WalletService {
+}
 
-    val file = new File(walletDir)
-
-    val kit = new WalletAppKit(network, file, walletFileName) {
-      override def onSetupCompleted() {
-        wallet.importKey(new ECKey)
-      }
-    }.setAutoStop(true)
-     .setDownloadListener(new DownloadProgressTracker{
-       override def progress(pct:Double,blocksSoFar:Int, date:Date) = {
-         logger.info(s"Chain sync ${pct * 100}%")
-       }
-     })
-    
-    Helpers.addShutDownHook {
-      logger.info("Shutting down bitcoinj peer group")
-      kit.peerGroup.stop
-    }
-
-    if(isEnabled)
-      kit.startAsync
-
-    def networkParams:NetworkParameters = kit.params
-    def peerGroup:PeerGroup = kit.peerGroup
-    def wallet:org.bitcoinj.wallet.Wallet = kit.wallet
-    def receivingAddress:Address = wallet.currentAddress(KeyPurpose.RECEIVE_FUNDS)
-
-    def bytes2hex(bytes: Array[Byte]): String = bytes.map("%02x ".format(_)).mkString
-
-    def generatePaymentRequest(session: Session, offerId: Long): Future[PaymentRequest] = {
-      logger.info(s"Issuing payment request for session ${session.id} and offer $offerId")
+trait WalletServiceInterface {
   
-      (for {
-        offer <- OfferServiceRegistry.offerService.offerById(offerId)
-      } yield PaymentProtocol.createPaymentRequest(
-        networkParams,
-        outputsForOffer(offer).asJava,
-        s"Please pay ${offer.price} satoshis for ${offer.description}",
-        s"http://$miniPortalHost:$miniPortalPort/api/pay/${session.id}",
-        Array.emptyByteArray
-      ).build).future.map(_.getOrElse(throw new IllegalArgumentException(s"Offer $offerId not found")))
+  def generatePaymentRequest(session: Session, offerId: Long): Future[PaymentRequest]
+  
+  def validatePayment(session: Session, offerId:Long, payment: Protos.Payment): Future[Protos.PaymentACK]
+  
+}
 
+class WalletService extends WalletServiceInterface with LazyLogging {
+  
+  val file = new File(walletDir)
+  
+  val kit = new WalletAppKit(network, file, walletFileName) {
+    override def onSetupCompleted() {
+      wallet.importKey(new ECKey)
     }
+  }.setAutoStop(true)
+    .setDownloadListener(new DownloadProgressTracker{
+      override def progress(pct:Double,blocksSoFar:Int, date:Date) = {
+        logger.info(s"Chain sync ${pct * 100}%")
+      }
+    })
+  
+  Helpers.addShutDownHook {
+    logger.info("Shutting down bitcoinj peer group")
+    kit.peerGroup.stop
+  }
+  
+  if(isEnabled)
+    kit.startAsync
+  
+  def networkParams:NetworkParameters = kit.params
+  def peerGroup:PeerGroup = kit.peerGroup
+  def wallet:org.bitcoinj.wallet.Wallet = kit.wallet
+  def receivingAddress:Address = wallet.currentAddress(KeyPurpose.RECEIVE_FUNDS)
+  
+  def bytes2hex(bytes: Array[Byte]): String = bytes.map("%02x ".format(_)).mkString
+  
+  def generatePaymentRequest(session: Session, offerId: Long): Future[PaymentRequest] = {
+    logger.info(s"Issuing payment request for session ${session.id} and offer $offerId")
     
-    def validatePayment(session: Session, offerId:Long, payment: Protos.Payment): Future[Protos.PaymentACK] = {
-
-      if(payment.getTransactionsCount != 1)
-        throw new IllegalStateException("Too many tx received in payment session")
-
-      val txBytes = payment.getTransactions(0).toByteArray
-      val tx = new Transaction(networkParams, txBytes)
-      val broadcast = peerGroup.broadcastTransaction(tx)
-      
-      val promise = Promise[Protos.PaymentACK]
-      
-      broadcast.setProgressCallback( (progress: Double) => {
-        logger.info(s"Tx broadcast for sessionId: ${session.id} at ${progress * 100}%")
-        if (progress == 1.0) {
-          promise.completeWith(
-            for {
-              _ <- SessionServiceRegistry.sessionService.enableSessionFor(session, offerId).future
-            } yield {
-              PaymentProtocol.createPaymentAck(payment, s"Enjoy your session!")
-            }
-          )
-        }
-      })
-      
-      promise.future
-    }
-
-    def p2pubKeyHash(value:Long, to:Address):ByteString = {
-
-      //Create custom script containing offer's id bytes
-//      val scriptOpReturn = new ScriptBuilder().op(OP_RETURN).data("hello".getBytes()).build()
-
-      ByteString.copyFrom(new TransactionOutput(
-        networkParams,
-        null,
-        Coin.valueOf(value),
-        to
-      ).getScriptBytes)
-    }
-
-    def isDust(satoshis:Long) = satoshis >= Transaction.MIN_NONDUST_OUTPUT.getValue
-
-    def outputsForOffer(offer:Offer):List[Protos.Output] = {
-      def outputBuilder = Protos.Output.newBuilder
-
+    (for {
+      offer <- OfferServiceRegistry.offerService.offerById(offerId)
+    } yield PaymentProtocol.createPaymentRequest(
+      networkParams,
+      outputsForOffer(offer).asJava,
+      s"Please pay ${offer.price} satoshis for ${offer.description}",
+      s"http://$miniPortalHost:$miniPortalPort/api/pay/${session.id}",
+      Array.emptyByteArray
+    ).build).future.map(_.getOrElse(throw new IllegalArgumentException(s"Offer $offerId not found")))
+    
+  }
+  
+  def validatePayment(session: Session, offerId:Long, payment: Protos.Payment): Future[Protos.PaymentACK] = {
+    
+    if(payment.getTransactionsCount != 1)
+      throw new IllegalStateException("Too many tx received in payment session")
+    
+    val txBytes = payment.getTransactions(0).toByteArray
+    val tx = new Transaction(networkParams, txBytes)
+    val broadcast = peerGroup.broadcastTransaction(tx)
+    
+    val promise = Promise[Protos.PaymentACK]
+    
+    broadcast.setProgressCallback( (progress: Double) => {
+      logger.info(s"Tx broadcast for sessionId: ${session.id} at ${progress * 100}%")
+      if (progress == 1.0) {
+        promise.completeWith(
+          for {
+            _ <- SessionServiceRegistry.sessionService.enableSessionFor(session, offerId).future
+          } yield {
+            PaymentProtocol.createPaymentAck(payment, s"Enjoy your session!")
+          }
+        )
+      }
+    })
+    
+    promise.future
+  }
+  
+  def p2pubKeyHash(value:Long, to:Address):ByteString = {
+    
+    //Create custom script containing offer's id bytes
+    //      val scriptOpReturn = new ScriptBuilder().op(OP_RETURN).data("hello".getBytes()).build()
+    
+    ByteString.copyFrom(new TransactionOutput(
+      networkParams,
+      null,
+      Coin.valueOf(value),
+      to
+    ).getScriptBytes)
+  }
+  
+  def isDust(satoshis:Long) = satoshis >= Transaction.MIN_NONDUST_OUTPUT.getValue
+  
+  def outputsForOffer(offer:Offer):List[Protos.Output] = {
+    def outputBuilder = Protos.Output.newBuilder
+    
     //  if(isDust(offer.price))
     //    throw new IllegalArgumentException(s"Price ${offer.price} is too low, considered dust")
-
-
-      val ownerOutput =
-        outputBuilder
-          .setAmount(offer.price)
-          .setScript(p2pubKeyHash(
-            value = offer.price,
-            to = receivingAddress
-          ))
-          .build
-
-      List(ownerOutput)
-    }
-
-
-
-
+    
+    
+    val ownerOutput =
+      outputBuilder
+        .setAmount(offer.price)
+        .setScript(p2pubKeyHash(
+          value = offer.price,
+          to = receivingAddress
+        ))
+        .build
+    
+    List(ownerOutput)
   }
-
-
+  
+  
+  
+  
 }
+

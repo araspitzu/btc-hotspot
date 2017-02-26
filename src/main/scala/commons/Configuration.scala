@@ -41,9 +41,9 @@ object Configuration {
   }
   
   object DbConfig {
-    val configPath = s"db.$env"
-    val jdbcUrl = config.getString(s"db.$env.url")
-    val webUI = config.getBoolean(s"db.webUI")
+    val configPath = s"database.$env"
+    val jdbcUrl = config.getString(s"database.$env.db.url")
+    val webUI = config.getBoolean(s"database.webUI")
   }
   
 }

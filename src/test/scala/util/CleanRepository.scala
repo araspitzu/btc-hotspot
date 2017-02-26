@@ -21,12 +21,13 @@ import Helpers._
 import org.specs2.mutable.BeforeAfter
 import org.specs2.specification.BeforeAfterEach
 import registry.SessionRepositoryRegistry
-import slick.driver.H2Driver.api._
 
 
 object CleanRepository {
   
   trait CleanSessionRepository extends BeforeAfterEach {
+    
+    import registry.DatabaseRegistry.database.database.profile.api._
   
     override def before = registry.DatabaseRegistry.database.db.run {
       SessionRepositoryRegistry

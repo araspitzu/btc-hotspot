@@ -22,13 +22,10 @@ import commons.Configuration.MiniPortalConfig.{miniPortalHost, miniPortalPort}
 import commons.TestData
 import protocol._
 import resources.{MiniPortal, PaymentChannelAPI}
-import wallet.WalletServiceComponent
-import slick.driver.H2Driver.api._
 import commons.AppExecutionContextRegistry.context._
 import akka.http.scaladsl.Http
 import iptables.{IpTablesInterface, IpTablesServiceComponent, IpTablesServiceImpl}
 import watchdog.{SchedulerComponent, SchedulerImpl}
-
 import scala.concurrent.Await
 import scala.concurrent.duration._
 
@@ -41,15 +38,7 @@ package object registry {
   }
 
   
-  object MiniPortalRegistry
-    extends Registry
-       with MiniPortal
-       with WalletServiceComponent {
-  
-  
-    override val walletService = new WalletService
-  
-    
+  object MiniPortalRegistry extends Registry with MiniPortal {
     
     bindOrFail(miniportalRoute, miniPortalHost, miniPortalPort, "MiniPortal")
   
@@ -64,9 +53,12 @@ package object registry {
   }
   
   object DatabaseRegistry extends Registry with DatabaseComponent {
-    override val database = new Database
-  
+    override val database = new DatabaseImpl
+    
+    import database.database.profile.api._
+    
     Await.result(setupDb, 5 seconds)
+    
     
     
     def setupDb = database.db.run({

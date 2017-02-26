@@ -24,10 +24,8 @@ import java.time.LocalDateTime
 import com.typesafe.scalalogging.LazyLogging
 import commons.AppExecutionContextRegistry.context._
 import commons.Helpers.FutureOption
-import protocol.domain.{Offer, Session}
+import protocol.domain.{Offer, Session => DomainSession}
 import registry.{DatabaseRegistry, OfferRepositoryRegistry}
-import slick.driver.H2Driver.api._
-
 import scala.concurrent.Future
 
 trait SessionRepositoryComponent {
@@ -37,10 +35,11 @@ trait SessionRepositoryComponent {
 }
 
 class SessionRepositoryImpl extends LazyLogging {
-
+  import DatabaseRegistry.database.database.profile.api._
+  
   lazy val db:Database = DatabaseRegistry.database.db
 
-  class SessionTable(tag: Tag) extends Table[Session](tag, "SESSIONS"){
+  class SessionTable(tag: Tag) extends Table[DomainSession](tag, "SESSIONS"){
   
     implicit val localDateTimeMapper = MappedColumnType.base[LocalDateTime,Timestamp](
       localDateTime => Timestamp.valueOf(localDateTime),
@@ -55,23 +54,23 @@ class SessionRepositoryImpl extends LazyLogging {
   
     def offer = foreignKey("offerFK", offerId, OfferRepositoryRegistry.offerRepositoryImpl.offersTable)(_.offerId.?)
   
-    override def * = (id, createdAt, clientMac, remainingUnits, offerId) <> (Session.tupled, Session.unapply)
+    override def * = (id, createdAt, clientMac, remainingUnits, offerId) <> (DomainSession.tupled, DomainSession.unapply)
   }
 
   val sessionsTable = TableQuery[SessionTable]
 
-  def insert(session: Session):Future[Long] = db.run {
-    (sessionsTable returning sessionsTable.map(_.id)) += session
+  def insert(DomainSession: DomainSession):Future[Long] = db.run {
+    (sessionsTable returning sessionsTable.map(_.id)) += DomainSession
   }
 
-  def upsert(session: Session):FutureOption[Long] = {
+  def upsert(session: DomainSession):FutureOption[Long] = {
     logger.warn("DOING UPSERT")
     db.run {
       (sessionsTable returning sessionsTable.map(_.id)).insertOrUpdate(session)
     }
   }
 
-  def byIdWithOffer(id:Long):FutureOption[(Session, Offer)] = db.run {
+  def byIdWithOffer(id:Long):FutureOption[(DomainSession, Offer)] = db.run {
     sessionsTable
       .filter(_.id === id)
       .join(OfferRepositoryRegistry.offerRepositoryImpl.offersTable).on( (s,o) => s.offerId.map(_ === o.offerId) )
@@ -79,26 +78,26 @@ class SessionRepositoryImpl extends LazyLogging {
       .headOption
   }
 
-  def bySessionId(id:Long):FutureOption[Session] = db.run {
+  def bySessionId(id:Long):FutureOption[DomainSession] = db.run {
     sessionsTable
       .filter(_.id === id)
       .result
       .headOption
   }
 
-  def allSession:Future[Seq[Session]] = db.run {
+  def allSession:Future[Seq[DomainSession]] = db.run {
     sessionsTable
       .result
   }
 
-  def byMacAddress(mac:String):FutureOption[Session] = db.run {
+  def byMacAddress(mac:String):FutureOption[DomainSession] = db.run {
     sessionsTable
       .filter(_.clientMac === mac)
       .result
       .headOption
   }
 
-  def activeSessions:Future[Seq[Session]] = db.run {
+  def activeSessions:Future[Seq[DomainSession]] = db.run {
     sessionsTable
       .filter(_.remainingUnits > 0L)
       .result

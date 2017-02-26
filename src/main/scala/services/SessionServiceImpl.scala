@@ -25,6 +25,7 @@ import commons.Helpers.FutureOption
 import protocol.SessionRepositoryImpl
 import protocol.domain.QtyUnit.MB
 import registry.{IpTablesServiceRegistry, SchedulerRegistry, SessionRepositoryRegistry}
+import wallet.{WalletServiceComponent, WalletServiceInterface}
 import watchdog.{SchedulerImpl, StopWatch, TimebasedStopWatch}
 
 import scala.concurrent.duration._
@@ -62,12 +63,14 @@ trait SessionServiceInterface {
 class SessionServiceImpl(dependencies:{
   val sessionRepository: SessionRepositoryImpl
   val offerService:OfferServiceInterface
+  val walletService: WalletServiceInterface
 }) extends SessionServiceInterface with LazyLogging {
   import dependencies._
   
   def this() = this(new {
     val sessionRepository: SessionRepositoryImpl = SessionRepositoryRegistry.sessionRepositoryImpl
     val offerService:OfferServiceInterface = OfferServiceRegistry.offerService
+    val walletService: WalletServiceInterface = ???
   })
   
   

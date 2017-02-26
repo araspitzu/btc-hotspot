@@ -21,18 +21,18 @@ package protocol
 import com.typesafe.scalalogging.LazyLogging
 import commons.Configuration.DbConfig._
 import commons.Helpers
-import slick.driver.H2Driver.api._ //FIXME
-
+import slick.basic.DatabaseConfig
+import slick.jdbc.JdbcProfile
 import scala.concurrent.duration.Duration
 import scala.concurrent.{Await, Future}
 
-// see http://www.lightbend.com/activator/template/slick-multidb-3.0 for multi db conf
 trait DatabaseComponent extends LazyLogging {
   
-  val database:Database
+  val database:DatabaseImpl
   
-  class Database {
-    val db = {
+  class DatabaseImpl {
+    
+    val database = {
       logger.info(s"Opening database for conf '$configPath' @ $jdbcUrl")
     
       if(webUI) {
@@ -40,8 +40,10 @@ trait DatabaseComponent extends LazyLogging {
         org.h2.tools.Server.createWebServer("-webAllowOthers", "-webPort", "8888").start()
       }
       
-      Database.forConfig(configPath)
+      DatabaseConfig.forConfig[JdbcProfile](configPath)
     }
+    
+    def db = database.db
     
     Helpers.addShutDownHook {
       logger.info("Shutting down db")

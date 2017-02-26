@@ -22,7 +22,6 @@ import registry.DatabaseRegistry
 import commons.Helpers.FutureOption
 import protocol.domain.{Offer, QtyUnit}
 import protocol.domain.QtyUnit.QtyUnit
-import slick.driver.H2Driver.api._
 import scala.concurrent.Future
 
 
@@ -33,6 +32,7 @@ trait OfferRepositoryComponent {
 }
 
 class OfferRepositoryImpl {
+  import DatabaseRegistry.database.database.profile.api._
   val db = DatabaseRegistry.database.db
   
   class OfferTable(tag:Tag) extends Table[Offer](tag,"OFFERS"){

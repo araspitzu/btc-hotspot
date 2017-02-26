@@ -29,6 +29,7 @@ import protocol.domain.{Offer, QtyUnit, Session}
 import services.{OfferService, OfferServiceInterface, OfferServiceRegistry, SessionServiceImpl}
 import util.CleanRepository.CleanSessionRepository
 import util.Helpers._
+import wallet.WalletServiceInterface
 import watchdog.{StopWatch, TimebasedStopWatch}
 
 class SessionServiceSpecs extends Specification with CleanSessionRepository with Mockito {
@@ -39,6 +40,7 @@ class SessionServiceSpecs extends Specification with CleanSessionRepository with
     
     val sessionRepository: SessionRepositoryImpl = new SessionRepositoryImpl
     val offerService:OfferServiceInterface = new OfferService
+    val walletService: WalletServiceInterface = ???
   }
   
   "SessionService" should {

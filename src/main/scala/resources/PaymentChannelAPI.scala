@@ -27,14 +27,12 @@ import commons.AppExecutionContextRegistry
 import org.bitcoin.protocols.payments.Protos
 import org.bitcoin.protocols.payments.Protos._
 import protocol.domain.Session
-import wallet.WalletServiceComponent
 import ExtraHttpHeaders._
 import AppExecutionContextRegistry.context._
 import registry.IpTablesServiceRegistry
 
 
 trait PaymentChannelAPI extends CommonResource with ExtraDirectives {
-  this:WalletServiceComponent  =>
   
 
   def headerLogger:LoggingMagnet[HttpRequest ⇒ Unit] = LoggingMagnet { loggingAdapter => request =>
@@ -51,18 +49,20 @@ trait PaymentChannelAPI extends CommonResource with ExtraDirectives {
 
   private def paymentRequestForSession(session:Session, offerId:Long) = get {
     complete {
-      walletService.generatePaymentRequest(session, offerId) map { req:PaymentRequest =>
-        HttpEntity(req.toByteArray).withContentType(paymentRequestContentType)
-      }
+      "TODO"
+//      walletService.generatePaymentRequest(session, offerId) map { req:PaymentRequest =>
+//        HttpEntity(req.toByteArray).withContentType(paymentRequestContentType)
+//      }
     }
   }
 
   private def paymentDataForSession(session:Session, offerId:Long) = post {
     entity(as[Protos.Payment]){ payment =>
       complete {
-        walletService.validatePayment(session, offerId, payment) map { ack =>
-          HttpEntity(ack.toByteArray).withContentType(paymentAckContentType)
-        }
+        "TODO"
+//        walletService.validatePayment(session, offerId, payment) map { ack =>
+//          HttpEntity(ack.toByteArray).withContentType(paymentAckContentType)
+//        }
       }
     }
   }
