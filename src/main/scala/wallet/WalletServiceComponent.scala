@@ -61,6 +61,7 @@ trait WalletServiceComponent extends LazyLogging {
      })
     
     Helpers.addShutDownHook {
+      logger.info("Shutting down bitcoinj peer group")
       kit.peerGroup.stop
     }
 
@@ -100,20 +101,16 @@ trait WalletServiceComponent extends LazyLogging {
       
       val promise = Promise[Protos.PaymentACK]
       
-      broadcast.setProgressCallback(new ProgressCallback {
-        override def onBroadcastProgress(progress: Double) = {
-          if(progress == 1.0){
-            promise.completeWith(
-              for {
-                _ <- SessionServiceRegistry.sessionService.enableSessionFor(session, offerId).future
-              } yield {
-                logger.info("SESSION SERVICE IS DONE")
-                PaymentProtocol.createPaymentAck(payment, s"Enjoy, your session will last for ")
-              }
-            )
-          } else {
-            logger.info(s"Tx broadcast for sessionId: ${session.id} at ${progress * 100}%")
-          }
+      broadcast.setProgressCallback( (progress: Double) => {
+        logger.info(s"Tx broadcast for sessionId: ${session.id} at ${progress * 100}%")
+        if (progress == 1.0) {
+          promise.completeWith(
+            for {
+              _ <- SessionServiceRegistry.sessionService.enableSessionFor(session, offerId).future
+            } yield {
+              PaymentProtocol.createPaymentAck(payment, s"Enjoy your session!")
+            }
+          )
         }
       })
       
