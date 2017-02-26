@@ -22,10 +22,9 @@ import java.io.File
 import java.util.Date
 
 import com.google.protobuf.ByteString
-import com.typesafe.scalalogging.slf4j.LazyLogging
+import com.typesafe.scalalogging.LazyLogging
 import commons.Configuration.WalletConfig._
 import commons.Configuration.MiniPortalConfig._
-import commons.Helpers._
 import org.bitcoin.protocols.payments.Protos
 import org.bitcoin.protocols.payments.Protos.PaymentRequest
 import org.bitcoinj.core._
@@ -33,13 +32,12 @@ import org.bitcoinj.kits.WalletAppKit
 import org.bitcoinj.protocols.payments.PaymentProtocol
 import org.bitcoinj.wallet.KeyChain.KeyPurpose
 import protocol.domain.{Offer, QtyUnit, Session}
-import services.{ OfferServiceRegistry, SessionServiceRegistry}
+import services.{OfferServiceRegistry, SessionServiceRegistry}
 
 import scala.collection.JavaConverters._
 import commons.AppExecutionContextRegistry.context._
-
+import commons.Helpers
 import scala.concurrent.{Future, Promise}
-import commons.Helpers.ScalaConversions._
 import org.bitcoinj.core.TransactionBroadcast.ProgressCallback
 import org.bitcoinj.core.listeners.DownloadProgressTracker
 
@@ -62,7 +60,7 @@ trait WalletServiceComponent extends LazyLogging {
        }
      })
     
-    addShutDownHook {
+    Helpers.addShutDownHook {
       kit.peerGroup.stop
     }
 

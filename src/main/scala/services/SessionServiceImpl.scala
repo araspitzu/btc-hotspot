@@ -18,7 +18,7 @@
 
 package services
 
-import com.typesafe.scalalogging.slf4j.LazyLogging
+import com.typesafe.scalalogging.LazyLogging
 import protocol.domain.{Offer, Session}
 import commons.AppExecutionContextRegistry.context._
 import commons.Helpers.FutureOption

@@ -18,7 +18,7 @@
 
 package stopwatch
 
-import com.typesafe.scalalogging.slf4j.LazyLogging
+import com.typesafe.scalalogging.LazyLogging
 import commons.Helpers.FutureOption
 import iptables.IpTablesInterface
 import mocks.IpTablesServiceMock

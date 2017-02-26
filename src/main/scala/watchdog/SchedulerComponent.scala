@@ -21,7 +21,7 @@ package watchdog
 import java.time.LocalDateTime
 
 import akka.actor.Cancellable
-import com.typesafe.scalalogging.slf4j.LazyLogging
+import com.typesafe.scalalogging.LazyLogging
 import commons.AppExecutionContextRegistry.context._
 
 import scala.concurrent.duration.FiniteDuration

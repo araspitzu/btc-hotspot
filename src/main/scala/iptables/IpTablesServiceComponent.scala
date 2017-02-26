@@ -18,9 +18,9 @@
 
 package iptables
 
-import com.typesafe.scalalogging.slf4j.LazyLogging
-import commons.Helpers._
-
+import com.typesafe.scalalogging.LazyLogging
+import commons.Helpers.FutureOption
+import commons.Helpers.CmdExecutor
 import scala.concurrent.Future
 import commons.AppExecutionContextRegistry.context._
 import iptables.domain.ChainEntry

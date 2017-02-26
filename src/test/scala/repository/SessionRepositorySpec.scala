@@ -18,7 +18,7 @@
 
 package repository
 
-import com.typesafe.scalalogging.slf4j.LazyLogging
+import com.typesafe.scalalogging.LazyLogging
 import org.specs2.mutable.Specification
 import protocol.SessionRepositoryImpl
 import protocol.domain.Session

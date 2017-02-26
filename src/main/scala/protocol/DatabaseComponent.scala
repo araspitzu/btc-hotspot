@@ -18,10 +18,11 @@
 
 package protocol
 
-import com.typesafe.scalalogging.slf4j.LazyLogging
+import com.typesafe.scalalogging.LazyLogging
 import commons.Configuration.DbConfig._
-import commons.Helpers._
+import commons.Helpers
 import slick.driver.H2Driver.api._
+
 import scala.concurrent.duration.Duration
 import scala.concurrent.{Await, Future}
 
@@ -42,7 +43,7 @@ trait DatabaseComponent extends LazyLogging {
       Database.forConfig(configPath)
     }
     
-    addShutDownHook {
+    Helpers.addShutDownHook {
       logger.info("Shutting down db")
       Await.result( db.shutdown, Duration(2, "seconds") )
     }

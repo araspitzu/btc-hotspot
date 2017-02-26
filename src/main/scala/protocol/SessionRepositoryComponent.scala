@@ -21,7 +21,7 @@ package protocol
 import java.sql.Timestamp
 import java.time.LocalDateTime
 
-import com.typesafe.scalalogging.slf4j.LazyLogging
+import com.typesafe.scalalogging.LazyLogging
 import commons.AppExecutionContextRegistry.context._
 import commons.Helpers.FutureOption
 import protocol.domain.{Offer, Session}

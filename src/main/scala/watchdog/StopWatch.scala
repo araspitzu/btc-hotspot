@@ -20,10 +20,12 @@ package watchdog
 
 import java.time.LocalDateTime
 import java.time.temporal.ChronoUnit
-import com.typesafe.scalalogging.slf4j.LazyLogging
+
+import com.typesafe.scalalogging.LazyLogging
 import commons.Helpers.FutureOption
 import iptables.IpTablesInterface
 import protocol.domain.Session
+
 import scala.concurrent.duration._
 import commons.AppExecutionContextRegistry.context._
 

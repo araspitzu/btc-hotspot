@@ -27,7 +27,7 @@ import scala.compat.java8.OptionConverters._
 import iptables.ArpService._
 
 import scala.concurrent.duration._
-import com.typesafe.scalalogging.slf4j.LazyLogging
+import com.typesafe.scalalogging.LazyLogging
 import de.heikoseeberger.akkahttpjson4s.Json4sSupport
 import akka.http.scaladsl.model._
 import akka.shapeless.HNil

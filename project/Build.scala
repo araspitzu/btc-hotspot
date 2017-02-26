@@ -38,7 +38,7 @@ object ThisBuild extends Build {
 
   val buildOrganization = "andrea"
   val buildVersion = "0.0.1"
-  val buildScalaVersion = "2.11.8"
+  val buildScalaVersion = "2.12.1"
   val name = "btc-hotspot"
 
 
@@ -146,12 +146,13 @@ object Resolvers {
 
 object Dependencies {
   val akkaVersion = "2.4.+"
+  val akkaHttpVersion = "10.+"
   val json4sVersion = "3.+"
 
   val akka = Seq(
     "com.typesafe.akka" %% "akka-actor" % akkaVersion,
     "com.typesafe.akka" %% "akka-slf4j" % akkaVersion,
-    "com.typesafe.akka" %% "akka-http-testkit" % akkaVersion % "test"
+    "com.typesafe.akka" %% "akka-http-testkit" % akkaHttpVersion % "test"
   )
 
   val json4s= Seq(
@@ -162,11 +163,11 @@ object Dependencies {
 
   val logging = Seq(
     "ch.qos.logback" % "logback-classic" % "1.1.2",
-    "com.typesafe.scala-logging" %% "scala-logging-slf4j" % "2.1.2"
+    "com.typesafe.scala-logging" %% "scala-logging" % "3.5.+"
   )
 
   val  bitcoinj = Seq(
-    "org.bitcoinj" % "bitcoinj-core" % "0.14.3"
+    "org.bitcoinj" % "bitcoinj-core" % "0.14.+"
   )
 
   val java8converters = Seq(
@@ -174,7 +175,7 @@ object Dependencies {
   )
 
   val db = Seq(
-    "com.typesafe.slick" %% "slick" % "3.0.3",
+    "com.typesafe.slick" %% "slick" % "3.2.+",
     "com.h2database" % "h2" % "1.4.+",
     "com.zaxxer" % "HikariCP" % "2.5.+" % "test"
   )
