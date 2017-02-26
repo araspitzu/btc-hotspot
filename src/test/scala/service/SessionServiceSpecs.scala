@@ -20,7 +20,7 @@ package service
 
 import commons.Helpers.FutureOption
 import iptables.IpTablesInterface
-import mocks.{IpTablesServiceMock, MockStopWatch}
+import mocks.{IpTablesServiceMock, MockStopWatch, WalletServiceMock}
 import org.specs2.mock.Mockito
 import org.specs2.mutable._
 import org.specs2.specification.Scope
@@ -40,7 +40,7 @@ class SessionServiceSpecs extends Specification with CleanSessionRepository with
     
     val sessionRepository: SessionRepositoryImpl = new SessionRepositoryImpl
     val offerService:OfferServiceInterface = new OfferService
-    val walletService: WalletServiceInterface = ???
+    val walletService: WalletServiceInterface = new WalletServiceMock
   }
   
   "SessionService" should {
