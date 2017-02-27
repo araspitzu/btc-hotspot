@@ -78,9 +78,7 @@ class SessionServiceImpl(dependencies:{
   })
   
   
-  //<statefulness>
   val sessionIdToStopwatch = new scala.collection.mutable.HashMap[Long, StopWatch]
-  //</statefulness>
   
   def selectStopwatchForOffer(session: Session, offer: Offer):StopWatch = {
     
@@ -96,12 +94,13 @@ class SessionServiceImpl(dependencies:{
   }
   
   def payAndEnableSessionForOffer(session: Session, offerId: Long, payment: Protos.Payment): Future[PaymentACK] = {
+    logger.info(s"Paying session ${session.id} for offer $offerId")
     for {
       paymentAck <- walletService.validateBIP70Payment(payment) getOrElse "Payment error"
       offer <- offerService.offerById(offerId) getOrElse "Offer not found"
       _ <- sessionRepository.upsert(session.copy(
         offerId = Some(offerId),
-        remainingUnits = if(session.remainingUnits < 0) offer.qty else session.remainingUnits
+        remainingUnits = offer.qty
       )).future
       stopWatch = selectStopwatchForOffer(session, offer)
       res <- stopWatch.start(onLimitReach = {
@@ -116,17 +115,13 @@ class SessionServiceImpl(dependencies:{
   }
   
   def enableSessionFor(session: Session, offerId:Long):FutureOption[Unit] = {
-    logger.warn(s"ENABLING SESSION ${session.id} FOR OFFER $offerId")
     for {
       offer <- offerService.offerById(offerId)
-      _ = logger.info("OFFER RETRIEVED")
       upsertedId <- sessionRepository.upsert(session.copy(
         offerId = Some(offerId),
         remainingUnits = if(session.remainingUnits < 0) offer.qty else session.remainingUnits
       ))
-      _ = logger.warn("SESSION UPDATED, SELECTING THE STOPWATCH")
       stopWatch = selectStopwatchForOffer(session, offer)
-      _ = logger.warn("GOING TO START THE STOPWATCH NOW")
       res <- stopWatch.start(onLimitReach = {
         logger.info(s"Reached limit for session $upsertedId, disabling it")
         disableSession(session)

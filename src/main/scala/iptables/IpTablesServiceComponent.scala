@@ -70,7 +70,6 @@ class IpTablesServiceImpl extends IpTablesInterface with LazyLogging {
   }
   
   override def enableClient(mac:String) = {
-    logger.info("CALLING IPTABLES")
     iptables(s"-t mangle -I internet 1 -m mac --mac-source $mac -j RETURN").exec.map(Some(_))
   }
   

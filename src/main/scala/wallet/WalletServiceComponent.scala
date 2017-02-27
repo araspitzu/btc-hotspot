@@ -60,8 +60,6 @@ trait WalletServiceInterface {
   
   def generatePaymentRequest(session: Session, offerId: Long): Future[PaymentRequest]
   
-  def validatePayment(session: Session, offerId:Long, payment: Protos.Payment): Future[Protos.PaymentACK]
-  
   def validateBIP70Payment(payment: Protos.Payment): FutureOption[Protos.PaymentACK]
   
 }
@@ -77,7 +75,7 @@ class WalletServiceImpl extends WalletServiceInterface with LazyLogging {
   }.setAutoStop(true)
     .setDownloadListener(new DownloadProgressTracker{
       override def progress(pct:Double,blocksSoFar:Int, date:Date) = {
-        logger.info(s"Chain sync ${pct * 100}%")
+        logger.warn(s"Chain sync ${pct * 100}%")
       }
     })
   
@@ -103,7 +101,7 @@ class WalletServiceImpl extends WalletServiceInterface with LazyLogging {
       networkParams,
       outputsForOffer(offer).asJava,
       s"Please pay ${offer.price} satoshis for ${offer.description}",
-      s"http://$miniPortalHost:$miniPortalPort/api/pay/${session.id}",
+      s"http://$miniPortalHost:$miniPortalPort/api/pay/$offerId",
       Array.emptyByteArray
     ).build).future.map(_.getOrElse(throw new IllegalArgumentException(s"Offer $offerId not found")))
     
@@ -130,34 +128,7 @@ class WalletServiceImpl extends WalletServiceInterface with LazyLogging {
   
     promise.future.map(Some(_))
   }
-  
-  def validatePayment(session: Session, offerId:Long, payment: Protos.Payment): Future[Protos.PaymentACK] = {
     
-    if(payment.getTransactionsCount != 1)
-      throw new IllegalStateException("Too many tx received in payment session")
-    
-    val txBytes = payment.getTransactions(0).toByteArray
-    val tx = new Transaction(networkParams, txBytes)
-    val broadcast = peerGroup.broadcastTransaction(tx)
-    
-    val promise = Promise[Protos.PaymentACK]
-    
-    broadcast.setProgressCallback( (progress: Double) => {
-      logger.info(s"Tx broadcast for sessionId: ${session.id} at ${progress * 100}%")
-      if (progress == 1.0) {
-        promise.completeWith(
-          for {
-            _ <- SessionServiceRegistry.sessionService.enableSessionFor(session, offerId).future
-          } yield {
-            PaymentProtocol.createPaymentAck(payment, s"Enjoy your session!")
-          }
-        )
-      }
-    })
-    
-    promise.future
-  }
-  
   private def p2pubKeyHash(value:Long, to:Address):ByteString = {
     
     //Create custom script containing offer's id bytes
