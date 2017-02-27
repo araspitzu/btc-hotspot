@@ -22,10 +22,12 @@ import com.typesafe.scalalogging.LazyLogging
 import protocol.domain.{Offer, Session}
 import commons.AppExecutionContextRegistry.context._
 import commons.Helpers.FutureOption
+import org.bitcoin.protocols.payments.Protos
+import org.bitcoin.protocols.payments.Protos.PaymentACK
 import protocol.SessionRepositoryImpl
 import protocol.domain.QtyUnit.MB
 import registry.{IpTablesServiceRegistry, SchedulerRegistry, SessionRepositoryRegistry}
-import wallet.{WalletServiceComponent, WalletServiceInterface}
+import wallet.{WalletServiceInterface, WalletServiceRegistry}
 import watchdog.{SchedulerImpl, StopWatch, TimebasedStopWatch}
 
 import scala.concurrent.duration._
@@ -46,6 +48,8 @@ trait SessionServiceComponent {
 trait SessionServiceInterface {
   
   def enableSessionFor(session: Session, offerId:Long):FutureOption[Unit]
+  
+  def payAndEnableSessionForOffer(session: Session, offerId: Long, payment: Protos.Payment):FutureOption[PaymentACK]
   
   def disableSession(session: Session):FutureOption[Unit]
   
@@ -70,7 +74,7 @@ class SessionServiceImpl(dependencies:{
   def this() = this(new {
     val sessionRepository: SessionRepositoryImpl = SessionRepositoryRegistry.sessionRepositoryImpl
     val offerService:OfferServiceInterface = OfferServiceRegistry.offerService
-    val walletService: WalletServiceInterface = ???
+    val walletService: WalletServiceInterface = WalletServiceRegistry.walletService
   })
   
   
@@ -91,6 +95,30 @@ class SessionServiceImpl(dependencies:{
     }
   }
   
+  def payAndEnableSessionForOffer(session: Session, offerId: Long, payment: Protos.Payment): FutureOption[PaymentACK] = {
+    logger.warn(s"PAYING OFFER $offerId FOR SESSION ${session.id}")
+    for {
+      paymentAck <- walletService.validateBIP70Payment(payment)
+      _ = logger.warn(s"PAYMENT VERIFIED - paymentAck.getMemo: ${paymentAck.getMemo}")
+      offer <- offerService.offerById(offerId)
+      _ = logger.warn(s"OFFER RETRIEVED - offer: $offer")
+      upsertedId <- sessionRepository.upsert(session.copy(
+        offerId = Some(offerId),
+        remainingUnits = if(session.remainingUnits < 0) offer.qty else session.remainingUnits
+      ))
+      _ = logger.warn(s"SESSION UPDATED - upsertedId: $upsertedId")
+      stopWatch = selectStopwatchForOffer(session, offer)
+      _ = logger.warn(s"STOPWATCH SELECTED - type ${stopWatch.getClass}")
+      res <- stopWatch.start(onLimitReach = {
+        logger.info(s"Reached limit for session $upsertedId, disabling it")
+        disableSession(session)
+      })
+    } yield {
+      sessionIdToStopwatch += upsertedId -> stopWatch
+      logger.info(s"Enabled session ${upsertedId} for offer $offerId")
+      paymentAck
+    }
+  }
   
   def enableSessionFor(session: Session, offerId:Long):FutureOption[Unit] = {
     logger.warn(s"ENABLING SESSION ${session.id} FOR OFFER $offerId")

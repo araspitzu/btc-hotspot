@@ -20,8 +20,6 @@ package resources
 
 import akka.http.scaladsl.server.Route
 import commons.Configuration.MiniPortalConfig._
-import iptables.IpTablesServiceComponent
-import wallet.WalletServiceComponent
 
 trait MiniPortal extends
   PaymentChannelAPI with

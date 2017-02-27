@@ -18,6 +18,8 @@
 
 package mocks
 
+import commons.Helpers.FutureOption
+import org.bitcoin.protocols.payments.Protos
 import org.bitcoin.protocols.payments.Protos.{Payment, PaymentACK, PaymentRequest}
 import protocol.domain.Session
 import wallet.WalletServiceInterface
@@ -28,4 +30,6 @@ class WalletServiceMock extends WalletServiceInterface {
   override def generatePaymentRequest(session: Session, offerId: Long): Future[PaymentRequest] = ???
   
   override def validatePayment(session: Session, offerId: Long, payment: Payment): Future[PaymentACK] = ???
+  
+  override def validateBIP70Payment(payment: Protos.Payment): FutureOption[Protos.PaymentACK] = ???
 }

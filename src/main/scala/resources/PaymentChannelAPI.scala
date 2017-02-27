@@ -30,10 +30,13 @@ import protocol.domain.Session
 import ExtraHttpHeaders._
 import AppExecutionContextRegistry.context._
 import registry.IpTablesServiceRegistry
+import services.SessionServiceRegistry
+import wallet.WalletServiceRegistry
 
 
 trait PaymentChannelAPI extends CommonResource with ExtraDirectives {
   
+  def sessionService = SessionServiceRegistry.sessionService
 
   def headerLogger:LoggingMagnet[HttpRequest ⇒ Unit] = LoggingMagnet { loggingAdapter => request =>
      loggingAdapter.debug(s"Headers: ${request._3.toString()}")
@@ -49,20 +52,18 @@ trait PaymentChannelAPI extends CommonResource with ExtraDirectives {
 
   private def paymentRequestForSession(session:Session, offerId:Long) = get {
     complete {
-      "TODO"
-//      walletService.generatePaymentRequest(session, offerId) map { req:PaymentRequest =>
-//        HttpEntity(req.toByteArray).withContentType(paymentRequestContentType)
-//      }
+      WalletServiceRegistry.walletService.generatePaymentRequest(session, offerId) map { req:PaymentRequest =>
+        HttpEntity(req.toByteArray).withContentType(paymentRequestContentType)
+      }
     }
   }
 
   private def paymentDataForSession(session:Session, offerId:Long) = post {
     entity(as[Protos.Payment]){ payment =>
       complete {
-        "TODO"
-//        walletService.validatePayment(session, offerId, payment) map { ack =>
-//          HttpEntity(ack.toByteArray).withContentType(paymentAckContentType)
-//        }
+        sessionService.payAndEnableSessionForOffer(session, offerId, payment).future.map(_.get).map { ack =>
+           HttpEntity(ack.toByteArray).withContentType(paymentAckContentType)
+        }
       }
     }
   }

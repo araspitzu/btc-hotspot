@@ -37,12 +37,21 @@ import services.{OfferServiceRegistry, SessionServiceRegistry}
 import scala.collection.JavaConverters._
 import commons.AppExecutionContextRegistry.context._
 import commons.Helpers
+import commons.Helpers.FutureOption
+
 import scala.concurrent.{Future, Promise}
 import org.bitcoinj.core.listeners.DownloadProgressTracker
 
+
+object WalletServiceRegistry extends WalletServiceComponent {
+  
+  override val walletService: WalletServiceInterface = new WalletServiceImpl
+  
+}
+
 trait WalletServiceComponent {
 
-  val walletService: WalletService
+  val walletService: WalletServiceInterface
 
 }
 
@@ -52,13 +61,15 @@ trait WalletServiceInterface {
   
   def validatePayment(session: Session, offerId:Long, payment: Protos.Payment): Future[Protos.PaymentACK]
   
+  def validateBIP70Payment(payment: Protos.Payment): FutureOption[Protos.PaymentACK]
+  
 }
 
-class WalletService extends WalletServiceInterface with LazyLogging {
+class WalletServiceImpl extends WalletServiceInterface with LazyLogging {
   
-  val file = new File(walletDir)
+  private val file = new File(walletDir)
   
-  val kit = new WalletAppKit(network, file, walletFileName) {
+  private val kit = new WalletAppKit(network, file, walletFileName) {
     override def onSetupCompleted() {
       wallet.importKey(new ECKey)
     }
@@ -77,12 +88,10 @@ class WalletService extends WalletServiceInterface with LazyLogging {
   if(isEnabled)
     kit.startAsync
   
-  def networkParams:NetworkParameters = kit.params
-  def peerGroup:PeerGroup = kit.peerGroup
-  def wallet:org.bitcoinj.wallet.Wallet = kit.wallet
-  def receivingAddress:Address = wallet.currentAddress(KeyPurpose.RECEIVE_FUNDS)
-  
-  def bytes2hex(bytes: Array[Byte]): String = bytes.map("%02x ".format(_)).mkString
+  private def networkParams:NetworkParameters = kit.params
+  private def peerGroup:PeerGroup = kit.peerGroup
+  private def wallet:org.bitcoinj.wallet.Wallet = kit.wallet
+  private def receivingAddress:Address = wallet.currentAddress(KeyPurpose.RECEIVE_FUNDS)
   
   def generatePaymentRequest(session: Session, offerId: Long): Future[PaymentRequest] = {
     logger.info(s"Issuing payment request for session ${session.id} and offer $offerId")
@@ -97,6 +106,28 @@ class WalletService extends WalletServiceInterface with LazyLogging {
       Array.emptyByteArray
     ).build).future.map(_.getOrElse(throw new IllegalArgumentException(s"Offer $offerId not found")))
     
+  }
+
+  def validateBIP70Payment(payment: Protos.Payment): FutureOption[Protos.PaymentACK] = {
+    if(payment.getTransactionsCount != 1)
+      throw new IllegalStateException("Too many tx received in payment session")
+  
+    val txBytes = payment.getTransactions(0).toByteArray
+    val tx = new Transaction(networkParams, txBytes)
+    val broadcast = peerGroup.broadcastTransaction(tx)
+  
+    val promise = Promise[Protos.PaymentACK]
+  
+    broadcast.setProgressCallback( (progress: Double) => {
+      logger.info(s"tx ${tx.getHashAsString} broadcast for at ${progress * 100}%")
+      if (progress == 1.0) {
+        promise.completeWith(Future.successful(
+          PaymentProtocol.createPaymentAck(payment, s"Enjoy your session!"))
+        )
+      }
+    })
+  
+    promise.future.map(Some(_))
   }
   
   def validatePayment(session: Session, offerId:Long, payment: Protos.Payment): Future[Protos.PaymentACK] = {
@@ -126,7 +157,7 @@ class WalletService extends WalletServiceInterface with LazyLogging {
     promise.future
   }
   
-  def p2pubKeyHash(value:Long, to:Address):ByteString = {
+  private def p2pubKeyHash(value:Long, to:Address):ByteString = {
     
     //Create custom script containing offer's id bytes
     //      val scriptOpReturn = new ScriptBuilder().op(OP_RETURN).data("hello".getBytes()).build()
@@ -139,9 +170,9 @@ class WalletService extends WalletServiceInterface with LazyLogging {
     ).getScriptBytes)
   }
   
-  def isDust(satoshis:Long) = satoshis >= Transaction.MIN_NONDUST_OUTPUT.getValue
+  private def isDust(satoshis:Long) = satoshis >= Transaction.MIN_NONDUST_OUTPUT.getValue
   
-  def outputsForOffer(offer:Offer):List[Protos.Output] = {
+  private def outputsForOffer(offer:Offer):List[Protos.Output] = {
     def outputBuilder = Protos.Output.newBuilder
     
     //  if(isDust(offer.price))
