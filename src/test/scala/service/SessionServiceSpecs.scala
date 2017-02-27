@@ -21,6 +21,7 @@ package service
 import commons.Helpers.FutureOption
 import iptables.IpTablesInterface
 import mocks.{IpTablesServiceMock, MockStopWatch, WalletServiceMock}
+import org.bitcoin.protocols.payments.Protos.{Payment, PaymentACK}
 import org.specs2.mock.Mockito
 import org.specs2.mutable._
 import org.specs2.specification.Scope
@@ -40,7 +41,9 @@ class SessionServiceSpecs extends Specification with CleanSessionRepository with
     
     val sessionRepository: SessionRepositoryImpl = new SessionRepositoryImpl
     val offerService:OfferServiceInterface = new OfferService
-    val walletService: WalletServiceInterface = new WalletServiceMock
+    val walletService: WalletServiceInterface = new WalletServiceMock {
+      override def validateBIP70Payment(payment: Payment): FutureOption[PaymentACK] = futureSome(PaymentACK.getDefaultInstance)
+    }
   }
   
   "SessionService" should {
@@ -75,7 +78,9 @@ class SessionServiceSpecs extends Specification with CleanSessionRepository with
       
     }
     
-    "enable session should bind the session with the offer and start the stopwatch" in new MockSessionServiceScope {
+    "enable session" in new MockSessionServiceScope {
+      
+      val bip70Payment = Payment.newBuilder.build
         
       var stopWatchStarted = false
       val stopWatchDepencencies = new {
@@ -96,7 +101,7 @@ class SessionServiceSpecs extends Specification with CleanSessionRepository with
       newSession.offerId must beNone
       newSession.remainingUnits must beLessThan(0L)
   
-      sessionService.enableSessionFor(newSession, offer.offerId).futureValue
+      sessionService.payAndEnableSessionForOffer(newSession, offer.offerId, bip70Payment).futureValue
 
       val Some(enabledSession) = sessionService.byMac(macAddress).futureValue
       sessionService.sessionIdToStopwatch.get(enabledSession.id) must beSome

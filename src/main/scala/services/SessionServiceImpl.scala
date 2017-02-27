@@ -49,7 +49,7 @@ trait SessionServiceInterface {
   
   def enableSessionFor(session: Session, offerId:Long):FutureOption[Unit]
   
-  def payAndEnableSessionForOffer(session: Session, offerId: Long, payment: Protos.Payment):FutureOption[PaymentACK]
+  def payAndEnableSessionForOffer(session: Session, offerId: Long, payment: Protos.Payment):Future[PaymentACK]
   
   def disableSession(session: Session):FutureOption[Unit]
   
@@ -95,27 +95,22 @@ class SessionServiceImpl(dependencies:{
     }
   }
   
-  def payAndEnableSessionForOffer(session: Session, offerId: Long, payment: Protos.Payment): FutureOption[PaymentACK] = {
-    logger.warn(s"PAYING OFFER $offerId FOR SESSION ${session.id}")
+  def payAndEnableSessionForOffer(session: Session, offerId: Long, payment: Protos.Payment): Future[PaymentACK] = {
     for {
-      paymentAck <- walletService.validateBIP70Payment(payment)
-      _ = logger.warn(s"PAYMENT VERIFIED - paymentAck.getMemo: ${paymentAck.getMemo}")
-      offer <- offerService.offerById(offerId)
-      _ = logger.warn(s"OFFER RETRIEVED - offer: $offer")
-      upsertedId <- sessionRepository.upsert(session.copy(
+      paymentAck <- walletService.validateBIP70Payment(payment) getOrElse "Payment error"
+      offer <- offerService.offerById(offerId) getOrElse "Offer not found"
+      _ <- sessionRepository.upsert(session.copy(
         offerId = Some(offerId),
         remainingUnits = if(session.remainingUnits < 0) offer.qty else session.remainingUnits
-      ))
-      _ = logger.warn(s"SESSION UPDATED - upsertedId: $upsertedId")
+      )).future
       stopWatch = selectStopwatchForOffer(session, offer)
-      _ = logger.warn(s"STOPWATCH SELECTED - type ${stopWatch.getClass}")
       res <- stopWatch.start(onLimitReach = {
-        logger.info(s"Reached limit for session $upsertedId, disabling it")
+        logger.info(s"Reached limit for session ${session.id}, disabling it")
         disableSession(session)
-      })
+      }).future
     } yield {
-      sessionIdToStopwatch += upsertedId -> stopWatch
-      logger.info(s"Enabled session ${upsertedId} for offer $offerId")
+      sessionIdToStopwatch += session.id -> stopWatch
+      logger.info(s"Enabled session ${session.id} for offer $offerId")
       paymentAck
     }
   }

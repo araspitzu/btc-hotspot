@@ -19,17 +19,10 @@
 package commons
 
 import java.io.{BufferedReader, File, InputStreamReader}
-import java.lang.ProcessBuilder.Redirect
-
-import Configuration._
-import akka.actor.ActorSystem
 import com.google.common.util.concurrent.{FutureCallback, Futures, ListenableFuture}
 import com.typesafe.scalalogging.LazyLogging
-
 import scala.collection.JavaConverters._
 import scala.concurrent._
-import scala.reflect.ClassTag
-import scala.reflect._
 import commons.AppExecutionContextRegistry.context._
 
 
@@ -57,7 +50,8 @@ package object Helpers {
 
   }
   
-  implicit class FutureOption[+T](val future: Future[Option[T]]) extends AnyVal {
+  implicit class FutureOption[+T](val future: Future[Option[T]]) {
+
     def flatMap[U](f: T => FutureOption[U])(implicit ec: ExecutionContext): FutureOption[U] = {
       FutureOption {
         future.flatMap { optA =>
@@ -69,6 +63,11 @@ package object Helpers {
     }
     
     def map[U](f: T => U)(implicit ec: ExecutionContext): FutureOption[U] = FutureOption(future.map(_ map f))
+
+    def getOrElse[U >: T](error:String):Future[U] = future map {
+      case Some(t) => t
+      case None => throw new NoSuchElementException(error)
+    }
     
   }
     

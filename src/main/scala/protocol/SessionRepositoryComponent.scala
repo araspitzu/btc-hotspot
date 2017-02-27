@@ -63,13 +63,10 @@ class SessionRepositoryImpl extends LazyLogging {
     (sessionsTable returning sessionsTable.map(_.id)) += DomainSession
   }
 
-  def upsert(session: DomainSession):FutureOption[Long] = {
-    logger.warn("DOING UPSERT")
-    db.run {
-      (sessionsTable returning sessionsTable.map(_.id)).insertOrUpdate(session)
-    }
+  def upsert(session: DomainSession):FutureOption[Long] = db.run {
+    (sessionsTable returning sessionsTable.map(_.id)).insertOrUpdate(session)
   }
-
+  
   def byIdWithOffer(id:Long):FutureOption[(DomainSession, Offer)] = db.run {
     sessionsTable
       .filter(_.id === id)
