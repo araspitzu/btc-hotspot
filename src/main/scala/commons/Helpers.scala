@@ -64,7 +64,7 @@ package object Helpers {
     
     def map[U](f: T => U)(implicit ec: ExecutionContext): FutureOption[U] = FutureOption(future.map(_ map f))
 
-    def getOrElse[U >: T](error:String):Future[U] = future map {
+    def orFailWith[U >: T](error:String):Future[U] = future map {
       case Some(t) => t
       case None => throw new NoSuchElementException(error)
     }

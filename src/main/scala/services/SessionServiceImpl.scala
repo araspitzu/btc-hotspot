@@ -69,7 +69,9 @@ class SessionServiceImpl(dependencies:{
   val offerService:OfferServiceInterface
   val walletService: WalletServiceInterface
 }) extends SessionServiceInterface with LazyLogging {
-  import dependencies._
+  import dependencies.walletService._
+  import dependencies.sessionRepository._
+  import dependencies.offerService._
   
   def this() = this(new {
     val sessionRepository: SessionRepositoryImpl = SessionRepositoryRegistry.sessionRepositoryImpl
@@ -96,17 +98,11 @@ class SessionServiceImpl(dependencies:{
   def payAndEnableSessionForOffer(session: Session, offerId: Long, payment: Protos.Payment): Future[PaymentACK] = {
     logger.info(s"Paying session ${session.id} for offer $offerId")
     for {
-      paymentAck <- walletService.validateBIP70Payment(payment) getOrElse "Payment error"
-      offer <- offerService.offerById(offerId) getOrElse "Offer not found"
-      _ <- sessionRepository.upsert(session.copy(
-        offerId = Some(offerId),
-        remainingUnits = offer.qty
-      )).future
+      paymentAck <- validateBIP70Payment(payment) orFailWith "Payment error"
+      offer <- offerById(offerId) orFailWith "Offer not found"
+      _ <- upsert(session.copy(offerId = Some(offerId), remainingUnits = offer.qty)).future
       stopWatch = selectStopwatchForOffer(session, offer)
-      res <- stopWatch.start(onLimitReach = {
-        logger.info(s"Reached limit for session ${session.id}, disabling it")
-        disableSession(session)
-      }).future
+      _ <- stopWatch.start(onLimitReach = { disableSession(session) }).future
     } yield {
       sessionIdToStopwatch += session.id -> stopWatch
       logger.info(s"Enabled session ${session.id} for offer $offerId")
@@ -116,8 +112,8 @@ class SessionServiceImpl(dependencies:{
   
   def enableSessionFor(session: Session, offerId:Long):FutureOption[Unit] = {
     for {
-      offer <- offerService.offerById(offerId)
-      upsertedId <- sessionRepository.upsert(session.copy(
+      offer <- offerById(offerId)
+      upsertedId <- upsert(session.copy(
         offerId = Some(offerId),
         remainingUnits = if(session.remainingUnits < 0) offer.qty else session.remainingUnits
       ))
@@ -141,9 +137,9 @@ class SessionServiceImpl(dependencies:{
     }
   }
 
-  def byId(id:Long):FutureOption[Session] = sessionRepository.bySessionId(id)
+  def byId(id:Long):FutureOption[Session] = bySessionId(id)
   
-  def byMac(mac: String): FutureOption[Session] = sessionRepository.byMacAddress(mac)
+  def byMac(mac: String): FutureOption[Session] = byMacAddress(mac)
 
   //TODO fucking remove!
   def byMacSync(mac: String): Option[Session] = {
@@ -158,7 +154,7 @@ class SessionServiceImpl(dependencies:{
     byMac(mac).future flatMap {
       case Some(session) =>
         Future.successful(session.id)
-      case None => sessionRepository.insert(Session(clientMac = mac)) map { sessionId =>
+      case None => insert(Session(clientMac = mac)) map { sessionId =>
           logger.info(s"Created session $sessionId for $mac")
           sessionId
         }

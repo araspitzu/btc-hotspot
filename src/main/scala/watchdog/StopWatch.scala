@@ -59,6 +59,7 @@ class TimebasedStopWatch(val dependencies: {
   override def start(onLimitReach: => Unit): FutureOption[Unit] = {
     ipTablesService.enableClient(session.clientMac) map { ipTablesOut =>
       scheduler.schedule(session.id, duration millisecond){
+        logger.info(s"Reached limit for session ${session.id}")
         scheduler.remove(session.id)
         onLimitReach
       }

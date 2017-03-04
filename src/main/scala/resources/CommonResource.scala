@@ -21,24 +21,16 @@ package resources
 import akka.http.scaladsl.server.{Directive, Directive1, Directives, Route}
 import akka.util.Timeout
 import protocol.domain.Session
-import services.{SessionServiceImpl, SessionServiceRegistry}
+import services.{SessionServiceRegistry}
 
 import scala.compat.java8.OptionConverters._
 import iptables.ArpService._
-
 import scala.concurrent.duration._
 import com.typesafe.scalalogging.LazyLogging
 import de.heikoseeberger.akkahttpjson4s.Json4sSupport
 import akka.http.scaladsl.model._
-import akka.shapeless.HNil
-import commons.AppExecutionContextRegistry.context._
 
-import scala.concurrent.Future
-import scala.util.{Failure, Success}
 
-/**
-  * Created by andrea on 09/09/16.
-  */
 trait CommonResource extends Directives with Json4sSupport with LazyLogging {
 
   implicit val timeout = Timeout(10 seconds)
@@ -47,13 +39,8 @@ trait CommonResource extends Directives with Json4sSupport with LazyLogging {
 
 object ExtraHttpHeaders {
 
-  val paymentRequestContentType: ContentType = contentTypeFor("application/bitcoin-paymentrequest")
-  val paymentAckContentType: ContentType = contentTypeFor("application/bitcoin-paymentack")
-
-  private def contentTypeFor(customContentType:String) = ContentType.parse(customContentType) match {
-    case Right(contentType) => contentType
-    case Left(err) => throw new RuntimeException(s"Unable to generate Content-Type for $customContentType, ${err.toString}")
-  }
+  val paymentRequestContentType = ContentType.parse("application/bitcoin-paymentrequest").right.get
+  val paymentAckContentType = ContentType.parse("application/bitcoin-paymentack").right.get
 
 }
 

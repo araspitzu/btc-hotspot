@@ -21,9 +21,6 @@ package iptables
 import scala.io.Source
 import commons.Configuration._
 
-/**
- * Created by andrea on 16/11/16.
- */
 //TODO add caching
 object ArpService {
 
