@@ -120,7 +120,7 @@ class SessionServiceSpecs extends Specification with CleanSessionRepository with
       
       val Some(newSession) = sessionRepository.bySessionId(newSessionId).futureValue
       
-      sessionService.enableSessionFor(newSession, offer.offerId).futureValue
+      //sessionService.enableSessionFor(newSession, offer.offerId).futureValue
       val Some(session) = sessionRepository.byMacAddress(newSession.clientMac).futureValue
       sessionService.sessionIdToStopwatch.get(session.id) must beSome
             

@@ -38,7 +38,6 @@ import scala.collection.JavaConverters._
 import commons.AppExecutionContextRegistry.context._
 import commons.Helpers
 import commons.Helpers.FutureOption
-
 import scala.concurrent.{Future, Promise}
 import org.bitcoinj.core.listeners.DownloadProgressTracker
 import registry.Registry

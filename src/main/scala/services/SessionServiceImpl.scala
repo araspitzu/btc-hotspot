@@ -47,8 +47,6 @@ trait SessionServiceComponent {
 
 trait SessionServiceInterface {
   
-  def enableSessionFor(session: Session, offerId:Long):FutureOption[Unit]
-  
   def payAndEnableSessionForOffer(session: Session, offerId: Long, payment: Protos.Payment):Future[PaymentACK]
   
   def disableSession(session: Session):FutureOption[Unit]
@@ -107,24 +105,6 @@ class SessionServiceImpl(dependencies:{
       sessionIdToStopwatch += session.id -> stopWatch
       logger.info(s"Enabled session ${session.id} for offer $offerId")
       paymentAck
-    }
-  }
-  
-  def enableSessionFor(session: Session, offerId:Long):FutureOption[Unit] = {
-    for {
-      offer <- offerById(offerId)
-      upsertedId <- upsert(session.copy(
-        offerId = Some(offerId),
-        remainingUnits = if(session.remainingUnits < 0) offer.qty else session.remainingUnits
-      ))
-      stopWatch = selectStopwatchForOffer(session, offer)
-      res <- stopWatch.start(onLimitReach = {
-        logger.info(s"Reached limit for session $upsertedId, disabling it")
-        disableSession(session)
-      })
-    } yield {
-      sessionIdToStopwatch += upsertedId -> stopWatch
-      logger.info(s"Enabled session ${upsertedId} for offer $offerId")
     }
   }
   
