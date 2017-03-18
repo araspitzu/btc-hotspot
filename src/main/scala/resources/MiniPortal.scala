@@ -30,7 +30,7 @@ trait MiniPortal extends
   /**
     * Serves all static files in the given folder
     */
-  def staticFilesRoute:Route = getFromDirectory(staticFilesDir)
+  def staticFilesRoute:Route = getFromDirectory(miniportalStaticFilesDir)
 
   val miniportalRoute: Route =
     paymentChannelRoute ~

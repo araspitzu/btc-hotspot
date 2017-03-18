@@ -27,11 +27,12 @@ import commons.AppExecutionContextRegistry.context._
 import commons.Configuration.MiniPortalConfig.{miniPortalHost, miniPortalPort}
 import services.{SessionServiceImpl, SessionServiceRegistry}
 
-/**
-  * Created by andrea on 19/10/16.
-  */
 trait CaptiveResource extends CommonResource with ExtraDirectives {
-
+  
+  /**
+    * Just redirect to index
+    */
+  def catchAllRedirect(pageUrl: String) = redirect(Uri(pageUrl), StatusCodes.TemporaryRedirect)
 
   /**
     * Redirects the user to prelogin

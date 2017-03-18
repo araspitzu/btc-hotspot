@@ -34,10 +34,17 @@ object Configuration {
   }
 
   object MiniPortalConfig {
-    val staticFilesDir = config.getString(s"miniportal.$env.staticFilesDir")
+    val miniportalStaticFilesDir = config.getString(s"miniportal.$env.staticFilesDir")
     val miniPortalHost = config.getString(s"miniportal.$env.host")
     val miniPortalPort = config.getInt(s"miniportal.$env.port")
     val miniPortalIndex = config.getString(s"miniportal.$env.index")
+  }
+  
+  object AdminPanelConfig {
+    val adminPanelStaticFilesDir = config.getString(s"admin_panel.$env.staticFilesDir")
+    val adminPanelHost = config.getString(s"admin_panel.$env.host")
+    val adminPanelPort = config.getInt(s"admin_panel.$env.port")
+    val adminPanelIndex = config.getString(s"admin_panel.$env.index")
   }
   
   object DbConfig {

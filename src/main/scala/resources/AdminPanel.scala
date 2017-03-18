@@ -16,21 +16,26 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import com.typesafe.scalalogging.LazyLogging
-import registry.{DatabaseRegistry, MiniPortalRegistry}
-import resources.AdminPanelRegistry
-import wallet.WalletServiceRegistry
+package resources
 
+import akka.http.scaladsl.server.Route
+import commons.Configuration.AdminPanelConfig._
+import registry.{MiniPortalRegistry, Registry}
 
-object Boot extends App with LazyLogging {
+object AdminPanelRegistry extends Registry with AdminPanel {
   
-  logger.info(s"Starting btc-hotspot")
-  val adminPanelStarted = AdminPanelRegistry.start
-  val miniPortalStarted = MiniPortalRegistry.start
-  val databaseStarted = DatabaseRegistry.start
-  val walletStarted = WalletServiceRegistry.start
-  logger.info(s"Done booting.")
-
+  MiniPortalRegistry.bindOrFail(adminPanelRoute, adminPanelHost, adminPanelPort, "Admin Panel")
+  
 }
 
-
+trait AdminPanel
+  extends CaptiveResource {
+  
+  
+  def staticFilesRoute:Route = getFromDirectory(adminPanelStaticFilesDir)
+  
+  val adminPanelRoute:Route =
+    staticFilesRoute ~
+    catchAllRedirect(adminPanelIndex)
+  
+}

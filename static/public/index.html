@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="it"><head>
+  <meta charset="utf-8">
+  <title>Paypercom hotspot</title>
+  <meta name="keywords" content="">
+  <meta name="description" content="">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  
+  <meta property="og:title" content="">
+	<meta property="og:type" content="website">
+	<meta property="og:url" content="">
+	<meta property="og:site_name" content="">
+	<meta property="og:description" content="">
+
+  <!-- Styles -->
+  <link rel="stylesheet" href="css/font-awesome.min.css">
+  <link rel="stylesheet" href="css/animate.css">
+  <link rel='stylesheet' href='css/raleway.css'>
+  
+
+  <link rel="stylesheet" href="css/bootstrap.min.css">
+  <link rel="stylesheet" href="css/main.css">
+
+  <script src="js/modernizr-2.7.1.js"></script>
+
+  <script>
+    window.onload = function(){
+          $.ajax({url: "/api/offer", success: function(offers){
+          var link1 = document.getElementById("link1");
+          var link2 = document.getElementById("link2");
+          var link3 = document.getElementById("link3");
+
+          link1.href = offers[0].paymentURI;
+          link2.href = offers[1].paymentURI;
+          link3.href = offers[2].paymentURI;
+      }});
+    };
+
+  </script>
+
+</head>
+
+<body>
+
+    
+    <div class="navbar navbar-inverse navbar-fixed-top">
+      <div class="container">
+        <div class="navbar-header">
+          <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+          </button>
+        </div>
+        <div class="navbar-collapse collapse">
+          <ul class="nav navbar-nav navbar-right">
+            <li><a href="#pricing" class="scroll">Pricing</a></li>
+            <li><a href="login.html">Sign in</a></li>
+          </ul>
+        </div><!--/.navbar-collapse -->
+      </div>
+    </div>
+        
+    <header>
+      <div class="container">
+        <div class="row">
+          <div class="col-xs-6">
+          </div>
+          <div class="col-xs-6 signin text-right navbar-nav">
+            <a href="#pricing" class="scroll">Pricing</a>&nbsp; &nbsp;<a href="/public/login.html">Sign in</a>
+          </div>
+        </div>
+        
+        <div class="row header-info">
+          <div class="col-sm-10 col-sm-offset-1 text-center">
+            <h1 class="wow fadeIn">Paypercom hotspot</h1>
+            <br />
+            <p class="lead wow fadeIn" data-wow-delay="0.5s">Guadagna affittando la tua connessione di casa<br>
+            Risparmia sulla connessione usando quelle messe in affitto</p>
+            <br />
+              
+            <div class="row">
+              <div class="col-md-8 col-md-offset-2 col-sm-10 col-sm-offset-1">
+                <div class="row">
+                  <div class="col-xs-6 text-right wow fadeInUp" data-wow-delay="1s">
+                    <a href="#be-the-first" class="btn btn-secondary btn-lg scroll">Informazioni</a>
+                  </div>
+                  <div class="col-xs-6 text-left wow fadeInUp" data-wow-delay="1.4s">
+                    <a href="#invite" class="btn btn-primary btn-lg scroll">Prova la beta</a>
+                  </div>
+                </div><!--End Button Row-->  
+              </div>
+            </div>
+            
+          </div>
+        </div>
+      </div>
+    </header>
+    
+    <div class="mouse-icon hidden-xs">
+				<div class="scroll"></div>
+			</div>
+
+    <section id="main-info" class="pad-xl">
+	    <div class="container">
+		    <div class="row">
+			    <div class="col-sm-4 wow fadeIn" data-wow-delay="0.4s">
+				    <hr class="line purple">
+				    <h3>Pay-per-com</h3>
+				    <p>Paghi solo il traffico che usi, per MB. I soldi che paghi vanno direttamente al proprietario del router, senza intermediari, senza trucchi.</p>
+			    </div>
+			    <div class="col-sm-4 wow fadeIn" data-wow-delay="0.8s">
+				    <hr  class="line blue">
+				    <h3>Risparmia</h3>
+				    <p>I prezzi sono calcolati al 0.0001€ (circa) per MB, chatta in liberta spendendo una frazione di centesimo.</p>
+			    </div>
+			    <div class="col-sm-4 wow fadeIn" data-wow-delay="1.2s">
+				    <hr  class="line yellow">
+				    <h3>Guadagna</h3>
+				    <p>Affittando la tua connessione di casa potrai guadagnare da chi si connette. Il prezzo lo decidi tu e i soldi li prendi tu.</p>
+			    </div>
+		    </div>
+	    </div>
+    </section>
+        
+        
+    <!--Pricing-->
+    <section id="pricing" class="pad-lg">
+      <div class="container">
+        <div class="row margin-40">
+          <div class="col-sm-8 col-sm-offset-2 text-center">
+            <h2 class="white">Naviga</h2>
+            <p class="white">Col nostro hotspot internet non sara piu un problema</p>
+          </div>
+        </div>
+        
+        <div class="row margin-50">
+          
+          <div class="col-sm-4 pricing-container wow fadeInUp" data-wow-delay="0.5s">
+            <br />
+            <ul class="list-unstyled pricing-table text-center">
+    					<li class="headline"><h5 class="white">Slow</h5></li>
+    					<li class="price"><div class="amount">0.0001€<small>/MB</small></div></li>
+    					<li class="info">Connessione a bassa velocita, ideale per:</li>
+    					<li class="features first">Whatsapp</li>
+    					<li class="features">Email</li>
+                        <li class="features">Facebook</li>
+                        <li class="features last btn btn-secondary btn-wide"><a id="link1" href="bitcoin:?r=http://10.1.0.1:8081/pay/1me000122">Buy</a></li>
+    				</ul>
+          </div>
+          
+          <div class="col-sm-4 pricing-container wow fadeInUp" data-wow-delay="0.2s">
+            <ul class="list-unstyled pricing-table active text-center">
+    					<li class="headline"><h5 class="white">Medium</h5></li>
+    					<li class="price"><div class="amount">0.001€<small>/MB</small></div></li>
+    					<li class="info">Connessione a media velocita, ideale per l'uso quotidiano da cellulare e laptop:</li>
+    					<li class="features first">Video HD</li>
+    					<li class="features">Skype</li>
+    					<li class="features">File sharing</li>
+    					<li class="features">Streaming</li>
+    					<li class="features last btn btn-secondary btn-wide"><a id="link2" href="bitcoin:?r=http://10.1.0.1:8081/pay/1me000122">Buy</a></li>
+    				</ul>
+          </div>
+          
+          <div class="col-sm-4 pricing-container wow fadeInUp" data-wow-delay="0.8s">
+            <br />
+            <ul class="list-unstyled pricing-table text-center">
+    					<li class="headline"><h5 class="white">Fast</h5></li>
+    					<li class="price"><div class="amount">0.005€<small>/MB</small></div></li>
+    					<li class="info">Connessione ad alta velocita, ideale per:</li>
+    					<li class="features first">Video chiamate</li>
+    					<li class="features">Gaming</li>
+    					<li class="features">Tutto il resto..</li>
+    					<li class="features last btn btn-secondary btn-wide"><a id="link3" href="bitcoin:?r=http://10.1.0.1:8081/pay/1me000122">Buy</a></li>
+    				</ul>
+          </div>
+          
+        </div>
+        
+      </div>
+    </section>
+    
+    
+    <section id="invite" class="pad-lg light-gray-bg">
+      <div class="container">
+        <div class="row">
+          <div class="col-sm-8 col-sm-offset-2 text-center">
+            <i class="fa fa-envelope-o margin-40"></i>
+            <h2 class="black">Iscriviti alla beta</h2>
+            <br />
+            <p class="black">Sarai tra i primi utilizzatori del servizio</p>
+            <br />
+            
+            <div class="row">
+              <div class="col-sm-8 col-sm-offset-2 col-md-6 col-md-offset-3">
+                <form role="form">
+                  <div class="form-group">
+                    <input type="email" class="form-control" id="exampleInputEmail1" placeholder="Enter Email">
+                  </div>
+                  <button type="submit" class="btn btn-primary btn-lg">Request Invite</button>
+                </form>
+              </div>
+            </div><!--End Form row-->
+
+          </div>
+        </div>
+      </div>
+    </section>
+    
+    
+    <section id="press" class="pad-sm">
+      <div class="container">
+        
+        <div class="row margin-30 news-container">
+          <div class="col-sm-10 col-sm-offset-1 col-md-8 col-md-offset-2 wow fadeInLeft" data-wow-delay="0.8s">
+            <a href="#" target="_blank">
+            <img class="news-img pull-left" src="img/press-01.jpg" alt="Tech Crunch">
+            <p class="black">Il servizio e' una bomba dovete provarlo.<br />
+            <small><em>Tech Crunch - January 15, 2015</em></small></p>
+            </a>
+          </div>
+        </div>
+        
+        <div class="row margin-30 news-container">
+          <div class="col-sm-10 col-sm-offset-1 col-md-8 col-md-offset-2 wow fadeInLeft" data-wow-delay="1.2s">
+            <a href="#" target="_blank">
+            <img class="news-img pull-left" src="img/press-02.jpg" alt="Forbes">
+            <p class="black">Troppo avanti. <br />
+            <small><em>Forbes - Feb 25, 2015</em></small></p>
+            </a>
+          </div>
+        </div>
+        
+      </div>
+    </section>
+    
+    
+    <footer>
+      <div class="container">
+        
+        <div class="row">
+          <div class="col-sm-8 margin-20">
+            <ul class="list-inline social">
+              <li>Connect with us on</li>
+              <li><a href="#"><i class="fa fa-twitter"></i></a></li>
+              <li><a href="#"><i class="fa fa-facebook"></i></a></li>
+              <li><a href="#"><i class="fa fa-instagram"></i></a></li>
+            </ul>
+          </div>
+
+        </div>
+        
+      </div>
+    </footer>
+    
+    
+    <!-- Javascript
+    ================================================== -->
+    <!-- Placed at the end of the document so the pages load faster -->
+    <script src="js/jquery.min.js"></script>
+    <script>window.jQuery || document.write('<script src="js/jquery-1.11.0.min.js"><\/script>')</script>
+    <script src="js/wow.min.js"></script>
+    <script src="js/bootstrap.min.js"></script>
+    <script src="js/main.js"></script>
+
+    </body>
+</html>
