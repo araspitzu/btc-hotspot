@@ -78,17 +78,19 @@ sequential
  
       var t2 = -1L
       val t1 = System.currentTimeMillis
+      var onReachCalled = false
       
       timeStopWatch.start(onLimitReach = {
         logger.info("calling onLimitReach")
         t2 = System.currentTimeMillis
+        onReachCalled = true
       })
   
       stopWatchDep.ipTablesEnableClientCalled must beTrue
   
       waitForOfferMillis(offer.qty)
 
-      stopWatchDep.ipTablesDisableClientCalled must beTrue
+      onReachCalled must beTrue
       t2 !== -1L
       t2 - t1 - approximation must beCloseTo(offer.qty within 1.significantFigures)
     }

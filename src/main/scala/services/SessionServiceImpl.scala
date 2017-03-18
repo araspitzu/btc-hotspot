@@ -109,7 +109,9 @@ class SessionServiceImpl(dependencies:{
   }
   
   def disableSession(session: Session):FutureOption[Unit] = {
+    logger.info(s"Disabling session ${session}")
     for {
+      _ <- upsert(session.copy(offerId = None))
       stopWatch <- FutureOption(Future.successful(sessionIdToStopwatch.get(session.id)))
     } yield {
       stopWatch.stop

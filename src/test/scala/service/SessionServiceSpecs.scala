@@ -37,6 +37,12 @@ class SessionServiceSpecs extends Specification with CleanSessionRepository with
   sequential
   
   trait MockSessionServiceScope extends Scope {
+    val bip70Payment = Payment.newBuilder.build
+    
+    val stopWatchDepencencies = new {
+      val ipTablesService: IpTablesInterface = new IpTablesServiceMock {}
+    }
+    
     val offer = OfferServiceRegistry.offerService.allOffers.futureValue.head
     
     val sessionRepository: SessionRepositoryImpl = new SessionRepositoryImpl
@@ -79,13 +85,8 @@ class SessionServiceSpecs extends Specification with CleanSessionRepository with
     }
     
     "enable session" in new MockSessionServiceScope {
-      
-      val bip70Payment = Payment.newBuilder.build
         
       var stopWatchStarted = false
-      val stopWatchDepencencies = new {
-        val ipTablesService: IpTablesInterface = new IpTablesServiceMock {}
-      }
       
       val newSession = Session(clientMac = macAddress)
       
@@ -102,33 +103,45 @@ class SessionServiceSpecs extends Specification with CleanSessionRepository with
       newSession.remainingUnits must beLessThan(0L)
   
       sessionService.payAndEnableSessionForOffer(newSession, offer.offerId, bip70Payment).futureValue
-
+      sessionService.sessionIdToStopwatch.get(newSession.id) must beSome
+      
       val Some(enabledSession) = sessionService.byMac(macAddress).futureValue
-      sessionService.sessionIdToStopwatch.get(enabledSession.id) must beSome
       
       stopWatchStarted must beTrue
       enabledSession.offerId === Some(offer.offerId)
-      enabledSession.remainingUnits === offer.qty
-      
     }
     
-    "disable session should stop the stopwatch and disable iptable traffic" in new MockSessionServiceScope {
+    "disable session" in new MockSessionServiceScope {
   
-      val sessionService = new SessionServiceImpl(this)
+      var stopWatchStopped = false
+      var stopWatchStarted = false
+      
+      val sessionService = new SessionServiceImpl(this){
+        override def selectStopwatchForOffer(session: Session, offer: Offer):StopWatch = new MockStopWatch(stopWatchDepencencies, session, offer.offerId){
+          override def start(onLimitReach: => Unit) = {
+            stopWatchStarted = true
+            futureSome(Unit)
+          }
+          override def stop() = {
+            stopWatchStopped = true
+            futureSome(Unit)
+          }
+        }
+      }
   
       val newSessionId = sessionService.getOrCreate(macAddress).futureValue
-      
+      println(s"TEST: newSessionId: $newSessionId")
       val Some(newSession) = sessionRepository.bySessionId(newSessionId).futureValue
+      println(s"TEST: newSession.id: ${newSession.id}")
+      stopWatchStarted must beFalse
+      stopWatchStopped must beFalse
+      sessionService.payAndEnableSessionForOffer(newSession, offer.offerId, bip70Payment).futureValue
+      stopWatchStarted must beTrue
+      stopWatchStopped must beFalse
       
-      //sessionService.enableSessionFor(newSession, offer.offerId).futureValue
-      val Some(session) = sessionRepository.byMacAddress(newSession.clientMac).futureValue
-      sessionService.sessionIdToStopwatch.get(session.id) must beSome
-            
       sessionService.disableSession(newSession).futureValue
-      
-      sessionService.sessionIdToStopwatch.get(newSession.id) must beNone
-  
-    }.pendingUntilFixed
+      stopWatchStopped must beTrue
+    }
     
   }
   

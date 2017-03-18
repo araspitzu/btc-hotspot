@@ -20,11 +20,7 @@ package resources
 
 import akka.http.scaladsl.server.{AuthorizationFailedRejection, Route}
 import commons.JsonSupport
-import services.SessionServiceImpl
 
-/**
-  * Created by andrea on 01/12/16.
-  */
 trait SessionAPI extends CommonResource with JsonSupport with ExtraDirectives {
   
   def statusRoute:Route =
@@ -35,10 +31,7 @@ trait SessionAPI extends CommonResource with JsonSupport with ExtraDirectives {
         else {
           get {
             complete(session)
-          } ~ delete {
-            complete(session)
           }
-          
         }
     }
   }
