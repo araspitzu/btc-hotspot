@@ -31,13 +31,13 @@ object AdminPanelRegistry extends Registry with AdminPanel {
 
 trait AdminPanel
   extends CaptiveResource
-  with WalletAPI {
+  with AdminAPI {
   
   
   def staticFilesRoute:Route = getFromDirectory(adminPanelStaticFilesDir)
   
   val adminPanelRoute:Route =
-    walletRoute ~
+    adminRoute ~
     staticFilesRoute ~
     catchAllRedirect(adminPanelIndex)
   

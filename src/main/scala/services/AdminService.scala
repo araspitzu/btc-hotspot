@@ -20,8 +20,12 @@ package services
 
 import com.typesafe.scalalogging.LazyLogging
 import protocol.SessionRepositoryImpl
+import protocol.domain.Session
 import registry.{Registry, SessionRepositoryRegistry}
 import wallet.{WalletServiceInterface, WalletServiceRegistry}
+import commons.AppExecutionContextRegistry.context._
+
+import scala.concurrent.Future
 
 object AdminServiceRegistry extends Registry with AdminServiceComponent {
   
@@ -39,24 +43,43 @@ trait AdminService {
   
   def walletBalance():Long
   
+  def activeSessions():Future[Seq[Session]]
+  
+  def allSessions():Future[Seq[Session]]
+  
 }
 
 class AdminServiceImpl(dependencies:{
   val sessionRepository: SessionRepositoryImpl
+  val sessionService: SessionServiceInterface
   val offerService:OfferServiceInterface
   val walletService: WalletServiceInterface
 }) extends AdminService with LazyLogging {
-  import dependencies.walletService._
-  import dependencies.sessionRepository._
-  import dependencies.offerService._
+  
+  private def sessionRepository = dependencies.sessionRepository
+  private def sessionService = dependencies.sessionService
+  private def walletService = dependencies.walletService
+  
   
   def this() = this(new {
     val sessionRepository: SessionRepositoryImpl = SessionRepositoryRegistry.sessionRepositoryImpl
+    val sessionService: SessionServiceInterface = SessionServiceRegistry.sessionService
     val offerService:OfferServiceInterface = OfferServiceRegistry.offerService
     val walletService: WalletServiceInterface = WalletServiceRegistry.walletService
   })
   
-  override def walletBalance():Long = getBalance
+  override def walletBalance():Long = walletService.getBalance
+  
+  override def activeSessions():Future[Seq[Session]] = {
+    val activeSessionIds = sessionService.activeSessionIds
+    for {
+       activeSessions <- sessionRepository.byIdSet(activeSessionIds.toSet)
+    } yield activeSessions
+  }
+  
+  override def allSessions():Future[Seq[Session]] = sessionRepository.allSession
+  
+  
   
   
 }

@@ -18,21 +18,38 @@
 
 package resources.admin
 
-import akka.http.scaladsl.server.Route
+import akka.http.scaladsl.server.{MalformedQueryParamRejection, Route}
 import commons.JsonSupport
 import resources.CommonResource
 import services.AdminServiceRegistry
 
-trait WalletAPI extends CommonResource with JsonSupport {
+trait AdminAPI extends CommonResource with JsonSupport {
   
+  def adminRoute:Route =
+    walletRoute ~
+    sessionRoute
   
-  def walletRoute:Route = get {
-    pathPrefix("api" / "admin" / "balance") {
+  def sessionRoute:Route = get {
+    path("api" / "admin" / "session"){
+      pathEnd {
+        parameter("filter") { filter:String =>
+          complete { filter match {
+             case "all" => AdminServiceRegistry.adminService.allSessions
+             case "active" => AdminServiceRegistry.adminService.activeSessions
+             case unknown => reject(MalformedQueryParamRejection("filter", s"$unknown not a valid filter"))
+           }
+         }
+        }
+      }
+    }
+  }
+  
+  def walletRoute :Route = get {
+    path("api" / "admin" / "balance") {
       pathEnd {
         complete(s"${AdminServiceRegistry.adminService.walletBalance}")
       }
     }
   }
-  
   
 }

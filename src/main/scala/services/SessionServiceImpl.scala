@@ -59,6 +59,8 @@ trait SessionServiceInterface {
   
   def byMacSync(mac: String): Option[Session]
   
+  def activeSessionIds():Seq[Long]
+  
 }
 
 
@@ -118,6 +120,8 @@ class SessionServiceImpl(dependencies:{
       sessionIdToStopwatch.remove(session.id)
     }
   }
+  
+  def activeSessionIds():Seq[Long] = sessionIdToStopwatch.keys.toSeq
 
   def byId(id:Long):FutureOption[Session] = bySessionId(id)
   

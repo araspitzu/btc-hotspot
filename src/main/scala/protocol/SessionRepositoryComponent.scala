@@ -81,6 +81,12 @@ class SessionRepositoryImpl extends LazyLogging {
       .result
       .headOption
   }
+  
+  def byIdSet(queryIdSet:Set[Long]):Future[Seq[DomainSession]] = db.run {
+    sessionsTable
+      .filter(_.id inSet queryIdSet)
+      .result
+  }
 
   def allSession:Future[Seq[DomainSession]] = db.run {
     sessionsTable
