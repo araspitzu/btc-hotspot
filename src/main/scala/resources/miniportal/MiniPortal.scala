@@ -16,24 +16,32 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package services
+package resources.miniportal
 
-/**
-  * Created by andrea on 19/01/17.
-  */
-trait DemoServiceComponent {
-  
-  val demoService:DemoServiceImpl
-  
+import akka.http.scaladsl.server.Route
+import commons.Configuration.MiniPortalConfig._
+import resources.CaptiveResource
+
+trait MiniPortal extends
+  PaymentChannelAPI with
+  CaptiveResource with
+  OffersAPI with
+  SessionAPI {
+
+  /**
+    * Serves all static files in the given folder
+    */
+  def staticFilesRoute:Route = getFromDirectory(miniportalStaticFilesDir)
+
+  val miniportalRoute: Route =
+    paymentChannelRoute ~
+    staticFilesRoute ~
+    offersRoute ~
+    statusRoute ~
+    enableMeRoute ~
+    preloginRoute ~
+    entryPointRoute  //must stay in the last position because it matches any request
+
 }
 
-class DemoServiceImpl {
-  
-  def strDup(withString:String):String = {
-    print(s"Yo you called me with $withString...going to sleep...")
-    Thread.sleep(500)
-    println("...awake!")
-    withString+withString
-  }
-  
-}
+

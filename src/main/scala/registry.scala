@@ -21,11 +21,12 @@ import akka.http.scaladsl.server.Route
 import commons.Configuration.MiniPortalConfig.{miniPortalHost, miniPortalPort}
 import commons.TestData
 import protocol._
-import resources.{MiniPortal, PaymentChannelAPI}
 import commons.AppExecutionContextRegistry.context._
 import akka.http.scaladsl.Http
 import iptables.{IpTablesInterface, IpTablesServiceComponent, IpTablesServiceImpl}
+import resources.miniportal.{MiniPortal, PaymentChannelAPI}
 import watchdog.{SchedulerComponent, SchedulerImpl}
+
 import scala.concurrent.Await
 import scala.concurrent.duration._
 

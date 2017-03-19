@@ -61,6 +61,8 @@ trait WalletServiceInterface {
   
   def validateBIP70Payment(payment: Protos.Payment): FutureOption[Protos.PaymentACK]
   
+  def getBalance():Long //satoshis
+  
 }
 
 class WalletServiceImpl extends WalletServiceInterface with LazyLogging {
@@ -127,7 +129,11 @@ class WalletServiceImpl extends WalletServiceInterface with LazyLogging {
   
     promise.future.map(Some(_))
   }
-    
+  
+  override def getBalance():Long = {
+    wallet.getBalance.value
+  }
+  
   private def p2pubKeyHash(value:Long, to:Address):ByteString = {
     
     //Create custom script containing offer's id bytes

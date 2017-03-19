@@ -16,26 +16,26 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package resources
+package resources.miniportal
 
 import akka.http.scaladsl.server.Route
-import commons.Configuration.AdminPanelConfig._
-import registry.{MiniPortalRegistry, Registry}
+import commons.AppExecutionContextRegistry.context._
+import commons.JsonSupport
+import protocol.webDto.WebOfferDto
+import resources.CommonResource
+import services.OfferServiceRegistry
 
-object AdminPanelRegistry extends Registry with AdminPanel {
-  
-  MiniPortalRegistry.bindOrFail(adminPanelRoute, adminPanelHost, adminPanelPort, "Admin Panel")
-  
-}
+trait OffersAPI extends CommonResource with JsonSupport {
 
-trait AdminPanel
-  extends CaptiveResource {
-  
-  
-  def staticFilesRoute:Route = getFromDirectory(adminPanelStaticFilesDir)
-  
-  val adminPanelRoute:Route =
-    staticFilesRoute ~
-    catchAllRedirect(adminPanelIndex)
-  
+
+  def offersRoute:Route = get {
+    pathPrefix("api" / "offer"){
+      pathEnd{
+        complete(OfferServiceRegistry.offerService.allOffers.map(xs => xs.map(WebOfferDto(_))))
+      } ~ path(LongNumber) { id =>
+        complete(OfferServiceRegistry.offerService.offerById(id).future)
+      }
+    }
+  }
+
 }

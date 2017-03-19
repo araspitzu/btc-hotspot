@@ -18,7 +18,7 @@
 
 import com.typesafe.scalalogging.LazyLogging
 import registry.{DatabaseRegistry, MiniPortalRegistry}
-import resources.AdminPanelRegistry
+import resources.admin.AdminPanelRegistry
 import wallet.WalletServiceRegistry
 
 

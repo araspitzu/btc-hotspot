@@ -16,25 +16,29 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package resources
+package resources.admin
 
-import akka.http.scaladsl.server.{AuthorizationFailedRejection, Route}
-import commons.JsonSupport
+import akka.http.scaladsl.server.Route
+import commons.Configuration.AdminPanelConfig._
+import registry.{MiniPortalRegistry, Registry}
+import resources.CaptiveResource
 
-trait SessionAPI extends CommonResource with JsonSupport with ExtraDirectives {
+object AdminPanelRegistry extends Registry with AdminPanel {
   
-  def statusRoute:Route =
-    path("api" / "session" / LongNumber) { sessionId =>
-      sessionOrReject { session =>
-        if(session.id != sessionId)
-          reject(AuthorizationFailedRejection)
-        else {
-          get {
-            complete(session)
-          }
-        }
-    }
-  }
+  MiniPortalRegistry.bindOrFail(adminPanelRoute, adminPanelHost, adminPanelPort, "Admin Panel")
   
+}
+
+trait AdminPanel
+  extends CaptiveResource
+  with WalletAPI {
+  
+  
+  def staticFilesRoute:Route = getFromDirectory(adminPanelStaticFilesDir)
+  
+  val adminPanelRoute:Route =
+    walletRoute ~
+    staticFilesRoute ~
+    catchAllRedirect(adminPanelIndex)
   
 }

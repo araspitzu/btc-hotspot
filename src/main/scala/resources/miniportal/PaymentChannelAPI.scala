@@ -16,23 +16,22 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package resources
+package resources.miniportal
 
-import akka.http.scaladsl.model._
-import akka.http.scaladsl.server._
+import akka.http.scaladsl.model.{HttpEntity, HttpRequest}
 import akka.http.scaladsl.server.directives.LoggingMagnet
-import akka.http.scaladsl.unmarshalling._
+import akka.http.scaladsl.server.{Route, ValidationRejection}
+import akka.http.scaladsl.unmarshalling.{FromRequestUnmarshaller, Unmarshaller}
 import akka.util.ByteString
-import commons.AppExecutionContextRegistry
 import org.bitcoin.protocols.payments.Protos
-import org.bitcoin.protocols.payments.Protos._
+import org.bitcoin.protocols.payments.Protos.PaymentRequest
 import protocol.domain.Session
-import ExtraHttpHeaders._
-import AppExecutionContextRegistry.context._
 import registry.IpTablesServiceRegistry
+import resources.ExtraHttpHeaders.{paymentAckContentType, paymentRequestContentType}
+import resources.{CommonResource, ExtraDirectives}
 import services.SessionServiceRegistry
 import wallet.WalletServiceRegistry
-
+import commons.AppExecutionContextRegistry.context._
 
 trait PaymentChannelAPI extends CommonResource with ExtraDirectives {
   

@@ -16,21 +16,23 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package services
+package resources.admin
 
-/**
-  * Created by andrea on 19/01/17.
-  */
-trait AnotherDemoServiceComponent {
-  
-}
+import akka.http.scaladsl.server.Route
+import commons.JsonSupport
+import resources.CommonResource
+import services.AdminServiceRegistry
 
-class AnotherDemoServiceImpl {
-  self:DemoServiceComponent =>
+trait WalletAPI extends CommonResource with JsonSupport {
   
-  def fooBar:Int = {
-    val dup = demoService.strDup("return 20")
-    dup.length
+  
+  def walletRoute:Route = get {
+    pathPrefix("api" / "admin" / "balance") {
+      pathEnd {
+        complete(s"${AdminServiceRegistry.adminService.walletBalance}")
+      }
+    }
   }
+  
   
 }

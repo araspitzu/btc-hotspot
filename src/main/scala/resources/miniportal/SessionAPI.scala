@@ -16,25 +16,26 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package resources
+package resources.miniportal
 
-import akka.http.scaladsl.server.Route
+import akka.http.scaladsl.server.{AuthorizationFailedRejection, Route}
 import commons.JsonSupport
-import protocol.webDto.WebOfferDto
-import services.{OfferService, OfferServiceRegistry}
-import commons.AppExecutionContextRegistry.context._
+import resources.{CommonResource, ExtraDirectives}
 
-trait OffersAPI extends CommonResource with JsonSupport {
-
-
-  def offersRoute:Route = get {
-    pathPrefix("api" / "offer"){
-      pathEnd{
-        complete(OfferServiceRegistry.offerService.allOffers.map(xs => xs.map(WebOfferDto(_))))
-      } ~ path(LongNumber) { id =>
-        complete(OfferServiceRegistry.offerService.offerById(id).future)
-      }
+trait SessionAPI extends CommonResource with JsonSupport with ExtraDirectives {
+  
+  def statusRoute:Route =
+    path("api" / "session" / LongNumber) { sessionId =>
+      sessionOrReject { session =>
+        if(session.id != sessionId)
+          reject(AuthorizationFailedRejection)
+        else {
+          get {
+            complete(session)
+          }
+        }
     }
   }
-
+  
+  
 }
