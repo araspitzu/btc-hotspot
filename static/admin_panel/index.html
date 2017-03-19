@@ -164,9 +164,10 @@
 
         $(document).ready(function() {
 
-            var bw =  document.getElementById('balance-well');
-            bw.textContent = bw.textContent.concat('123$');
-
+          $.ajax({url: "/api/admin/balance", success: function(value){
+              var bw =  document.getElementById('balance-well');
+              bw.textContent = bw.textContent.concat(value+' mBTC');
+          }});
 
         });
 
