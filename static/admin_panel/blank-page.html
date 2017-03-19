@@ -156,7 +156,7 @@
                         <a href="index.html"><i class="fa fa-fw fa-dashboard"></i> Dashboard</a>
                     </li>
                     <li class="active">
-                        <a href="blank-page.html"><i class="fa fa-fw fa-file"></i> Blank Page</a>
+                        <a href="blank-page.html"><i class="fa fa-fw fa-file"></i> Sessions</a>
                     </li>
 
                 </ul>
@@ -172,22 +172,43 @@
                 <div class="row">
                     <div class="col-lg-12">
                         <h1 class="page-header">
-                            Blank Page
-                            <small>Subheading</small>
+                            Session page
                         </h1>
                         <ol class="breadcrumb">
                             <li>
                                 <i class="fa fa-dashboard"></i>  <a href="index.html">Dashboard</a>
                             </li>
                             <li class="active">
-                                <i class="fa fa-file"></i> Blank Page
+                                <i class="fa fa-file"></i> Sessions
                             </li>
                         </ol>
                     </div>
                 </div>
                 <!-- /.row -->
 
-            </div>
+
+                <div class="row">
+                    <div class="col-lg-12">
+                        <h2>All sessions</h2>
+                        <div class="table-responsive">
+                            <table class="table table-hover" id="tx-table">
+                                <thead>
+                                <tr>
+                                    <th>SessionID</th>
+                                    <th>MAC Address</th>
+                                    <th>Active</th>
+                                    <th>Created at</th>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+                <!-- /. row -->
+
+                </div>
             <!-- /.container-fluid -->
 
         </div>
@@ -201,6 +222,38 @@
 
     <!-- Bootstrap Core JavaScript -->
     <script src="js/bootstrap.min.js"></script>
+
+    <script type="text/javascript">
+
+    function addRow(sessionId, mac, active, creation_date){
+         $("#tx-table").find('tbody')
+            .append($('<tr>')
+              .append($('<td>')
+                .text(sessionId)
+              )
+              .append($('<td>')
+                .text(mac)
+              )
+              .append($('<td>')
+                .text(active)
+              )
+              .append($('<td>')
+                .text(creation_date)
+              )
+            );
+    }
+
+     $(document).ready(function() {
+
+          $.ajax({url: "/api/admin/session?filter=all", success: function(sessions){
+                sessions.forEach(function(session, index, arr) {
+                    addRow(session.id, session.clientMac, '?', session.createdAt);
+                })
+
+          }});
+
+     });
+    </script>
 
 </body>
 
