@@ -18,8 +18,9 @@
 
 package protocol
 
-import protocol.domain.Offer
+import protocol.domain.{BitcoinTransaction, Offer}
 import commons.Configuration.MiniPortalConfig._
+import protocol.webDto.BitcoinTransactionDto
 
 package object webDto {
 
@@ -35,4 +36,21 @@ package object webDto {
     )
   }
 
+  case class BitcoinTransactionDto(
+     hash: String,
+     value: Long,
+     explorerUrl: String
+  )
+  
+  object BitcoinTransactionDto {
+    def apply(hash: String, value: Long): BitcoinTransactionDto = BitcoinTransactionDto(
+      hash,
+      value,
+      explorerUrl = s"https://testnet.blockexplorer.com/tx/$hash"
+    )
+    
+    def apply(btx: BitcoinTransaction): BitcoinTransactionDto = apply(btx.hash, btx.value)
+        
+  }
+  
 }

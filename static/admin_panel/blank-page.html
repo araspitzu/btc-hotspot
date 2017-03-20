@@ -137,7 +137,7 @@
                     <div class="col-lg-12">
                         <h2>All sessions</h2>
                         <div class="table-responsive">
-                            <table class="table table-hover" id="tx-table">
+                            <table class="table table-hover" id="session-table">
                                 <thead>
                                 <tr>
                                     <th>SessionID</th>
@@ -153,6 +153,25 @@
                     </div>
                 </div>
                 <!-- /. row -->
+
+                <div class="row">
+                    <div class="col-lg-12">
+                        <h2>All transactions</h2>
+                        <div class="table-responsive">
+                            <table class="table table-hover" id="tx-table">
+                                <thead>
+                                <tr>
+                                    <th>Hash</th>
+                                    <th>Value</th>
+                                    <th>Explorer</th>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
 
                 </div>
             <!-- /.container-fluid -->
@@ -171,8 +190,8 @@
 
     <script type="text/javascript">
 
-    function addRow(sessionId, mac, active, creation_date){
-         $("#tx-table").find('tbody')
+    function addSessionRow(sessionId, mac, active, creation_date){
+         $("#session-table").find('tbody')
             .append($('<tr>')
               .append($('<td>')
                 .text(sessionId)
@@ -189,14 +208,37 @@
             );
     }
 
+    function addTxRow(hash, value, url){
+          $("#tx-table").find('tbody')
+            .append($('<tr>')
+              .append($('<td>')
+                .text(hash)
+              )
+              .append($('<td>')
+                .text(value)
+              )
+              .append($('<td>')
+                .text(url)
+              )
+          );
+    }
+
      $(document).ready(function() {
 
           $.ajax({url: "/api/admin/session?filter=all", success: function(sessions){
                 sessions.forEach(function(session, index, arr) {
-                    addRow(session.id, session.clientMac, '?', session.createdAt);
+                    addSessionRow(session.id, session.clientMac, '?', session.createdAt);
                 })
 
           }});
+
+          $.ajax({url: "/api/admin/wallet/transactions", success: function(txs){
+                txs.forEach(function(tx, index, arr) {
+                    addTxRow(tx.hash, tx.value, tx.explorerUrl);
+                })
+
+          }});
+
 
      });
     </script>

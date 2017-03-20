@@ -46,6 +46,9 @@ package object domain {
     val millis = Value("millis")
   }
   
-  
+  case class BitcoinTransaction(
+     hash: String,
+     value: Long
+  )
   
 }

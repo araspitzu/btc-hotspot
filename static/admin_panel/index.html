@@ -153,7 +153,7 @@
 
         $(document).ready(function() {
 
-          $.ajax({url: "/api/admin/balance", success: function(value){
+          $.ajax({url: "/api/admin/wallet/balance", success: function(value){
               var bw =  document.getElementById('balance-well');
               bw.textContent = bw.textContent.concat(' '+value+' mBTC');
           }});

@@ -24,6 +24,7 @@ import protocol.domain.Session
 import registry.{Registry, SessionRepositoryRegistry}
 import wallet.{WalletServiceInterface, WalletServiceRegistry}
 import commons.AppExecutionContextRegistry.context._
+import protocol.webDto.BitcoinTransactionDto
 
 import scala.concurrent.Future
 
@@ -46,6 +47,8 @@ trait AdminService {
   def activeSessions():Future[Seq[Session]]
   
   def allSessions():Future[Seq[Session]]
+  
+  def transactions():Seq[BitcoinTransactionDto]
   
 }
 
@@ -79,7 +82,9 @@ class AdminServiceImpl(dependencies:{
   
   override def allSessions():Future[Seq[Session]] = sessionRepository.allSession
   
-  
+  override def transactions():Seq[BitcoinTransactionDto] = {
+    walletService.getTransactions.map(BitcoinTransactionDto(_))
+  }
   
   
 }

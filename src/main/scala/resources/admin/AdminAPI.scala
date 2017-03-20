@@ -44,10 +44,16 @@ trait AdminAPI extends CommonResource with JsonSupport {
     }
   }
   
-  def walletRoute :Route = get {
-    path("api" / "admin" / "balance") {
-      pathEnd {
-        complete(s"${AdminServiceRegistry.adminService.walletBalance}")
+  def walletRoute :Route = {
+    pathPrefix("api" / "admin" / "wallet") {
+      path("balance") {
+         get {
+          complete(s"${AdminServiceRegistry.adminService.walletBalance}")
+        }
+      } ~ path("transactions"){
+         get {
+           complete(AdminServiceRegistry.adminService.transactions)
+         }
       }
     }
   }

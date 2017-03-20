@@ -31,13 +31,14 @@ import org.bitcoinj.core._
 import org.bitcoinj.kits.WalletAppKit
 import org.bitcoinj.protocols.payments.PaymentProtocol
 import org.bitcoinj.wallet.KeyChain.KeyPurpose
-import protocol.domain.{Offer, QtyUnit, Session}
+import protocol.domain.{BitcoinTransaction, Offer, QtyUnit, Session}
 import services.{OfferServiceRegistry, SessionServiceRegistry}
 
 import scala.collection.JavaConverters._
 import commons.AppExecutionContextRegistry.context._
 import commons.Helpers
 import commons.Helpers.FutureOption
+
 import scala.concurrent.{Future, Promise}
 import org.bitcoinj.core.listeners.DownloadProgressTracker
 import registry.Registry
@@ -62,6 +63,8 @@ trait WalletServiceInterface {
   def validateBIP70Payment(payment: Protos.Payment): FutureOption[Protos.PaymentACK]
   
   def getBalance():Long //satoshis
+  
+  def getTransactions():Seq[BitcoinTransaction]
   
 }
 
@@ -132,6 +135,15 @@ class WalletServiceImpl extends WalletServiceInterface with LazyLogging {
   
   override def getBalance():Long = {
     wallet.getBalance.value
+  }
+  
+  def getTransactions():Seq[BitcoinTransaction] = {
+    wallet.getWalletTransactions.asScala.toSeq.map { tx =>
+      BitcoinTransaction(
+        hash = tx.getTransaction.getHashAsString,
+        value = tx.getTransaction.getValue(wallet).value
+      )
+    }
   }
   
   private def p2pubKeyHash(value:Long, to:Address):ByteString = {
