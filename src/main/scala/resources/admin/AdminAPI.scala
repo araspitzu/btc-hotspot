@@ -20,6 +20,7 @@ package resources.admin
 
 import akka.http.scaladsl.server.{MalformedQueryParamRejection, Route}
 import commons.JsonSupport
+import protocol.webDto.WithdrawTransactionData
 import resources.CommonResource
 import services.AdminServiceRegistry
 
@@ -54,6 +55,12 @@ trait AdminAPI extends CommonResource with JsonSupport {
          get {
            complete(AdminServiceRegistry.adminService.transactions)
          }
+      } ~ path("spend") {
+        post {
+          entity(as[WithdrawTransactionData]) { withdrawTransactionData =>
+            complete(AdminServiceRegistry.adminService.withdraw(withdrawTransactionData))
+          }
+        }
       }
     }
   }

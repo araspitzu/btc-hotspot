@@ -53,4 +53,9 @@ package object webDto {
         
   }
   
+  case class WithdrawTransactionData(
+    address: String,
+    amount: Long
+  )
+  
 }

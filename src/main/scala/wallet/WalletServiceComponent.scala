@@ -66,6 +66,8 @@ trait WalletServiceInterface {
   
   def getTransactions():Seq[BitcoinTransaction]
   
+  def createSpendingTx(address: String, value: Long):Future[String]
+  
 }
 
 class WalletServiceImpl extends WalletServiceInterface with LazyLogging {
@@ -144,6 +146,30 @@ class WalletServiceImpl extends WalletServiceInterface with LazyLogging {
         value = tx.getTransaction.getValue(wallet).value
       )
     }
+  }
+  
+  override def createSpendingTx(address: String, value: Long):Future[String] = {
+    val spendingTx = wallet.createSend(
+      Address.fromBase58(networkParams, address),
+      Coin.valueOf(value)
+    )
+    
+    val txHash = spendingTx.getHashAsString
+    
+    logger.info(s"created spending tx $txHash")
+    
+    val broadcast = peerGroup.broadcastTransaction(spendingTx)
+    
+    val promise = Promise[String]
+  
+    broadcast.setProgressCallback( (progress: Double) => {
+      logger.info(s"tx $txHash broadcast for at ${progress * 100}%")
+      if (progress == 1.0) {
+        promise.completeWith(Future.successful(txHash))
+      }
+    })
+  
+    promise.future
   }
   
   private def p2pubKeyHash(value:Long, to:Address):ByteString = {
