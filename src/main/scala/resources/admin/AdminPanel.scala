@@ -39,6 +39,6 @@ trait AdminPanel
   val adminPanelRoute:Route =
     adminRoute ~
     staticFilesRoute ~
-    catchAllRedirect(adminPanelIndex)
+    emptyUrlRedirect(adminPanelIndex)
   
 }

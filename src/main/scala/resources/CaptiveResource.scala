@@ -29,11 +29,16 @@ import services.{SessionServiceImpl, SessionServiceRegistry}
 
 trait CaptiveResource extends CommonResource with ExtraDirectives {
   
+  
+  
+  
   /**
-    * Just redirect to index
+    * Redirect empty url to index
     */
-  def catchAllRedirect(pageUrl: String) = redirect(Uri(pageUrl), StatusCodes.TemporaryRedirect)
-
+  def emptyUrlRedirect(toPage: String) = path("") {
+       redirect(Uri(toPage), StatusCodes.TemporaryRedirect)
+  }
+  
   /**
     * Redirects the user to prelogin
     */

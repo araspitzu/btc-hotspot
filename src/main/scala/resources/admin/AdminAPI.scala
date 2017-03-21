@@ -26,6 +26,8 @@ import services.AdminServiceRegistry
 
 trait AdminAPI extends CommonResource with JsonSupport {
   
+  def adminService = AdminServiceRegistry.adminService
+  
   def adminRoute:Route =
     walletRoute ~
     sessionRoute
@@ -35,8 +37,8 @@ trait AdminAPI extends CommonResource with JsonSupport {
       pathEnd {
         parameter("filter") { filter:String =>
           complete { filter match {
-             case "all" => AdminServiceRegistry.adminService.allSessions
-             case "active" => AdminServiceRegistry.adminService.activeSessions
+             case "all" => adminService.allSessions
+             case "active" => adminService.activeSessions
              case unknown => reject(MalformedQueryParamRejection("filter", s"$unknown not a valid filter"))
            }
          }
@@ -49,16 +51,16 @@ trait AdminAPI extends CommonResource with JsonSupport {
     pathPrefix("api" / "admin" / "wallet") {
       path("balance") {
          get {
-          complete(s"${AdminServiceRegistry.adminService.walletBalance}")
+          complete(s"${adminService.walletBalance}")
         }
       } ~ path("transactions"){
          get {
-           complete(AdminServiceRegistry.adminService.transactions)
+           complete(adminService.transactions)
          }
       } ~ path("spend") {
         post {
           entity(as[WithdrawTransactionData]) { withdrawTransactionData =>
-            complete(AdminServiceRegistry.adminService.withdraw(withdrawTransactionData))
+            complete(adminService.withdraw(withdrawTransactionData))
           }
         }
       }

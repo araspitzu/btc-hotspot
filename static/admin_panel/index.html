@@ -170,17 +170,17 @@
         function withdraw(){
             var address = $('#address_input').val();
             var amount = $('#amount_input').val().replace('.','');
-            var satoshis = Number(amount);
 
             var post_body = new Object();
             post_body.address = address;
-            post_body.amount = amount;
+            post_body.amount = Number(amount);
 
 
             $.ajax({
               type: "POST",
               url: "/api/admin/wallet/spend",
-              data: post_body,
+              data: JSON.stringify(post_body),
+              contentType: "application/json; charset=utf-8",
               success: function(value) { alert('Successfully sent!'); }
             });
 
