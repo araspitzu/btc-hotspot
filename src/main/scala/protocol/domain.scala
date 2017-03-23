@@ -19,6 +19,8 @@
 package protocol
 
 import java.time.LocalDateTime
+import java.util.Date
+
 import protocol.domain.QtyUnit.QtyUnit
 
 package object domain {
@@ -48,7 +50,8 @@ package object domain {
   
   case class BitcoinTransaction(
      hash: String,
-     value: Long
+     value: Long,
+     creationDate: Option[Date] = None
   )
   
 }

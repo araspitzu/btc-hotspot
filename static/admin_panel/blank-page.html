@@ -163,7 +163,7 @@
                                 <tr>
                                     <th>Hash</th>
                                     <th>Value</th>
-                                    <th>Explorer</th>
+                                    <th>Date</th>
                                 </tr>
                                 </thead>
                                 <tbody>
@@ -208,20 +208,20 @@
             );
     }
 
-    function addTxRow(hash, value, url){
+    function addTxRow(hash, value, url, date){
           $("#tx-table").find('tbody')
             .append($('<tr>')
               .append($('<td>')
-                .text(hash)
+                .append($('<a>')
+                    .attr('href', url)
+                    .text(hash.substring(0, 47)+'...')
+                )
               )
               .append($('<td>')
                 .text(value)
               )
               .append($('<td>')
-                .append($('<a>')
-                    .attr('href', url)
-                    .text('View')
-                )
+                .text(date)
               )
           );
     }
@@ -237,7 +237,7 @@
 
           $.ajax({url: "/api/admin/wallet/transactions", success: function(txs){
                 txs.forEach(function(tx, index, arr) {
-                    addTxRow(tx.hash, tx.value, tx.explorerUrl);
+                    addTxRow(tx.hash, tx.value, tx.explorerUrl, tx.creationDate);
                 })
 
           }});

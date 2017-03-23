@@ -18,9 +18,11 @@
 
 package protocol
 
+import java.time.LocalDateTime
+import java.util.Date
+
 import protocol.domain.{BitcoinTransaction, Offer}
 import commons.Configuration.MiniPortalConfig._
-import protocol.webDto.BitcoinTransactionDto
 
 package object webDto {
 
@@ -39,17 +41,19 @@ package object webDto {
   case class BitcoinTransactionDto(
      hash: String,
      value: Long,
+     creationDate: Option[Date] = None,
      explorerUrl: String
   )
   
   object BitcoinTransactionDto {
-    def apply(hash: String, value: Long): BitcoinTransactionDto = BitcoinTransactionDto(
+    def apply(hash: String, value: Long, creationDate: Option[Date]): BitcoinTransactionDto = BitcoinTransactionDto(
       hash,
       value,
+      creationDate = creationDate,
       explorerUrl = s"https://testnet.blockexplorer.com/tx/$hash"
     )
     
-    def apply(btx: BitcoinTransaction): BitcoinTransactionDto = apply(btx.hash, btx.value)
+    def apply(btx: BitcoinTransaction): BitcoinTransactionDto = apply(btx.hash, btx.value, btx.creationDate)
         
   }
   

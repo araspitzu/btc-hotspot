@@ -19,6 +19,7 @@
 package wallet
 
 import java.io.File
+import java.time.{LocalDate, LocalDateTime}
 import java.util.Date
 
 import com.google.protobuf.ByteString
@@ -143,9 +144,20 @@ class WalletServiceImpl extends WalletServiceInterface with LazyLogging {
     wallet.getWalletTransactions.asScala.toSeq.map { tx =>
       BitcoinTransaction(
         hash = tx.getTransaction.getHashAsString,
-        value = tx.getTransaction.getValue(wallet).value
+        value = tx.getTransaction.getValue(wallet).value,
+        creationDate = {
+          if(tx.getTransaction.getConfidence.getDepthInBlocks > 0)
+            Some(tx.getTransaction.getUpdateTime)
+          else
+            None
+        }
       )
-    }
+    }.sortWith((lh, rh) => (lh.creationDate, rh.creationDate) match {
+      case (Some(lhDate), Some(rhDate)) => lhDate.after(rhDate)
+      case (None, _) => true
+      case (_, None) => false
+    })
+    
   }
   
   override def createSpendingTx(address: String, value: Long):Future[String] = {
