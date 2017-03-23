@@ -218,7 +218,10 @@
                 .text(value)
               )
               .append($('<td>')
-                .text(url)
+                .append($('<a>')
+                    .attr('href', url)
+                    .text('View')
+                )
               )
           );
     }
