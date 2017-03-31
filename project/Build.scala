@@ -186,8 +186,12 @@ object Dependencies {
     "org.specs2" %% "specs2-matcher-extra" % "3.8.6" % "test"
   )
   
+  val misc = Seq(
+    "org.apache.commons" % "commons-email" % "1.4.+"
+  )
+  
 
-  val dependencies = akka ++ json4s ++ logging ++ bitcoinj ++ db ++ testing
+  val dependencies = akka ++ json4s ++ logging ++ bitcoinj ++ db ++ testing ++ misc
 }
 
 // Shell prompt which show the current project,

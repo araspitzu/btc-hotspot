@@ -25,6 +25,9 @@ import commons.AppExecutionContextRegistry.context._
 import akka.http.scaladsl.Http
 import iptables.{IpTablesInterface, IpTablesServiceComponent, IpTablesServiceImpl}
 import resources.miniportal.{MiniPortal, PaymentChannelAPI}
+import slick.driver.JdbcProfile
+import slick.jdbc
+import slick.jdbc.meta.MTable
 import watchdog.{SchedulerComponent, SchedulerImpl}
 
 import scala.concurrent.Await
@@ -34,7 +37,7 @@ import scala.concurrent.duration._
 package object registry {
   
   trait Registry {
-    //Dummy call to trigger object initialization thus the registries instantiation
+    //Dummy call to trigger object initialization thus the registry instantiation
     val start = true
   }
 
@@ -60,16 +63,35 @@ package object registry {
     
     Await.result(setupDb, 5 seconds)
     
+    def offerTable = OfferRepositoryRegistry.offerRepositoryImpl.offersTable
+    def sessionTable = SessionRepositoryRegistry.sessionRepositoryImpl.sessionsTable
+    
+    offerTable.schema ++ sessionTable.schema
+    
+    def getExistingTableNames:DBIO[Vector[String]] =  MTable.getTables.map {
+      _.map {
+        _.name.name
+      }
+    }
     
     
     def setupDb = database.db.run({
-      logger.info(s"Setting up schemas and populating tables")
+      logger.info(s"Setting up db")
       DBIO.seq (
-        (OfferRepositoryRegistry.offerRepositoryImpl.offersTable.schema ++
-         SessionRepositoryRegistry.sessionRepositoryImpl.sessionsTable.schema).create,
-      
+        //Create schemas if it doesn't exist yet
+//        getExistingTableNames map { existingTableNames =>
+//
+////
+////          if(!existingTableNames.exists(_ == offerTable.baseTableRow.tableName))
+////            offerTable.schema
+////          else if(!existingTableNames.exists(_ == sessionTable.baseTableRow.tableName))
+////            sessionTable.schema.create
+////          else
+////            SimpleDBIO(_ => ())
+//        },
+        
         //Insert some offers
-        OfferRepositoryRegistry.offerRepositoryImpl.offersTable ++= TestData.offers
+        offerTable ++= TestData.offers
       )
     })
     

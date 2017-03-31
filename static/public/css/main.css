@@ -65,14 +65,6 @@ a {
   text-decoration: none;
 }
 
-a:hover, a:focus {
-  text-decoration: none;
-  color: #231f20;
-  -webkit-transition: all 0.35s ease-in-out;
-  -moz-transition: all 0.35s ease-in-out;
-  -o-transition: all 0.35s ease-in-out;
-  transition: all 0.35s ease-in-out;
-}
 
 .fa-lg {
   font-size: 1.33333em;
@@ -134,10 +126,6 @@ a:hover, a:focus {
 .btn-primary:hover, .btn-primary:focus, .btn-primary:active, .btn-primary.active {
   background-color: #8be2e5;
   color: #ffffff;
-  -webkit-transition: all 0.35s ease-in-out;
-  -moz-transition: all 0.35s ease-in-out;
-  -o-transition: all 0.35s ease-in-out;
-  transition: all 0.35s ease-in-out;
 }
 
 .btn-secondary {
@@ -148,10 +136,6 @@ a:hover, a:focus {
 .btn-secondary:hover, .btn-secondary:focus, .btn-secondary:active, .btn-secondary.active {
   background-color: #ededed;
   color: #231f20;
-  -webkit-transition: all 0.35s ease-in-out;
-  -moz-transition: all 0.35s ease-in-out;
-  -o-transition: all 0.35s ease-in-out;
-  transition: all 0.35s ease-in-out;
 }
 
 
@@ -240,7 +224,7 @@ a:hover, a:focus {
     padding-top: 8px;
     position: fixed;
     top: -60px;
-    transition: top 0.4s ease 0s;
+    display: normal;
 }
 
 .navbar.open {
@@ -470,10 +454,6 @@ footer {
   background: transparent;
   margin-bottom: 50px;
   margin-top: 0px;
-  -webkit-transition: all 0.25s ease-in-out;
-  -moz-transition: all 0.25s ease-in-out;
-  -o-transition: all 0.25s ease-in-out;
-  transition: all 0.25s ease-in-out;
 }
 .pricing-table.active {
   box-shadow: 0px 0px 12px rgba(41,46,50,0.6); 
@@ -486,10 +466,6 @@ footer {
 
 .pricing-table:hover {
   margin-top: -10px;
-  -webkit-transition: all 0.25s ease-in-out;
-  -moz-transition: all 0.25s ease-in-out;
-  -o-transition: all 0.25s ease-in-out;
-  transition: all 0.25s ease-in-out;
 }
 
 .pricing-table li {
@@ -517,10 +493,6 @@ footer {
 
 .pricing-table:hover li.price  {
   background: #303236;
-  -webkit-transition: all 0.85s ease-in-out;
-  -moz-transition: all 0.85s ease-in-out;
-  -o-transition: all 0.85s ease-in-out;
-  transition: all 0.85s ease-in-out;
 }
 
 .price small {
@@ -583,7 +555,6 @@ footer {
     height: 60px;
     line-height: 1.42857;
     padding: 6px 12px;
-    transition: border-color 0.15s ease-in-out 0s, box-shadow 0.15s ease-in-out 0s;
 }
 
 .form-control::-moz-placeholder {

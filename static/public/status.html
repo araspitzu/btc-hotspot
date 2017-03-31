@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="it"><head>
+  <meta charset="utf-8">
+  <title>Paypercom hotspot</title>
+  <meta name="keywords" content="">
+  <meta name="description" content="">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+
+  <!-- Styles -->
+  <link rel="stylesheet" href="css/font-awesome.min.css">
+  <link rel='stylesheet' href='css/raleway.css'>
+  <link rel="stylesheet" href="css/bootstrap.min.css">
+  <link rel="stylesheet" href="css/main.css">
+
+  <script src="js/modernizr-2.7.1.js"></script>
+
+  <script>
+    window.onload = function(){
+          $.ajax({url: "/api/offer", success: function(offers){
+          var link1 = document.getElementById("link1");
+          var link2 = document.getElementById("link2");
+          var link3 = document.getElementById("link3");
+
+      }});
+    };
+
+  </script>
+
+</head>
+
+<body>
+
+    
+    <div class="navbar navbar-fixed-top open">
+      <div class="container">
+        <div class="navbar-header">
+          <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+          </button>
+        </div>
+          <ul class="nav navbar-nav navbar-right">
+            <li><a href="#pricing">Pricing</a></li>
+            <li><a href="login.html">Sign in</a></li>
+          </ul>
+      </div>
+    </div>
+        
+
+       <div class="row">
+          <div class="col-lg-7">
+            <ul class="list-unstyled pricing-table text-center">
+              <li class="headline"><h5 class="white">Medium</h5></li>
+              <li class="price"><div class="amount">0.001€<small>/MB</small></div></li>
+              <li class="info">Connessione a media velocita</li>
+              <li class="features">Video HD</li>
+              <li class="features">Streaming</li>
+            </ul>
+          </div>
+            
+          </div>        
+    
+   
+    
+    <!-- Javascript
+    ================================================== -->
+    <!-- Placed at the end of the document so the pages load faster -->
+    <script src="js/jquery.min.js"></script>
+    <script>window.jQuery || document.write('<script src="js/jquery-1.11.0.min.js"><\/script>')</script>
+    <script src="js/bootstrap.min.js"></script>
+    <script src="js/wow.min.js"></script>
+    <script src="js/main.js"></script>
+
+    </body>
+</html>
