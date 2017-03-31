@@ -53,5 +53,12 @@ object Configuration {
     val webUI = config.getBoolean(s"database.webUI")
   }
   
+  object EmailConfig {
+    val smtpServer = config.getString("mail.smpt_server")
+    val port = config.getInt("mail.port")
+    val username = config.getString("mail.username")
+    val password = config.getString("mail.password")
+  }
+  
 }
 

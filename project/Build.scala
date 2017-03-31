@@ -187,7 +187,7 @@ object Dependencies {
   )
   
   val misc = Seq(
-    "org.apache.commons" % "commons-email" % "1.4.+"
+    "org.apache.commons" % "commons-email" % "1.4"
   )
   
 
