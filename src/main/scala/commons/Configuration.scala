@@ -60,5 +60,10 @@ object Configuration {
     val password = config.getString("mail.password")
   }
   
+  object NetworkConfig {
+    val uplinkInterfaceName = config.getString(s"network.$env.iface_uplink")
+    val downlinkInterfaceName = config.getString(s"network.$env.iface_downlink")
+  }
+  
 }
 

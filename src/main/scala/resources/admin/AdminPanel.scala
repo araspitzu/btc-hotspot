@@ -20,12 +20,54 @@ package resources.admin
 
 import akka.http.scaladsl.server.Route
 import commons.Configuration.AdminPanelConfig._
+import commons.Configuration.NetworkConfig
+import commons.MailService
+import commons.MailService.Mail
 import registry.{MiniPortalRegistry, Registry}
 import resources.CaptiveResource
+
+import scala.collection.JavaConverters._
 
 object AdminPanelRegistry extends Registry with AdminPanel {
   
   MiniPortalRegistry.bindOrFail(adminPanelRoute, adminPanelHost, adminPanelPort, "Admin Panel")
+  
+  //Notify the user of the boot via email
+  val hotspotAddress = getUplinkInternalIp()
+  
+  val bootupEmail = Mail(
+    from = ("hotspot@paypercom.net", "Your paypercom hotspot"),
+    to = Seq("a.raspitzu@gmail.com"),
+    subject = "New boot",
+    message = " ",
+    richMessage = Some(
+     s"""
+        Click <a href="http://$hotspotAddress:8082">here</a> to access your dashboard.
+      """.stripMargin)
+  )
+  
+  MailService.send(bootupEmail)
+  
+  
+  def getUplinkInternalIp():String = {
+    
+    val ifaceName = NetworkConfig.uplinkInterfaceName
+    
+    val iface = java.net.NetworkInterface
+      .getNetworkInterfaces.asScala.find(_.getName == ifaceName) match {
+      case None => throw new IllegalStateException(s"Iface $ifaceName not found")
+      case Some(networkInterface) => networkInterface
+    }
+    
+    val ipv4Address = iface.getInterfaceAddresses.asScala.find( inetAddress =>
+      inetAddress.getNetworkPrefixLength == 24
+    ) match {
+      case None => throw new IllegalStateException(s"Unable to find ipv4 address for iface $iface")
+      case Some(address) => address
+    }
+  
+    ipv4Address.getAddress.getHostAddress
+  }
   
 }
 
