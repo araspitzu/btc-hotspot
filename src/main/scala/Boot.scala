@@ -21,16 +21,23 @@ import registry.{DatabaseRegistry, MiniPortalRegistry}
 import resources.admin.AdminPanelRegistry
 import wallet.WalletServiceRegistry
 
+import scala.util.{Failure, Success, Try}
+
 
 object Boot extends App with LazyLogging {
   
-  logger.info(s"Starting btc-hotspot")
-  val adminPanelStarted = AdminPanelRegistry.start
-  val miniPortalStarted = MiniPortalRegistry.start
-  val databaseStarted = DatabaseRegistry.start
-  val walletStarted = WalletServiceRegistry.start
-  logger.info(s"Done booting.")
-
+  try {
+    logger.info(s"Starting btc-hotspot")
+    WalletServiceRegistry.start
+    AdminPanelRegistry.start
+    MiniPortalRegistry.start
+    DatabaseRegistry.start
+  } catch {
+    case thr: Throwable => logger.error("Initialization error", thr)
+  } finally {
+    logger.info(s"Done booting.")
+  }
+  
 }
 
 

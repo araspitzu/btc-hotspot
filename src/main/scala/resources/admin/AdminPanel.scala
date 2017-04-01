@@ -34,6 +34,7 @@ object AdminPanelRegistry extends Registry with AdminPanel {
   
   //Notify the user of the boot via email
   val hotspotAddress = getUplinkInternalIp()
+  logger.info(s"Using uplink interface \'${NetworkConfig.uplinkInterfaceName}\' @ $hotspotAddress")
   
   val bootupEmail = Mail(
     from = ("hotspot@paypercom.net", "Your paypercom hotspot"),
@@ -55,14 +56,14 @@ object AdminPanelRegistry extends Registry with AdminPanel {
     
     val iface = java.net.NetworkInterface
       .getNetworkInterfaces.asScala.find(_.getName == ifaceName) match {
-      case None => throw new IllegalStateException(s"Iface $ifaceName not found")
+      case None => throw new NoSuchElementException(s"Iface $ifaceName not found")
       case Some(networkInterface) => networkInterface
     }
     
     val ipv4Address = iface.getInterfaceAddresses.asScala.find( inetAddress =>
       inetAddress.getNetworkPrefixLength == 24
     ) match {
-      case None => throw new IllegalStateException(s"Unable to find ipv4 address for iface $iface")
+      case None => throw new NoSuchElementException(s"Unable to find ipv4 address for iface $iface")
       case Some(address) => address
     }
   

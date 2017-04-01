@@ -38,7 +38,7 @@ package object registry {
   
   trait Registry {
     //Dummy call to trigger object initialization thus the registry instantiation
-    val start = true
+    val start = ()
   }
 
   
@@ -66,13 +66,11 @@ package object registry {
     def offerTable = OfferRepositoryRegistry.offerRepositoryImpl.offersTable
     def sessionTable = SessionRepositoryRegistry.sessionRepositoryImpl.sessionsTable
     
-    offerTable.schema ++ sessionTable.schema
-    
-    def getExistingTableNames:DBIO[Vector[String]] =  MTable.getTables.map {
-      _.map {
-        _.name.name
-      }
-    }
+//    def getExistingTableNames:DBIO[Vector[String]] =  MTable.getTables.map {
+//      _.map {
+//        _.name.name
+//      }
+//    }
     
     
     def setupDb = database.db.run({
