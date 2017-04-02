@@ -30,7 +30,7 @@ import slick.jdbc
 import slick.jdbc.meta.MTable
 import watchdog.{SchedulerComponent, SchedulerImpl}
 
-import scala.concurrent.Await
+import scala.concurrent.{Await, Future}
 import scala.concurrent.duration._
 
 
@@ -61,35 +61,20 @@ package object registry {
     
     import database.database.profile.api._
     
-    Await.result(setupDb, 5 seconds)
+    Await.result(setupDb, 10 seconds)
     
-    def offerTable = OfferRepositoryRegistry.offerRepositoryImpl.offersTable
-    def sessionTable = SessionRepositoryRegistry.sessionRepositoryImpl.sessionsTable
+//    def offerTable = OfferRepositoryRegistry.offerRepositoryImpl.offersTable
+//    def sessionTable = SessionRepositoryRegistry.sessionRepositoryImpl.sessionsTable
     
-//    def getExistingTableNames:DBIO[Vector[String]] =  MTable.getTables.map {
-//      _.map {
-//        _.name.name
-//      }
-//    }
-    
-    
-    def setupDb = database.db.run({
-      logger.info(s"Setting up db")
-      DBIO.seq (
-        //Create schemas if it doesn't exist yet
-//        getExistingTableNames map { existingTableNames =>
-//
-////
-////          if(!existingTableNames.exists(_ == offerTable.baseTableRow.tableName))
-////            offerTable.schema
-////          else if(!existingTableNames.exists(_ == sessionTable.baseTableRow.tableName))
-////            sessionTable.schema.create
-////          else
-////            SimpleDBIO(_ => ())
-//        },
         
+    def setupDb = database.db.run({
+      logger.info(s"Setting up schemas and populating tables")
+      DBIO.seq (
+        (OfferRepositoryRegistry.offerRepositoryImpl.offersTable.schema ++
+         SessionRepositoryRegistry.sessionRepositoryImpl.sessionsTable.schema).create,
+      
         //Insert some offers
-        offerTable ++= TestData.offers
+        OfferRepositoryRegistry.offerRepositoryImpl.offersTable ++= TestData.offers
       )
     })
     

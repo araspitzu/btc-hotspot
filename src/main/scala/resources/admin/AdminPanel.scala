@@ -21,7 +21,7 @@ package resources.admin
 import akka.http.scaladsl.server.Route
 import commons.Configuration.AdminPanelConfig._
 import commons.Configuration.NetworkConfig
-import commons.MailService
+import commons.{Configuration, MailService}
 import commons.MailService.Mail
 import registry.{MiniPortalRegistry, Registry}
 import resources.CaptiveResource
@@ -46,8 +46,8 @@ object AdminPanelRegistry extends Registry with AdminPanel {
         Click <a href="http://$hotspotAddress:8082">here</a> to access your dashboard.
       """.stripMargin)
   )
-  
-  MailService.send(bootupEmail)
+  if(Configuration.env != "local")
+    MailService.send(bootupEmail)
   
   
   def getUplinkInternalIp():String = {
