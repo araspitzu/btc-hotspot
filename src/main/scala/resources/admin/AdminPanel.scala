@@ -31,7 +31,11 @@ import scala.collection.JavaConverters._
 object AdminPanelRegistry extends Registry with AdminPanel {
   
   //Notify the user of the boot via email
-  val hotspotAddress = getUplinkInternalIp()
+  val hotspotAddress = Configuration.env match {
+    case "local" => "127.0.0.1"
+    case "hotspot" => getUplinkInternalIp()
+  }
+  
   logger.info(s"Using uplink interface \'${NetworkConfig.uplinkInterfaceName}\' @ $hotspotAddress")
   MiniPortalRegistry.bindOrFail(adminPanelRoute, hotspotAddress, adminPanelPort, "Admin Panel")
   

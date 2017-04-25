@@ -103,17 +103,17 @@ object PackageSetting {
 
 
   private def logbackConfMapping = Def.setting {
-    val logback = ThisBuild.env == "hotspot" match {
-      case true => (resourceDirectory in Compile).value / "hotspot_logback.xml"
-      case false => (resourceDirectory in Compile).value / "logback.xml"
+    val logback = ThisBuild.env match {
+      case "hotspot" => (resourceDirectory in Compile).value / "hotspot_logback.xml"
+      case _ => (resourceDirectory in Compile).value / "logback.xml"
     }
     logback -> "conf/logback.xml"
   }
 
   private def confFileMapping = Def.setting {
-    val conf = ThisBuild.env == "hotspot" match {
-      case true => (resourceDirectory in Compile).value / "hotspot.conf"
-      case false => (resourceDirectory in Compile).value / "application.conf"
+    val conf = ThisBuild.env match {
+      case "hotspot" => (resourceDirectory in Compile).value / "hotspot.conf"
+      case _ => (resourceDirectory in Compile).value / "application.conf"
     }
     conf -> "conf/application.conf"
   }
