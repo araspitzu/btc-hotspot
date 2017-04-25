@@ -48,9 +48,10 @@ package object registry {
   
     def bindOrFail(handler:Route, iface:String, port:Int, serviceName:String):Unit = {
       Http().bindAndHandle(handler, iface, port) map { binding =>
-        logger.info(s"Service $serviceName bound to ${binding.localAddress}") } recover { case ex =>
-        logger.info(s"Interface could not bind to $iface:$port", ex.getMessage)
-        throw ex;
+        logger.info(s"Service $serviceName bound to ${binding.localAddress}")
+      } recover { case ex =>
+        logger.error(s"Interface could not bind to $iface:$port", ex)
+        throw ex
       }
     }
     

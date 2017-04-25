@@ -1,12 +1,17 @@
 run:
 	sbt run
 
+test:
+	sbt test
+
 compile:
 	sbt compile
 
 package:
-	sbt debian:packageBin
+	sbt -Denv=$(env) -Dversion=$(version) debian:packageBin
 
-piDeploy:
-	sbt debian:packageBin && scp target/btc-hotspot_0.0.1_all.deb pi@$(host):/home/pi/container && ssh pi@$(host) 'sudo dpkg -i /home/pi/container/btc-hotspot_0.0.1_all.deb'
+deploy:
+	sbt -Denv=$(env) -Dversion=$(version) debian:packageBin &&
+	scp target/btc-hotspot_$(version)_all.deb pi@$(host):/home/pi/container &&
+	ssh pi@$(host) 'sudo dpkg -i /home/pi/container/btc-hotspot_$(version)_all.deb'
 

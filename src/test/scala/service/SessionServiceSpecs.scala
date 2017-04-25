@@ -130,9 +130,9 @@ class SessionServiceSpecs extends Specification with CleanSessionRepository with
       }
   
       val newSessionId = sessionService.getOrCreate(macAddress).futureValue
-      println(s"TEST: newSessionId: $newSessionId")
+
       val Some(newSession) = sessionRepository.bySessionId(newSessionId).futureValue
-      println(s"TEST: newSession.id: ${newSession.id}")
+
       stopWatchStarted must beFalse
       stopWatchStopped must beFalse
       sessionService.payAndEnableSessionForOffer(newSession, offer.offerId, bip70Payment).futureValue

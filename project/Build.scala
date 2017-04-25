@@ -37,7 +37,8 @@ object ThisBuild extends Build {
   
 
   val buildOrganization = "andrea"
-  val buildVersion = "0.0.1"
+  val env = sys.props.getOrElse("env", default = "local")
+  val buildVersion = sys.props.getOrElse("version", default = "dev")
   val buildScalaVersion = "2.12.1"
   val name = "btc-hotspot"
 
@@ -102,12 +103,18 @@ object PackageSetting {
 
 
   private def logbackConfMapping = Def.setting {
-    val logback = (resourceDirectory in Compile).value / "logback.xml"
+    val logback = ThisBuild.env == "hotspot" match {
+      case true => (resourceDirectory in Compile).value / "hotspot_logback.xml"
+      case false => (resourceDirectory in Compile).value / "logback.xml"
+    }
     logback -> "conf/logback.xml"
   }
 
   private def confFileMapping = Def.setting {
-    val conf = (resourceDirectory in Compile).value / "application.conf"
+    val conf = ThisBuild.env == "hotspot" match {
+      case true => (resourceDirectory in Compile).value / "hotspot.conf"
+      case false => (resourceDirectory in Compile).value / "application.conf"
+    }
     conf -> "conf/application.conf"
   }
 
