@@ -7,24 +7,11 @@
     </encoder>
   </appender>
 
-  <appender name="FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
-    <file>logs/btc-hotspot.log</file>
 
-    <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
-      <fileNamePattern>logs/btc-hotspot.%d{yyyy-MM-dd}.log</fileNamePattern>
-      <maxHistory>10</maxHistory>
-    </rollingPolicy>
-
-    <encoder>
-      <pattern>%d [%logger{1}] %5p - %m%n</pattern>
-    </encoder>
-  </appender>
-
-  <logger name="org.bitcoinj" level="WARN" />
+  <logger name="org.bitcoinj" level="INFO" />
 
   <root level="INFO">
     <appender-ref ref="STDOUT"/>
-    <appender-ref ref="FILE"/>
   </root>
 
 
