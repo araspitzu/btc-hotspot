@@ -27,30 +27,30 @@ object Configuration {
   lazy val env = config.getString("env")
 
   object WalletConfig {
-    val isEnabled = config.getBoolean(s"wallet.$env.enabled")
-    val network:NetworkParameters = NetworkParameters.fromID(config.getString(s"wallet.$env.net"))
-    val walletFileName = config.getString(s"wallet.$env.walletFile")
-    val walletDir = config.getString(s"wallet.$env.walletDir")
+    val isEnabled = config.getBoolean("wallet.enabled")
+    val network:NetworkParameters = NetworkParameters.fromID(config.getString("wallet.net"))
+    val walletFileName = config.getString("wallet.walletFile")
+    val walletDir = config.getString("wallet.walletDir")
   }
 
   object MiniPortalConfig {
-    val miniportalStaticFilesDir = config.getString(s"miniportal.$env.staticFilesDir")
-    val miniPortalHost = config.getString(s"miniportal.$env.host")
-    val miniPortalPort = config.getInt(s"miniportal.$env.port")
-    val miniPortalIndex = config.getString(s"miniportal.$env.index")
+    val miniportalStaticFilesDir = config.getString("miniportal.staticFilesDir")
+    val miniPortalHost = config.getString("miniportal.host")
+    val miniPortalPort = config.getInt("miniportal.port")
+    val miniPortalIndex = config.getString("miniportal.index")
   }
   
   object AdminPanelConfig {
-    val adminPanelStaticFilesDir = config.getString(s"admin_panel.$env.staticFilesDir")
-    val adminPanelHost = config.getString(s"admin_panel.$env.host")
-    val adminPanelPort = config.getInt(s"admin_panel.$env.port")
-    val adminPanelIndex = config.getString(s"admin_panel.$env.index")
+    val adminPanelStaticFilesDir = config.getString("admin_panel.staticFilesDir")
+    val adminPanelHost = config.getString("admin_panel.host")
+    val adminPanelPort = config.getInt("admin_panel.port")
+    val adminPanelIndex = config.getString("admin_panel.index")
   }
   
   object DbConfig {
-    val configPath = s"database.$env"
-    val jdbcUrl = config.getString(s"database.$env.db.url")
-    val webUI = config.getBoolean(s"database.webUI")
+    val configPath = "database"
+    val jdbcUrl = config.getString("database.db.url")
+    val webUI = config.getBoolean("database.webUI")
   }
   
   object EmailConfig {
@@ -61,8 +61,8 @@ object Configuration {
   }
   
   object NetworkConfig {
-    val uplinkInterfaceName = config.getString(s"network.$env.iface_uplink")
-    val downlinkInterfaceName = config.getString(s"network.$env.iface_downlink")
+    val uplinkInterfaceName = config.getString("network.iface_uplink")
+    val downlinkInterfaceName = config.getString("network.iface_downlink")
   }
   
 }

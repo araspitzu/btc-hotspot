@@ -30,11 +30,10 @@ import scala.collection.JavaConverters._
 
 object AdminPanelRegistry extends Registry with AdminPanel {
   
-  MiniPortalRegistry.bindOrFail(adminPanelRoute, adminPanelHost, adminPanelPort, "Admin Panel")
-  
   //Notify the user of the boot via email
   val hotspotAddress = getUplinkInternalIp()
   logger.info(s"Using uplink interface \'${NetworkConfig.uplinkInterfaceName}\' @ $hotspotAddress")
+  MiniPortalRegistry.bindOrFail(adminPanelRoute, hotspotAddress, adminPanelPort, "Admin Panel")
   
   val bootupEmail = Mail(
     from = ("hotspot@paypercom.net", "Your paypercom hotspot"),
@@ -43,9 +42,10 @@ object AdminPanelRegistry extends Registry with AdminPanel {
     message = " ",
     richMessage = Some(
      s"""
-        Click <a href="http://$hotspotAddress:8082">here</a> to access your dashboard.
+        Click <a href="http://$hotspotAddress:$adminPanelPort">here</a> to access your dashboard.
       """.stripMargin)
   )
+
   if(Configuration.env != "local")
     MailService.send(bootupEmail)
   
