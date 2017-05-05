@@ -113,8 +113,8 @@ class SessionServiceSpecs extends Specification with CleanSessionRepository with
     
     "disable session" in new MockSessionServiceScope {
   
-      var stopWatchStopped = false
       var stopWatchStarted = false
+      var stopWatchStopped = false
       
       val sessionService = new SessionServiceImpl(this){
         override def selectStopwatchForOffer(session: Session, offer: Offer):StopWatch = new MockStopWatch(stopWatchDepencencies, session, offer.offerId){
