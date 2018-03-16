@@ -18,26 +18,25 @@
 
 package commons
 
-import java.io.{BufferedReader, File, InputStreamReader}
-import com.google.common.util.concurrent.{FutureCallback, Futures, ListenableFuture}
+import java.io.{ BufferedReader, File, InputStreamReader }
+import com.google.common.util.concurrent.{ FutureCallback, Futures, ListenableFuture }
 import com.typesafe.scalalogging.LazyLogging
 import scala.collection.JavaConverters._
 import scala.concurrent._
 import commons.AppExecutionContextRegistry.context._
 
-
 package object Helpers {
-  
+
   def addShutDownHook(hook: => Unit) = {
     Runtime.getRuntime.addShutdownHook(new Thread {
-      override def run:Unit = hook
+      override def run: Unit = hook
     })
   }
-  
+
   object ScalaConversions {
 
-    implicit class ListenableFutureToScalaFuture[T](lfuture:ListenableFuture[T]) {
-      def asScala:Future[T] = {
+    implicit class ListenableFutureToScalaFuture[T](lfuture: ListenableFuture[T]) {
+      def asScala: Future[T] = {
         val promise = Promise[T]()
         Futures.addCallback(lfuture, new FutureCallback[T] {
           override def onFailure(t: Throwable): Unit = promise failure t
@@ -49,7 +48,7 @@ package object Helpers {
     }
 
   }
-  
+
   implicit class FutureOption[+T](val future: Future[Option[T]]) {
 
     def flatMap[U](f: T => FutureOption[U])(implicit ec: ExecutionContext): FutureOption[U] = {
@@ -61,36 +60,34 @@ package object Helpers {
         }
       }
     }
-    
+
     def map[U](f: T => U)(implicit ec: ExecutionContext): FutureOption[U] = FutureOption(future.map(_ map f))
 
-    def orFailWith[U >: T](error:String):Future[U] = future map {
+    def orFailWith[U >: T](error: String): Future[U] = future map {
       case Some(t) => t
-      case None => throw new NoSuchElementException(error)
+      case None    => throw new NoSuchElementException(error)
     }
-    
+
   }
-    
-  implicit class CmdExecutor(cmd:String) extends LazyLogging {
-    def exec:Future[String] = Future {
+
+  implicit class CmdExecutor(cmd: String) extends LazyLogging {
+    def exec: Future[String] = Future {
       logger.debug(s"Executing $cmd")
       val proc = Runtime.getRuntime.exec(cmd)
-      
+
       val exitValue = proc.waitFor
-      if(exitValue != 0)
+      if (exitValue != 0)
         throw new IllegalStateException(s"\'$cmd\' exited with code $exitValue")
-      
+
       val reader = new BufferedReader(
-        new InputStreamReader (proc.getInputStream )
+        new InputStreamReader(proc.getInputStream)
       )
-      
+
       val output = reader.lines.iterator.asScala.fold("")(_ + _)
       logger.info(output)
       output
     }
-    
+
   }
-  
-  
-  
+
 }

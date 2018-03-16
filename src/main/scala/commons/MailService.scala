@@ -22,50 +22,46 @@ import commons.Configuration.EmailConfig
 import org.apache.commons.mail._
 
 object MailService {
-  
-  
+
   sealed abstract class MailType
   case object Plain extends MailType
   case object Rich extends MailType
-  
+
   case class Mail(
-     from: (String, String), // (email -> name)
-     to: Seq[String],
-     cc: Seq[String] = Seq.empty,
-     bcc: Seq[String] = Seq.empty,
-     subject: String,
-     message: String,
-     richMessage: Option[String] = None)
-  
-  
+    from: (String, String), // (email -> name)
+    to: Seq[String],
+    cc: Seq[String] = Seq.empty,
+    bcc: Seq[String] = Seq.empty,
+    subject: String,
+    message: String,
+    richMessage: Option[String] = None)
+
   def send(mail: Mail) {
-    
+
     val format =
       if (mail.richMessage.isDefined) Rich
       else Plain
-    
+
     val commonsMail: Email = format match {
       case Plain => new SimpleEmail().setMsg(mail.message)
-      case Rich => new HtmlEmail().setHtmlMsg(mail.richMessage.get).setTextMsg(mail.message)
+      case Rich  => new HtmlEmail().setHtmlMsg(mail.richMessage.get).setTextMsg(mail.message)
     }
-    
+
     commonsMail.setCharset(EmailConstants.UTF_8)
     commonsMail.setHostName(EmailConfig.smtpServer)
     commonsMail.setSmtpPort(EmailConfig.port)
     commonsMail.setAuthenticator(new DefaultAuthenticator(EmailConfig.username, EmailConfig.password))
     commonsMail.setSSLOnConnect(true)
-    
-    
+
     // Can't add these via fluent API because it produces exceptions
     mail.to foreach commonsMail.addTo
     mail.cc foreach commonsMail.addCc
     mail.bcc foreach commonsMail.addBcc
-    
+
     commonsMail.
       setFrom(mail.from._1, mail.from._2).
       setSubject(mail.subject).
       send()
   }
-  
-  
+
 }

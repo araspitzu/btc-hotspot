@@ -18,24 +18,23 @@
 
 package resources.miniportal
 
-import akka.http.scaladsl.server.{AuthorizationFailedRejection, Route}
+import akka.http.scaladsl.server.{ AuthorizationFailedRejection, Route }
 import commons.JsonSupport
-import resources.{CommonResource, ExtraDirectives}
+import resources.{ CommonResource, ExtraDirectives }
 
 trait SessionAPI extends CommonResource with JsonSupport with ExtraDirectives {
-  
-  def statusRoute:Route =
+
+  def statusRoute: Route =
     path("api" / "session" / LongNumber) { sessionId =>
       sessionOrReject { session =>
-        if(session.id != sessionId)
+        if (session.id != sessionId)
           reject(AuthorizationFailedRejection)
         else {
           get {
             complete(session)
           }
         }
+      }
     }
-  }
-  
-  
+
 }

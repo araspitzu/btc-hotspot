@@ -28,7 +28,7 @@ object Configuration {
 
   object WalletConfig {
     val isEnabled = config.getBoolean("wallet.enabled")
-    val network:NetworkParameters = NetworkParameters.fromID(config.getString("wallet.net"))
+    val network: NetworkParameters = NetworkParameters.fromID(config.getString("wallet.net"))
     val walletFileName = config.getString("wallet.walletFile")
     val walletDir = config.getString("wallet.walletDir")
   }
@@ -39,31 +39,31 @@ object Configuration {
     val miniPortalPort = config.getInt("miniportal.port")
     val miniPortalIndex = config.getString("miniportal.index")
   }
-  
+
   object AdminPanelConfig {
     val adminPanelStaticFilesDir = config.getString("admin_panel.staticFilesDir")
     val adminPanelHost = config.getString("admin_panel.host")
     val adminPanelPort = config.getInt("admin_panel.port")
     val adminPanelIndex = config.getString("admin_panel.index")
   }
-  
+
   object DbConfig {
     val configPath = "database"
     val jdbcUrl = config.getString("database.db.url")
     val webUI = config.getBoolean("database.webUI")
   }
-  
+
   object EmailConfig {
     val smtpServer = config.getString("mail.smpt_server")
     val port = config.getInt("mail.port")
     val username = config.getString("mail.username")
     val password = config.getString("mail.password")
   }
-  
+
   object NetworkConfig {
     val uplinkInterfaceName = config.getString("network.iface_uplink")
     val downlinkInterfaceName = config.getString("network.iface_downlink")
   }
-  
+
 }
 

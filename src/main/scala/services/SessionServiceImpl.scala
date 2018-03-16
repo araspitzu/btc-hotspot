@@ -19,82 +19,80 @@
 package services
 
 import com.typesafe.scalalogging.LazyLogging
-import protocol.domain.{Offer, Session}
+import protocol.domain.{ Offer, Session }
 import commons.AppExecutionContextRegistry.context._
 import commons.Helpers.FutureOption
 import org.bitcoin.protocols.payments.Protos
 import org.bitcoin.protocols.payments.Protos.PaymentACK
 import protocol.SessionRepositoryImpl
 import protocol.domain.QtyUnit.MB
-import registry.{IpTablesServiceRegistry, SchedulerRegistry, SessionRepositoryRegistry}
-import wallet.{WalletServiceInterface, WalletServiceRegistry}
-import watchdog.{SchedulerImpl, StopWatch, TimebasedStopWatch}
+import registry.{ IpTablesServiceRegistry, SchedulerRegistry, SessionRepositoryRegistry }
+import wallet.{ WalletServiceInterface, WalletServiceRegistry }
+import watchdog.{ SchedulerImpl, StopWatch, TimebasedStopWatch }
 
 import scala.concurrent.duration._
-import scala.concurrent.{Await, Future}
+import scala.concurrent.{ Await, Future }
 
 object SessionServiceRegistry extends SessionServiceComponent {
-  
-  val sessionService:SessionServiceInterface = new SessionServiceImpl()
-  
+
+  val sessionService: SessionServiceInterface = new SessionServiceImpl()
+
 }
 
 trait SessionServiceComponent {
-  
-  val sessionService:SessionServiceInterface
-  
+
+  val sessionService: SessionServiceInterface
+
 }
 
 trait SessionServiceInterface {
-  
-  def payAndEnableSessionForOffer(session: Session, offerId: Long, payment: Protos.Payment):Future[PaymentACK]
-  
-  def disableSession(session: Session):FutureOption[Unit]
-  
-  def getOrCreate(mac:String):Future[Long]
-  
-  def byId(id:Long):FutureOption[Session]
-  
+
+  def payAndEnableSessionForOffer(session: Session, offerId: Long, payment: Protos.Payment): Future[PaymentACK]
+
+  def disableSession(session: Session): FutureOption[Unit]
+
+  def getOrCreate(mac: String): Future[Long]
+
+  def byId(id: Long): FutureOption[Session]
+
   def byMac(mac: String): FutureOption[Session]
-  
+
   def byMacSync(mac: String): Option[Session]
-  
-  def activeSessionIds():Seq[Long]
-  
+
+  def activeSessionIds(): Seq[Long]
+
 }
 
-
-class SessionServiceImpl(dependencies:{
+class SessionServiceImpl(dependencies: {
   val sessionRepository: SessionRepositoryImpl
-  val offerService:OfferServiceInterface
+  val offerService: OfferServiceInterface
   val walletService: WalletServiceInterface
 }) extends SessionServiceInterface with LazyLogging {
   import dependencies.walletService._
   import dependencies.sessionRepository._
   import dependencies.offerService._
-  
+
   def this() = this(new {
     val sessionRepository: SessionRepositoryImpl = SessionRepositoryRegistry.sessionRepositoryImpl
-    val offerService:OfferServiceInterface = OfferServiceRegistry.offerService
+    val offerService: OfferServiceInterface = OfferServiceRegistry.offerService
     val walletService: WalletServiceInterface = WalletServiceRegistry.walletService
   })
-  
-  
+
   val sessionIdToStopwatch = new scala.collection.mutable.HashMap[Long, StopWatch]
-  
-  def selectStopwatchForOffer(session: Session, offer: Offer):StopWatch = {
-    
+
+  def selectStopwatchForOffer(session: Session, offer: Offer): StopWatch = {
+
     val stopWatchDependencies = new {
       val ipTablesService = IpTablesServiceRegistry.ipTablesServiceImpl
       val scheduler: SchedulerImpl = SchedulerRegistry.schedulerImpl
     }
-    
+
     offer.qtyUnit match {
-      case MB => ???
+      case MB     => ???
       case millis => new TimebasedStopWatch(stopWatchDependencies, session, offer.qty)
     }
   }
-  
+
   def payAndEnableSessionForOffer(session: Session, offerId: Long, payment: Protos.Payment): Future[PaymentACK] = {
     logger.info(s"Paying session ${session.id} for offer $offerId")
     for {
@@ -109,8 +107,8 @@ class SessionServiceImpl(dependencies:{
       paymentAck
     }
   }
-  
-  def disableSession(session: Session):FutureOption[Unit] = {
+
+  def disableSession(session: Session): FutureOption[Unit] = {
     logger.info(s"Disabling session ${session}")
     for {
       _ <- upsert(session.copy(offerId = None))
@@ -120,11 +118,11 @@ class SessionServiceImpl(dependencies:{
       sessionIdToStopwatch.remove(session.id)
     }
   }
-  
-  def activeSessionIds():Seq[Long] = sessionIdToStopwatch.keys.toSeq
 
-  def byId(id:Long):FutureOption[Session] = bySessionId(id)
-  
+  def activeSessionIds(): Seq[Long] = sessionIdToStopwatch.keys.toSeq
+
+  def byId(id: Long): FutureOption[Session] = bySessionId(id)
+
   def byMac(mac: String): FutureOption[Session] = byMacAddress(mac)
 
   //TODO fucking remove!
@@ -136,16 +134,15 @@ class SessionServiceImpl(dependencies:{
     Returns the id of the existing session for this mac, create a new one if
     no session can be found, ids are created by the database
    */
-  def getOrCreate(mac:String):Future[Long] = {
+  def getOrCreate(mac: String): Future[Long] = {
     byMac(mac).future flatMap {
       case Some(session) =>
         Future.successful(session.id)
       case None => insert(Session(clientMac = mac)) map { sessionId =>
-          logger.info(s"Created session $sessionId for $mac")
-          sessionId
-        }
+        logger.info(s"Created session $sessionId for $mac")
+        sessionId
+      }
     }
   }
-
 
 }

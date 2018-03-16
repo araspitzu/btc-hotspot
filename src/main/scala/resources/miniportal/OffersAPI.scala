@@ -27,10 +27,9 @@ import services.OfferServiceRegistry
 
 trait OffersAPI extends CommonResource with JsonSupport {
 
-
-  def offersRoute:Route = get {
-    pathPrefix("api" / "offer"){
-      pathEnd{
+  def offersRoute: Route = get {
+    pathPrefix("api" / "offer") {
+      pathEnd {
         complete(OfferServiceRegistry.offerService.allOffers.map(xs => xs.map(WebOfferDto(_))))
       } ~ path(LongNumber) { id =>
         complete(OfferServiceRegistry.offerService.offerById(id).future)

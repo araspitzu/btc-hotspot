@@ -23,11 +23,11 @@ import akka.stream.ActorMaterializer
 import commons.Configuration._
 
 /**
-  * Created by andrea on 18/11/16.
-  */
+ * Created by andrea on 18/11/16.
+ */
 trait AppExecutionContext {
 
-  val context:ExecutionFramework
+  val context: ExecutionFramework
 
   class ExecutionFramework {
     implicit val actorSystem = ActorSystem(config.getString("akka.actorSystem"))

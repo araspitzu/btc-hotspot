@@ -36,7 +36,7 @@ package commons
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import protocol.domain.{Offer, QtyUnit}
+import protocol.domain.{ Offer, QtyUnit }
 
 object TestData {
 
@@ -45,19 +45,19 @@ object TestData {
       qty = 60000,
       qtyUnit = QtyUnit.millis,
       price = 950000,
-      description =  "1 minutes"
+      description = "1 minutes"
     ),
     Offer(
       qty = 600000,
       qtyUnit = QtyUnit.millis,
       price = 1500000,
-      description =  "10 minutes"
+      description = "10 minutes"
     ),
     Offer(
       qty = 900000,
       qtyUnit = QtyUnit.millis,
       price = 5000000,
-      description =  "15 minutes"
+      description = "15 minutes"
     )
   )
 

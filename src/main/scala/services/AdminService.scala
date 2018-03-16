@@ -21,75 +21,74 @@ package services
 import com.typesafe.scalalogging.LazyLogging
 import protocol.SessionRepositoryImpl
 import protocol.domain.Session
-import registry.{Registry, SessionRepositoryRegistry}
-import wallet.{WalletServiceInterface, WalletServiceRegistry}
+import registry.{ Registry, SessionRepositoryRegistry }
+import wallet.{ WalletServiceInterface, WalletServiceRegistry }
 import commons.AppExecutionContextRegistry.context._
-import protocol.webDto.{BitcoinTransactionDto, WithdrawTransactionData}
+import protocol.webDto.{ BitcoinTransactionDto, WithdrawTransactionData }
 
 import scala.concurrent.Future
 
 object AdminServiceRegistry extends Registry with AdminServiceComponent {
-  
+
   val adminService = new AdminServiceImpl()
-  
+
 }
 
 trait AdminServiceComponent {
-  
-  val adminService:AdminService
-  
+
+  val adminService: AdminService
+
 }
 
 trait AdminService {
-  
-  def walletBalance():Long
-  
-  def activeSessions():Future[Seq[Session]]
-  
-  def allSessions():Future[Seq[Session]]
-  
-  def transactions():Seq[BitcoinTransactionDto]
-  
-  def withdraw(wtd: WithdrawTransactionData):Future[String]
-  
+
+  def walletBalance(): Long
+
+  def activeSessions(): Future[Seq[Session]]
+
+  def allSessions(): Future[Seq[Session]]
+
+  def transactions(): Seq[BitcoinTransactionDto]
+
+  def withdraw(wtd: WithdrawTransactionData): Future[String]
+
 }
 
-class AdminServiceImpl(dependencies:{
+class AdminServiceImpl(dependencies: {
   val sessionRepository: SessionRepositoryImpl
   val sessionService: SessionServiceInterface
-  val offerService:OfferServiceInterface
+  val offerService: OfferServiceInterface
   val walletService: WalletServiceInterface
 }) extends AdminService with LazyLogging {
-  
+
   private def sessionRepository = dependencies.sessionRepository
   private def sessionService = dependencies.sessionService
   private def walletService = dependencies.walletService
-  
-  
+
   def this() = this(new {
     val sessionRepository: SessionRepositoryImpl = SessionRepositoryRegistry.sessionRepositoryImpl
     val sessionService: SessionServiceInterface = SessionServiceRegistry.sessionService
-    val offerService:OfferServiceInterface = OfferServiceRegistry.offerService
+    val offerService: OfferServiceInterface = OfferServiceRegistry.offerService
     val walletService: WalletServiceInterface = WalletServiceRegistry.walletService
   })
-  
-  override def walletBalance():Long = walletService.getBalance
-  
-  override def activeSessions():Future[Seq[Session]] = {
+
+  override def walletBalance(): Long = walletService.getBalance
+
+  override def activeSessions(): Future[Seq[Session]] = {
     val activeSessionIds = sessionService.activeSessionIds
     for {
-       activeSessions <- sessionRepository.byIdSet(activeSessionIds.toSet)
+      activeSessions <- sessionRepository.byIdSet(activeSessionIds.toSet)
     } yield activeSessions
   }
-  
-  override def allSessions():Future[Seq[Session]] = sessionRepository.allSession
-  
-  override def transactions():Seq[BitcoinTransactionDto] = {
+
+  override def allSessions(): Future[Seq[Session]] = sessionRepository.allSession
+
+  override def transactions(): Seq[BitcoinTransactionDto] = {
     walletService.getTransactions.map(BitcoinTransactionDto(_))
   }
-  
-  override def withdraw(wtd: WithdrawTransactionData):Future[String] =  {
+
+  override def withdraw(wtd: WithdrawTransactionData): Future[String] = {
     walletService.createSpendingTx(wtd.address, wtd.amount)
   }
-  
+
 }

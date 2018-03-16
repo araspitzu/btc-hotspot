@@ -26,14 +26,14 @@ object ArpService {
 
   private final val arpFile = "/proc/net/arp"
 
-  def arpLookup(ipAddr:String):Option[String] = {
-    if(env == "local") return Some("unknown")
-    
+  def arpLookup(ipAddr: String): Option[String] = {
+    if (env == "local") return Some("unknown")
+
     Source
       .fromFile(arpFile)
       .getLines
       .drop(1)
-      .find(_.startsWith(ipAddr)).map(_.substring(41,58))
+      .find(_.startsWith(ipAddr)).map(_.substring(41, 58))
   }
 
 }

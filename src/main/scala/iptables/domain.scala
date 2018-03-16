@@ -19,21 +19,21 @@
 package iptables
 
 /**
-  * Created by andrea on 30/11/16.
-  */
+ * Created by andrea on 30/11/16.
+ */
 package object domain {
-  
+
   case class ChainEntry(
-      pkts:Long,
-      bytes:Long,
-      target:String,
-      prot:String,
-      opt:String,
-      in:String,
-      out:String,
-      source:String,
-      destination:String,
-      rule:String
+    pkts: Long,
+    bytes: Long,
+    target: String,
+    prot: String,
+    opt: String,
+    in: String,
+    out: String,
+    source: String,
+    destination: String,
+    rule: String
   )
-  
+
 }

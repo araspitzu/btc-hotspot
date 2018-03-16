@@ -27,39 +27,38 @@ import commons.AppExecutionContextRegistry.context._
 import scala.concurrent.duration.FiniteDuration
 
 trait SchedulerComponent {
-  
+
   val schedulerImpl: SchedulerImpl
-  
+
 }
 
-class SchedulerImpl extends LazyLogging{
-  
-  private case class Schedule(createdAt:LocalDateTime, cancellable: Cancellable)
+class SchedulerImpl extends LazyLogging {
+
+  private case class Schedule(createdAt: LocalDateTime, cancellable: Cancellable)
 
   private val sessIdToScheduleMap = new scala.collection.mutable.HashMap[Long, Schedule]
 
-  def schedule(sessionId:Long, delay: FiniteDuration)(task: => Unit):Unit = {
-  
+  def schedule(sessionId: Long, delay: FiniteDuration)(task: => Unit): Unit = {
+
     val cancellable = actorSystem.scheduler.scheduleOnce(delay)(task)
-  
+
     sessIdToScheduleMap += sessionId -> Schedule(LocalDateTime.now, cancellable)
   }
 
-  def isScheduled(sessionId:Long):Boolean = sessIdToScheduleMap.get(sessionId).isDefined
+  def isScheduled(sessionId: Long): Boolean = sessIdToScheduleMap.get(sessionId).isDefined
 
-  def scheduledAt(sessionId:Long):Option[LocalDateTime] = {
+  def scheduledAt(sessionId: Long): Option[LocalDateTime] = {
     sessIdToScheduleMap.get(sessionId).map(_.createdAt)
   }
-  
-  def remove(sessionId: Long):Unit = sessIdToScheduleMap.remove(sessionId)
 
-  def cancel(sessionId:Long):Boolean = {
+  def remove(sessionId: Long): Unit = sessIdToScheduleMap.remove(sessionId)
+
+  def cancel(sessionId: Long): Boolean = {
     sessIdToScheduleMap.get(sessionId) match {
-      case None => false
+      case None           => false
       case Some(schedule) => schedule.cancellable.cancel
     }
   }
 
 }
-  
 

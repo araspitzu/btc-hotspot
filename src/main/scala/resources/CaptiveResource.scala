@@ -21,37 +21,34 @@ package resources
 import akka.http.scaladsl.model._
 import akka.http.scaladsl.model.MediaTypes._
 import akka.http.scaladsl.model.HttpCharsets._
-import akka.http.scaladsl.model.Uri.{Path, Query}
+import akka.http.scaladsl.model.Uri.{ Path, Query }
 import akka.http.scaladsl.server.Route
 import commons.AppExecutionContextRegistry.context._
-import commons.Configuration.MiniPortalConfig.{miniPortalHost, miniPortalPort}
-import services.{SessionServiceImpl, SessionServiceRegistry}
+import commons.Configuration.MiniPortalConfig.{ miniPortalHost, miniPortalPort }
+import services.{ SessionServiceImpl, SessionServiceRegistry }
 
 trait CaptiveResource extends CommonResource with ExtraDirectives {
-  
-  
-  
-  
+
   /**
-    * Redirect empty url to index
-    */
+   * Redirect empty url to index
+   */
   def emptyUrlRedirect(toPage: String) = path("") {
-       redirect(Uri(toPage), StatusCodes.TemporaryRedirect)
+    redirect(Uri(toPage), StatusCodes.TemporaryRedirect)
   }
-  
+
   /**
-    * Redirects the user to prelogin
-    */
-  def entryPointRoute:Route = get {
+   * Redirects the user to prelogin
+   */
+  def entryPointRoute: Route = get {
     extractRequest { httpRequest =>
       redirectToPrelogin(Some(httpRequest))
     }
   }
 
   /**
-    * Create the session and performs browser redirect
-    */
-  def preloginRoute:Route = get {
+   * Create the session and performs browser redirect
+   */
+  def preloginRoute: Route = get {
     path("prelogin") {
       extractClientMAC { clientMac =>
         complete {
@@ -64,11 +61,11 @@ trait CaptiveResource extends CommonResource with ExtraDirectives {
       }
     }
   }
-  
+
   def redirectToPrelogin(request: Option[HttpRequest] = None) =
     redirect(preLoginUrl(request), StatusCodes.TemporaryRedirect)
-  
-  private def preLoginUrl(request: Option[HttpRequest]):Uri = {
+
+  private def preLoginUrl(request: Option[HttpRequest]): Uri = {
     Uri()
       .withScheme("http")
       .withHost(miniPortalHost)
@@ -78,8 +75,7 @@ trait CaptiveResource extends CommonResource with ExtraDirectives {
         "userUrl" -> request.map(_._2.toString).getOrElse("duckduckgo.com")
       ))
   }
-  
-  
+
   val browserRedirectPage =
     """
       |<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
@@ -107,6 +103,5 @@ trait CaptiveResource extends CommonResource with ExtraDirectives {
       |</body>
       |</html>
     """.stripMargin
-
 
 }

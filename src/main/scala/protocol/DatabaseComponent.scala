@@ -24,32 +24,31 @@ import commons.Helpers
 import slick.basic.DatabaseConfig
 import slick.jdbc.JdbcProfile
 import scala.concurrent.duration.Duration
-import scala.concurrent.{Await, Future}
+import scala.concurrent.{ Await, Future }
 
 trait DatabaseComponent extends LazyLogging {
-  
-  val database:DatabaseImpl
-  
+
+  val database: DatabaseImpl
+
   class DatabaseImpl {
-    
+
     val database = {
       logger.info(s"Opening database for conf '$configPath' @ $jdbcUrl")
-    
-      if(webUI) {
+
+      if (webUI) {
         logger.info(s"Creating web ui @ localhost:8888")
         org.h2.tools.Server.createWebServer("-webAllowOthers", "-webPort", "8888").start()
       }
-      
+
       DatabaseConfig.forConfig[JdbcProfile](configPath)
     }
-    
+
     def db = database.db
-    
+
     Helpers.addShutDownHook {
       logger.info("Shutting down db")
-      Await.result( db.shutdown, Duration(2, "seconds") )
+      Await.result(db.shutdown, Duration(2, "seconds"))
     }
   }
-  
-  
+
 }

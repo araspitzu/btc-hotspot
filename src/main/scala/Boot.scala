@@ -17,15 +17,14 @@
  */
 
 import com.typesafe.scalalogging.LazyLogging
-import registry.{DatabaseRegistry, MiniPortalRegistry}
+import registry.{ DatabaseRegistry, MiniPortalRegistry }
 import resources.admin.AdminPanelRegistry
 import wallet.WalletServiceRegistry
 
-import scala.util.{Failure, Success, Try}
-
+import scala.util.{ Failure, Success, Try }
 
 object Boot extends App with LazyLogging {
-  
+
   try {
     logger.info(s"Starting btc-hotspot")
     WalletServiceRegistry.start
@@ -37,7 +36,6 @@ object Boot extends App with LazyLogging {
   } finally {
     logger.info(s"Done booting.")
   }
-  
-}
 
+}
 

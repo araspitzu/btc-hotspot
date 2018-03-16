@@ -20,37 +20,36 @@ package services
 
 import commons.Helpers.FutureOption
 import protocol.domain.Offer
-import registry.{OfferRepositoryRegistry}
+import registry.{ OfferRepositoryRegistry }
 
 import scala.concurrent.Future
 
 object OfferServiceRegistry extends OfferServiceComponent {
-  
-  val offerService:OfferServiceInterface = new OfferService
-  
+
+  val offerService: OfferServiceInterface = new OfferService
+
 }
 
 trait OfferServiceComponent {
-  
-  val offerService:OfferServiceInterface
-  
+
+  val offerService: OfferServiceInterface
+
 }
 
 trait OfferServiceInterface {
-  
-  def allOffers:Future[Seq[Offer]]
-  
-  def offerById(id:Long):FutureOption[Offer]
-  
+
+  def allOffers: Future[Seq[Offer]]
+
+  def offerById(id: Long): FutureOption[Offer]
+
 }
 
 class OfferService extends OfferServiceInterface {
 
-  def allOffers:Future[Seq[Offer]] = {
+  def allOffers: Future[Seq[Offer]] = {
     OfferRepositoryRegistry.offerRepositoryImpl.allOffers
   }
-  
-  def offerById(id:Long):FutureOption[Offer] = OfferRepositoryRegistry.offerRepositoryImpl.byId(id)
-  
+
+  def offerById(id: Long): FutureOption[Offer] = OfferRepositoryRegistry.offerRepositoryImpl.byId(id)
 
 }

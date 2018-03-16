@@ -18,10 +18,10 @@
 
 package resources
 
-import akka.http.scaladsl.server.{Directive, Directive1, Directives, Route}
+import akka.http.scaladsl.server.{ Directive, Directive1, Directives, Route }
 import akka.util.Timeout
 import protocol.domain.Session
-import services.{SessionServiceRegistry}
+import services.{ SessionServiceRegistry }
 
 import scala.compat.java8.OptionConverters._
 import iptables.ArpService._
@@ -29,7 +29,6 @@ import scala.concurrent.duration._
 import com.typesafe.scalalogging.LazyLogging
 import de.heikoseeberger.akkahttpjson4s.Json4sSupport
 import akka.http.scaladsl.model._
-
 
 trait CommonResource extends Directives with Json4sSupport with LazyLogging {
 
@@ -46,24 +45,22 @@ object ExtraHttpHeaders {
 
 trait ExtraDirectives extends Directives with LazyLogging {
 
-  def extractClientMAC:Directive1[Option[String]] = extractClientIP map { remoteAddress =>
+  def extractClientMAC: Directive1[Option[String]] = extractClientIP map { remoteAddress =>
     for {
       ipAddr <- remoteAddress.getAddress.asScala.map(_.getHostAddress)
       macAddr <- arpLookup(ipAddr)
     } yield macAddr
   }
-  
-  def extractSessionForMac:Directive1[Option[Session]] = extractClientMAC map { someMac =>
+
+  def extractSessionForMac: Directive1[Option[Session]] = extractClientMAC map { someMac =>
     someMac map SessionServiceRegistry.sessionService.byMacSync flatten //FIXME
   }
 
-
-  def sessionOrReject:Directive1[Session] = extractSessionForMac map {
+  def sessionOrReject: Directive1[Session] = extractSessionForMac map {
     _ match {
-      case None => throw new IllegalArgumentException("Session not found") //FIXME
+      case None          => throw new IllegalArgumentException("Session not found") //FIXME
       case Some(session) => session
     }
   }
-  
 
 }

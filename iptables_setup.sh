@@ -2,7 +2,7 @@
 
 IPTABLES=/sbin/iptables
 
-# Create new chain "internet" for catching the traffing, non auth clients will be marked with 99 while 
+# Create new chain "internet" for catching the traffic, non auth clients will be marked with 99 while
 # authenticated clients will jump off the chain asap
 $IPTABLES -N internet -t mangle
 

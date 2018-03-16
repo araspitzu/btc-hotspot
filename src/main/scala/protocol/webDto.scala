@@ -21,30 +21,30 @@ package protocol
 import java.time.LocalDateTime
 import java.util.Date
 
-import protocol.domain.{BitcoinTransaction, Offer}
+import protocol.domain.{ BitcoinTransaction, Offer }
 import commons.Configuration.MiniPortalConfig._
 
 package object webDto {
 
   case class WebOfferDto(
-     offer:Offer,
-     paymentURI:String
+    offer: Offer,
+    paymentURI: String
   )
 
   object WebOfferDto {
-    def apply(offer:Offer):WebOfferDto = WebOfferDto(
+    def apply(offer: Offer): WebOfferDto = WebOfferDto(
       offer,
       paymentURI = s"bitcoin:?r=http://$miniPortalHost:$miniPortalPort/api/pay/${offer.offerId}"
     )
   }
 
   case class BitcoinTransactionDto(
-     hash: String,
-     value: Long,
-     creationDate: Option[Date] = None,
-     explorerUrl: String
+    hash: String,
+    value: Long,
+    creationDate: Option[Date] = None,
+    explorerUrl: String
   )
-  
+
   object BitcoinTransactionDto {
     def apply(hash: String, value: Long, creationDate: Option[Date]): BitcoinTransactionDto = BitcoinTransactionDto(
       hash,
@@ -52,14 +52,14 @@ package object webDto {
       creationDate = creationDate,
       explorerUrl = s"https://testnet.blockexplorer.com/tx/$hash"
     )
-    
+
     def apply(btx: BitcoinTransaction): BitcoinTransactionDto = apply(btx.hash, btx.value, btx.creationDate)
-        
+
   }
-  
+
   case class WithdrawTransactionData(
     address: String,
     amount: Long
   )
-  
+
 }

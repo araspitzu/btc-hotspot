@@ -18,45 +18,46 @@
 
 package resources.admin
 
-import akka.http.scaladsl.server.{MalformedQueryParamRejection, Route}
+import akka.http.scaladsl.server.{ MalformedQueryParamRejection, Route }
 import commons.JsonSupport
 import protocol.webDto.WithdrawTransactionData
 import resources.CommonResource
 import services.AdminServiceRegistry
 
 trait AdminAPI extends CommonResource with JsonSupport {
-  
+
   def adminService = AdminServiceRegistry.adminService
-  
-  def adminRoute:Route =
+
+  def adminRoute: Route =
     walletRoute ~
-    sessionRoute
-  
-  def sessionRoute:Route = get {
-    path("api" / "admin" / "session"){
+      sessionRoute
+
+  def sessionRoute: Route = get {
+    path("api" / "admin" / "session") {
       pathEnd {
-        parameter("filter") { filter:String =>
-          complete { filter match {
-             case "all" => adminService.allSessions
-             case "active" => adminService.activeSessions
-             case unknown => reject(MalformedQueryParamRejection("filter", s"$unknown not a valid filter"))
-           }
-         }
+        parameter("filter") { filter: String =>
+          complete {
+            filter match {
+              case "all"    => adminService.allSessions
+              case "active" => adminService.activeSessions
+              case unknown  => reject(MalformedQueryParamRejection("filter", s"$unknown not a valid filter"))
+            }
+          }
         }
       }
     }
   }
-  
-  def walletRoute :Route = {
+
+  def walletRoute: Route = {
     pathPrefix("api" / "admin" / "wallet") {
       path("balance") {
-         get {
+        get {
           complete(s"${adminService.walletBalance}")
         }
-      } ~ path("transactions"){
-         get {
-           complete(adminService.transactions)
-         }
+      } ~ path("transactions") {
+        get {
+          complete(adminService.transactions)
+        }
       } ~ path("spend") {
         post {
           entity(as[WithdrawTransactionData]) { withdrawTransactionData =>
@@ -66,5 +67,5 @@ trait AdminAPI extends CommonResource with JsonSupport {
       }
     }
   }
-  
+
 }

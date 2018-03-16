@@ -26,32 +26,32 @@ import protocol.domain.QtyUnit.QtyUnit
 package object domain {
 
   case class Session(
-    id:Long = -1,
-    createdAt:LocalDateTime = LocalDateTime.now,
-    clientMac:String,
-    remainingUnits:Long = -1,
+    id: Long = -1,
+    createdAt: LocalDateTime = LocalDateTime.now,
+    clientMac: String,
+    remainingUnits: Long = -1,
     offerId: Option[Long] = None
   )
-  
+
   case class Offer(
-    offerId:Long = -1,
-    qty:Long,
+    offerId: Long = -1,
+    qty: Long,
     qtyUnit: QtyUnit,
-    price:Long,
-    description:String
+    price: Long,
+    description: String
   )
 
   case object QtyUnit extends Enumeration {
     type QtyUnit = Value
-    
+
     val MB = Value("MB")
     val millis = Value("millis")
   }
-  
+
   case class BitcoinTransaction(
-     hash: String,
-     value: Long,
-     creationDate: Option[Date] = None
+    hash: String,
+    value: Long,
+    creationDate: Option[Date] = None
   )
-  
+
 }
