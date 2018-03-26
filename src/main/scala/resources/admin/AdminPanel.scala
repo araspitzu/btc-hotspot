@@ -66,7 +66,7 @@ object AdminPanelRegistry extends Registry with AdminPanel {
     val ipv4Address = iface.getInterfaceAddresses.asScala.find(inetAddress =>
       inetAddress.getNetworkPrefixLength == 24
     ) match {
-      case None          => throw new NoSuchElementException(s"Unable to find ipv4 address for iface $iface")
+      case None          => throw new NoSuchElementException(s"Unable to find ipv4 lnUri for iface $iface")
       case Some(address) => address
     }
 

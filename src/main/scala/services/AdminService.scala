@@ -84,11 +84,11 @@ class AdminServiceImpl(dependencies: {
   override def allSessions(): Future[Seq[Session]] = sessionRepository.allSession
 
   override def transactions(): Seq[BitcoinTransactionDto] = {
-    walletService.getTransactions.map(BitcoinTransactionDto(_))
+    walletService.allTransactions.map(BitcoinTransactionDto(_))
   }
 
   override def withdraw(wtd: WithdrawTransactionData): Future[String] = {
-    walletService.createSpendingTx(wtd.address, wtd.amount)
+    walletService.spendTo(wtd.address, wtd.amount)
   }
 
 }

@@ -58,15 +58,16 @@ trait WalletServiceComponent {
 
 trait WalletServiceInterface {
 
-  def generatePaymentRequest(session: Session, offerId: Long): Future[PaymentRequest]
+  def generateInvoice(session: Session, offerId: Long): Future[String]
 
+  //Deprecated with LN
   def validateBIP70Payment(payment: Protos.Payment): FutureOption[Protos.PaymentACK]
 
   def getBalance(): Long //satoshis
 
-  def getTransactions(): Seq[BitcoinTransaction]
+  def allTransactions(): Seq[BitcoinTransaction]
 
-  def createSpendingTx(address: String, value: Long): Future[String]
+  def spendTo(address: String, value: Long): Future[String]
 
 }
 
@@ -98,7 +99,7 @@ class WalletServiceImpl extends WalletServiceInterface with LazyLogging {
   private def wallet: org.bitcoinj.wallet.Wallet = kit.wallet
   private def receivingAddress: Address = wallet.currentAddress(KeyPurpose.RECEIVE_FUNDS)
 
-  def generatePaymentRequest(session: Session, offerId: Long): Future[PaymentRequest] = {
+  def generateInvoice(session: Session, offerId: Long): Future[String] = {
     logger.info(s"Issuing payment request for session ${session.id} and offer $offerId")
 
     (for {
@@ -109,7 +110,11 @@ class WalletServiceImpl extends WalletServiceInterface with LazyLogging {
       s"Please pay ${offer.price} satoshis for ${offer.description}",
       s"http://$miniPortalHost:$miniPortalPort/api/pay/$offerId",
       Array.emptyByteArray
-    ).build).future.map(_.getOrElse(throw new IllegalArgumentException(s"Offer $offerId not found")))
+    ).build)
+      .future
+       .map(f => f.map(_.toByteString.toStringUtf8))
+       .map(_.getOrElse(throw new IllegalArgumentException(s"Offer $offerId not found")))
+
 
   }
 
@@ -139,7 +144,7 @@ class WalletServiceImpl extends WalletServiceInterface with LazyLogging {
     wallet.getBalance.value
   }
 
-  def getTransactions(): Seq[BitcoinTransaction] = {
+  def allTransactions(): Seq[BitcoinTransaction] = {
     wallet.getWalletTransactions.asScala.toSeq.map { tx =>
       BitcoinTransaction(
         hash = tx.getTransaction.getHashAsString,
@@ -159,7 +164,7 @@ class WalletServiceImpl extends WalletServiceInterface with LazyLogging {
 
   }
 
-  override def createSpendingTx(address: String, value: Long): Future[String] = {
+  override def spendTo(address: String, value: Long): Future[String] = {
     val spendingTx = wallet.createSend(
       Address.fromBase58(networkParams, address),
       Coin.valueOf(value)
