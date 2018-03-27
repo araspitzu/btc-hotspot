@@ -27,10 +27,10 @@ object Boot extends App with LazyLogging {
 
   try {
     logger.info(s"Starting btc-hotspot")
-    val wsr = WalletServiceRegistry.start
-    val apr = AdminPanelRegistry.start
-    val mpr = MiniPortalRegistry.start
-    val dr = DatabaseRegistry.start
+    WalletServiceRegistry.start
+    AdminPanelRegistry.start
+    MiniPortalRegistry.start
+    DatabaseRegistry.start
   } catch {
     case thr: Throwable => logger.error("Initialization error", thr)
   } finally {

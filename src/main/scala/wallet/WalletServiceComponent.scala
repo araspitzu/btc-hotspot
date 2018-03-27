@@ -112,9 +112,8 @@ class WalletServiceImpl extends WalletServiceInterface with LazyLogging {
       Array.emptyByteArray
     ).build)
       .future
-       .map(f => f.map(_.toByteString.toStringUtf8))
-       .map(_.getOrElse(throw new IllegalArgumentException(s"Offer $offerId not found")))
-
+      .map(f => f.map(_.toByteString.toStringUtf8))
+      .map(_.getOrElse(throw new IllegalArgumentException(s"Offer $offerId not found")))
 
   }
 

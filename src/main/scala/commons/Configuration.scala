@@ -33,6 +33,12 @@ object Configuration {
     val walletDir = config.getString("wallet.walletDir")
   }
 
+  object EclairConfig {
+    val host = config.getString("eclair.host")
+    val port = config.getString("eclair.port")
+    val apiPassword = config.getString("eclair.apiToken")
+  }
+
   object MiniPortalConfig {
     val miniportalStaticFilesDir = config.getString("miniportal.staticFilesDir")
     val miniPortalHost = config.getString("miniportal.host")

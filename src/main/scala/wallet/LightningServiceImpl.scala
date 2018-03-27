@@ -11,10 +11,7 @@ import scala.concurrent.Future
 
 class LightningServiceImpl extends WalletServiceInterface with LazyLogging {
 
-
   val eclairClient: EclairClient = ???
-
-
 
   override def generateInvoice(session: domain.Session, offerId: Long): Future[String] = {
     logger.info(s"Issuing payment request for session ${session.id} and offer $offerId")
