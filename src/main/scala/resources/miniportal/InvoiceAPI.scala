@@ -8,9 +8,14 @@ trait InvoiceAPI extends CommonResource with ExtraDirectives with JsonSupport {
 
   def invoiceRoute = get {
     withSession { session =>
-      path("api" / "invoice" / LongNumber) { offerId =>
-        complete(WalletServiceRegistry.walletService.generateInvoice(session.get, offerId))
+      pathPrefix("api" / "invoice") {
+        path("offer" / LongNumber) { offerId =>
+          complete(WalletServiceRegistry.walletService.generateInvoice(session.get, offerId))
+        } ~ path(Segment) {
+          complete("true")
+        }
       }
+
     }
   }
 
