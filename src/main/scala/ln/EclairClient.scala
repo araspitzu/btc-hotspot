@@ -14,7 +14,7 @@ import com.typesafe.scalalogging.LazyLogging
 import commons.Configuration.EclairConfig
 import commons.JsonSupport
 import ln.model.{ JsonRPCRequest, JsonRPCResponse }
-import org.json4s.JsonAST.JString
+import org.json4s.JsonAST.{ JBool, JString }
 
 import scala.concurrent.{ Await, ExecutionContext, Future }
 import scala.concurrent.duration._
@@ -53,7 +53,15 @@ class EclairClientImpl extends EclairClient with JsonSupport with LazyLogging {
     })
   }
 
-  override def checkInvoice(invoice: String): Future[Boolean] = ???
+  override def checkInvoice(invoiceHash: String): Future[Boolean] = {
+    rpcCall(JsonRPCRequest(
+      method = "checkinvoice",
+      params = invoiceHash :: Nil
+    )).map(_.result match {
+      case JBool(isPaid) => isPaid
+      case _             => throw new IllegalArgumentException("CheckInvoice response wasn't boolean")
+    })
+  }
 
   override def sendTo(lnInvoice: String, msat: Long): Future[String] = ???
 

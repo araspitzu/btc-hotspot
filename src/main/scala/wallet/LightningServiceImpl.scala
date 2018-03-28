@@ -2,16 +2,17 @@ package wallet
 
 import com.typesafe.scalalogging.LazyLogging
 import commons.Helpers
-import ln.EclairClient
+import ln.{ EclairClient, EclairClientImpl }
 import org.bitcoin.protocols.payments.Protos
 import protocol.domain
 import services.OfferServiceRegistry
 import commons.AppExecutionContextRegistry.context._
+
 import scala.concurrent.Future
 
 class LightningServiceImpl extends WalletServiceInterface with LazyLogging {
 
-  val eclairClient: EclairClient = ???
+  val eclairClient: EclairClient = new EclairClientImpl
 
   override def generateInvoice(session: domain.Session, offerId: Long): Future[String] = {
     logger.info(s"Issuing payment request for session ${session.id} and offer $offerId")

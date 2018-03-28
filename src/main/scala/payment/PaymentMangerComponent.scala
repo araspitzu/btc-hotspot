@@ -1,0 +1,5 @@
+package payment
+
+trait PaymentMangerComponent {
+
+}

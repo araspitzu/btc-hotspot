@@ -46,7 +46,7 @@ import registry.Registry
 
 object WalletServiceRegistry extends Registry with WalletServiceComponent {
 
-  override val walletService: WalletServiceInterface = new WalletServiceImpl
+  override val walletService: WalletServiceInterface = new LightningServiceImpl
 
 }
 

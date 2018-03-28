@@ -52,11 +52,11 @@ trait ExtraDirectives extends Directives with LazyLogging {
     } yield macAddr
   }
 
-  def extractSessionForMac: Directive1[Option[Session]] = extractClientMAC map { someMac =>
+  def withSession: Directive1[Option[Session]] = extractClientMAC map { someMac =>
     someMac map SessionServiceRegistry.sessionService.byMacSync flatten //FIXME
   }
 
-  def sessionOrReject: Directive1[Session] = extractSessionForMac map {
+  def sessionOrReject: Directive1[Session] = withSession map {
     _ match {
       case None          => throw new IllegalArgumentException("Session not found") //FIXME
       case Some(session) => session

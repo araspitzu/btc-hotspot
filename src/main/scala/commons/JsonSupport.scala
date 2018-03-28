@@ -44,8 +44,4 @@ trait JsonSupport extends Json4sSupport {
     }
   ))
 
-  def eeeee = {
-
-  }
-
 }
