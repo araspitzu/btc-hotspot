@@ -2,8 +2,6 @@
 <html lang="it"><head>
     <meta charset="utf-8">
     <title>Paypercom hotspot</title>
-    <meta name="keywords" content="">
-    <meta name="description" content="">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 
     <!-- Styles -->
@@ -22,12 +20,14 @@
     window.onload = function(){
 
           //var href = window.location.href;
-          var sessionId = param('sessionId');
-          var offerId = param('offerId');
+          var offerId = param('offerId') || 1; //fallback to offer #1
 
+          $.ajax({url: "/api/invoice/"+offerId, success: function(lnInvoice){
+              var lnInvoiceEl = document.getElementById("ln-invoice");
+              var offerIdEl = document.getElementById("offer-id");
 
-          $.ajax({url: "/api/invoice/offerId/sessionId", success: function(lnInvoice){
-
+              lnInvoiceEl.innerText = lnInvoice;
+              offerIdEl.innerText = offerIdEl.innerText + offerId;
           }});
 
     };
@@ -59,7 +59,8 @@
             <li class="headline"><h3 class="white">Invoice</h3></li>
             <li class="features" id="session-id">Session ID:</li>
             <li class="features" id="offer-id">Offer ID: </li>
-            <li class="features" id="ln-invoice">LN Invoice: </li>
+            <li class="features">LN Invoice: </li>
+            <li class="info" id="ln-invoice"> [invoice here] </li>
         </ul>
     </div>
 
