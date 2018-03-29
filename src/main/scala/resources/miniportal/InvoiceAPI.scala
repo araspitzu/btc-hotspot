@@ -11,7 +11,7 @@ trait InvoiceAPI extends CommonResource with ExtraDirectives with JsonSupport {
       pathPrefix("api" / "invoice") {
         path("offer" / LongNumber) { offerId =>
           complete(WalletServiceRegistry.walletService.generateInvoice(session.get, offerId))
-        } ~ path(Segment) {
+        } ~ path(Segment) { asd =>
           complete("true")
         }
       }

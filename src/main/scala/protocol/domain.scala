@@ -25,6 +25,14 @@ import protocol.domain.QtyUnit.QtyUnit
 
 package object domain {
 
+  case class Invoice(
+    id: Long = -1,
+    createdAt: LocalDateTime = LocalDateTime.now,
+    paid: Boolean = false,
+    lnInvoice: String
+//    offerId: Option[Long]
+  )
+
   case class Session(
     id: Long = -1,
     createdAt: LocalDateTime = LocalDateTime.now,
