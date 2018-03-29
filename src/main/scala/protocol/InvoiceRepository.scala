@@ -2,8 +2,11 @@ package protocol
 
 import java.time.LocalDateTime
 
+import commons.Helpers.FutureOption
 import protocol.domain.Invoice
 import registry.{DatabaseRegistry, OfferRepositoryRegistry, SessionRepositoryRegistry}
+
+import scala.concurrent.Future
 
 trait InvoiceRepository {
 
@@ -36,6 +39,23 @@ class InvoiceRepositoryImpl extends DbSerializers {
 
   val invoiceTable = TableQuery[InvoiceTable]
 
+
+  def insert(invoice: Invoice): Future[Long] = db.run {
+    (invoiceTable returning invoiceTable.map(_.id)) += invoice
+  }
+
+  def invoiceById(id: Long): FutureOption[Invoice] = db.run {
+    invoiceTable
+      .filter(_.id === id)
+      .result
+      .headOption
+  }
+
+  def invoicesBySessionId(sessionId: Long):Future[Seq[Invoice]] = db.run {
+    invoiceTable
+      .filter( invoice => invoice.sessionId.getOrElse(-1) === sessionId )
+      .result
+  }
 
 
 }
