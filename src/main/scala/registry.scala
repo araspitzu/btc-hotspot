@@ -17,19 +17,20 @@
  */
 
 import akka.http.scaladsl.server.Route
-import commons.Configuration.MiniPortalConfig.{ miniPortalHost, miniPortalPort }
+import commons.Configuration.MiniPortalConfig.{miniPortalHost, miniPortalPort}
 import commons.TestData
 import protocol._
 import commons.AppExecutionContextRegistry.context._
 import akka.http.scaladsl.Http
-import iptables.{ IpTablesInterface, IpTablesServiceComponent, IpTablesServiceImpl }
-import resources.miniportal.{ MiniPortal, PaymentChannelAPI }
+import iptables.{IpTablesInterface, IpTablesServiceComponent, IpTablesServiceImpl}
+import resources.miniportal.{MiniPortal, PaymentChannelAPI}
+import services.InvoiceServiceRegistry
 import slick.driver.JdbcProfile
 import slick.jdbc
 import slick.jdbc.meta.MTable
-import watchdog.{ SchedulerComponent, SchedulerImpl }
+import watchdog.{SchedulerComponent, SchedulerImpl}
 
-import scala.concurrent.{ Await, Future }
+import scala.concurrent.{Await, Future}
 import scala.concurrent.duration._
 
 package object registry {
@@ -69,7 +70,8 @@ package object registry {
       logger.info(s"Setting up schemas and populating tables")
       DBIO.seq(
         (OfferRepositoryRegistry.offerRepositoryImpl.offersTable.schema ++
-          SessionRepositoryRegistry.sessionRepositoryImpl.sessionsTable.schema).create,
+          SessionRepositoryRegistry.sessionRepositoryImpl.sessionsTable.schema ++
+          InvoiceRepositoryRegistry.invoiceRepository.invoiceTable.schema).create,
 
         //Insert some offers
         OfferRepositoryRegistry.offerRepositoryImpl.offersTable ++= TestData.offers
@@ -84,6 +86,10 @@ package object registry {
 
   object OfferRepositoryRegistry extends Registry with OfferRepositoryComponent {
     override val offerRepositoryImpl = new OfferRepositoryImpl
+  }
+
+  object InvoiceRepositoryRegistry extends Registry with InvoiceRepository {
+    override val invoiceRepository = new InvoiceRepositoryImpl
   }
 
   object SchedulerRegistry extends Registry with SchedulerComponent {

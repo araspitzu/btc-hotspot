@@ -29,8 +29,9 @@ package object domain {
     id: Long = -1,
     createdAt: LocalDateTime = LocalDateTime.now,
     paid: Boolean = false,
-    lnInvoice: String
-//    offerId: Option[Long]
+    lnInvoice: String,
+    sessionId: Option[Long],
+    offerId: Option[Long]
   )
 
   case class Session(
