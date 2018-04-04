@@ -18,31 +18,17 @@
 
 package wallet
 
-import java.io.File
-import java.time.{ LocalDate, LocalDateTime }
-import java.util.Date
-
-import com.google.protobuf.ByteString
 import com.typesafe.scalalogging.LazyLogging
-import commons.Configuration.WalletConfig._
-import commons.Configuration.MiniPortalConfig._
-import org.bitcoin.protocols.payments.Protos
-import org.bitcoin.protocols.payments.Protos.PaymentRequest
-import org.bitcoinj.core._
-import org.bitcoinj.kits.WalletAppKit
-import org.bitcoinj.protocols.payments.PaymentProtocol
-import org.bitcoinj.wallet.KeyChain.KeyPurpose
-import protocol.domain.{ BitcoinTransaction, Offer, QtyUnit, Session }
+import protocol.domain._
 import services.{ OfferServiceRegistry, SessionServiceRegistry }
-
-import scala.collection.JavaConverters._
 import commons.AppExecutionContextRegistry.context._
-import commons.Helpers
 import commons.Helpers.FutureOption
+import ln.{ EclairClient, EclairClientImpl }
+import protocol.webDto.InvoiceDto
 
 import scala.concurrent.{ Future, Promise }
-import org.bitcoinj.core.listeners.DownloadProgressTracker
-import registry.Registry
+import protocol.{ InvoiceRepositoryImpl, domain }
+import registry.{ InvoiceRepositoryRegistry, Registry }
 
 object WalletServiceRegistry extends Registry with WalletServiceComponent {
 
@@ -58,10 +44,9 @@ trait WalletServiceComponent {
 
 trait WalletServiceInterface {
 
-  def generateInvoice(session: Session, offerId: Long): Future[String]
+  def generateInvoice(session: Session, offerId: Long): Future[InvoiceDto]
 
-  //Deprecated with LN
-  def validateBIP70Payment(payment: Protos.Payment): FutureOption[Protos.PaymentACK]
+  def checkInvoicePaid(invoiceId: Long): Future[Boolean]
 
   def getBalance(): Long //satoshis
 
@@ -71,154 +56,47 @@ trait WalletServiceInterface {
 
 }
 
-class WalletServiceImpl extends WalletServiceInterface with LazyLogging {
+class LightningServiceImpl(dependencies: {
+  val eclairClient: EclairClient
+  val invoiceRepository: InvoiceRepositoryImpl
+}) extends WalletServiceInterface with LazyLogging {
 
-  private val file = new File(walletDir)
+  private def eclairClient = dependencies.eclairClient
+  private def invoiceRepository = dependencies.invoiceRepository
 
-  private val kit = new WalletAppKit(network, file, walletFileName) {
-    override def onSetupCompleted() {
-      wallet.importKey(new ECKey)
-    }
-  }.setAutoStop(true)
-    .setDownloadListener(new DownloadProgressTracker {
-      override def progress(pct: Double, blocksSoFar: Int, date: Date) = {
-        logger.warn(s"Chain sync ${pct * 100}%")
-      }
-    })
+  def this() = this(new {
+    val eclairClient = new EclairClientImpl
+    val invoiceRepository = InvoiceRepositoryRegistry.invoiceRepositoryImpl
+  })
 
-  Helpers.addShutDownHook {
-    logger.info("Shutting down bitcoinj peer group")
-    kit.peerGroup.stop
+  override def generateInvoice(session: domain.Session, offerId: Long): Future[InvoiceDto] = {
+    logger.info(s"Creating invoice for session ${session.id} and offer $offerId")
+    for {
+      offer <- OfferServiceRegistry.offerService.offerById(offerId).future.map(_.get)
+      invoiceMsg = s"Please pay ${offer.price} satoshis for ${offer.description}, MAC:${session.clientMac}"
+      eclairResponse <- eclairClient.getInvoice(offer.price, invoiceMsg)
+      invoice = Invoice(paid = false, lnInvoice = eclairResponse, sessionId = Some(session.id), offerId = Some(offerId))
+      invoiceId <- invoiceRepository.insert(invoice)
+    } yield InvoiceDto(invoiceId, invoice.createdAt, invoice.lnInvoice, invoice.paid)
+
   }
 
-  if (isEnabled)
-    kit.startAsync
-
-  private def networkParams: NetworkParameters = kit.params
-  private def peerGroup: PeerGroup = kit.peerGroup
-  private def wallet: org.bitcoinj.wallet.Wallet = kit.wallet
-  private def receivingAddress: Address = wallet.currentAddress(KeyPurpose.RECEIVE_FUNDS)
-
-  def generateInvoice(session: Session, offerId: Long): Future[String] = {
-    logger.info(s"Issuing payment request for session ${session.id} and offer $offerId")
-
+  override def checkInvoicePaid(invoiceId: Long): Future[Boolean] = {
     (for {
-      offer <- OfferServiceRegistry.offerService.offerById(offerId)
-    } yield PaymentProtocol.createPaymentRequest(
-      networkParams,
-      outputsForOffer(offer).asJava,
-      s"Please pay ${offer.price} satoshis for ${offer.description}",
-      s"http://$miniPortalHost:$miniPortalPort/api/pay/$offerId",
-      Array.emptyByteArray
-    ).build)
-      .future
-      .map(f => f.map(_.toByteString.toStringUtf8))
-      .map(_.getOrElse(throw new IllegalArgumentException(s"Offer $offerId not found")))
+      invoice <- invoiceRepository.invoiceById(invoiceId)
+      isPaid <- eclairClient.checkInvoice(invoice.lnInvoice).map(Some(_)).asInstanceOf[FutureOption[Boolean]]
+      updated <- invoiceRepository.upsert(invoice.copy(paid = isPaid))
+    } yield isPaid).future.map(_.getOrElse(false))
 
   }
 
-  def validateBIP70Payment(payment: Protos.Payment): FutureOption[Protos.PaymentACK] = {
-    if (payment.getTransactionsCount != 1)
-      throw new IllegalStateException("Too many tx received in payment session")
+  override def getBalance(): Long = 666
 
-    val txBytes = payment.getTransactions(0).toByteArray
-    val tx = new Transaction(networkParams, txBytes)
-    val broadcast = peerGroup.broadcastTransaction(tx)
+  override def allTransactions(): Seq[domain.BitcoinTransaction] = Seq.empty
 
-    val promise = Promise[Protos.PaymentACK]
-
-    broadcast.setProgressCallback((progress: Double) => {
-      logger.info(s"tx ${tx.getHashAsString} broadcast for at ${progress * 100}%")
-      if (progress == 1.0) {
-        promise.completeWith(Future.successful(
-          PaymentProtocol.createPaymentAck(payment, s"Enjoy your session!"))
-        )
-      }
-    })
-
-    promise.future.map(Some(_))
-  }
-
-  override def getBalance(): Long = {
-    wallet.getBalance.value
-  }
-
-  def allTransactions(): Seq[BitcoinTransaction] = {
-    wallet.getWalletTransactions.asScala.toSeq.map { tx =>
-      BitcoinTransaction(
-        hash = tx.getTransaction.getHashAsString,
-        value = tx.getTransaction.getValue(wallet).value,
-        creationDate = {
-          if (tx.getTransaction.getConfidence.getDepthInBlocks > 0)
-            Some(tx.getTransaction.getUpdateTime)
-          else
-            None
-        }
-      )
-    }.sortWith((lh, rh) => (lh.creationDate, rh.creationDate) match {
-      case (Some(lhDate), Some(rhDate)) => lhDate.after(rhDate)
-      case (None, _)                    => true
-      case (_, None)                    => false
-    })
-
-  }
-
-  override def spendTo(address: String, value: Long): Future[String] = {
-    val spendingTx = wallet.createSend(
-      Address.fromBase58(networkParams, address),
-      Coin.valueOf(value)
-    )
-
-    val txHash = spendingTx.getHashAsString
-
-    logger.info(s"created spending tx $txHash")
-
-    val broadcast = peerGroup.broadcastTransaction(spendingTx)
-
-    val promise = Promise[String]
-
-    broadcast.setProgressCallback((progress: Double) => {
-      logger.info(s"tx $txHash broadcast for at ${progress * 100}%")
-      if (progress == 1.0) {
-        promise.completeWith(Future.successful(txHash))
-      }
-    })
-
-    promise.future
-  }
-
-  private def p2pubKeyHash(value: Long, to: Address): ByteString = {
-
-    //Create custom script containing offer's id bytes
-    //      val scriptOpReturn = new ScriptBuilder().op(OP_RETURN).data("hello".getBytes()).build()
-
-    ByteString.copyFrom(new TransactionOutput(
-      networkParams,
-      null,
-      Coin.valueOf(value),
-      to
-    ).getScriptBytes)
-  }
-
-  private def isDust(satoshis: Long) = satoshis >= Transaction.MIN_NONDUST_OUTPUT.getValue
-
-  private def outputsForOffer(offer: Offer): List[Protos.Output] = {
-    def outputBuilder = Protos.Output.newBuilder
-
-    //  if(isDust(offer.price))
-    //    throw new IllegalArgumentException(s"Price ${offer.price} is too low, considered dust")
-
-    val ownerOutput =
-      outputBuilder
-        .setAmount(offer.price)
-        .setScript(p2pubKeyHash(
-          value = offer.price,
-          to = receivingAddress
-        ))
-        .build
-
-    List(ownerOutput)
+  override def spendTo(lnInvoice: String, value: Long): Future[String] = {
+    logger.info(s"Sending $value to $lnInvoice")
+    eclairClient.sendTo(lnInvoice, value)
   }
 
 }
-

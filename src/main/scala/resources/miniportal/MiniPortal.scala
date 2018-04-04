@@ -22,7 +22,7 @@ import akka.http.scaladsl.server.Route
 import commons.Configuration.MiniPortalConfig._
 import resources.CaptiveResource
 
-trait MiniPortal extends PaymentChannelAPI with CaptiveResource with OffersAPI with SessionAPI with InvoiceAPI {
+trait MiniPortal extends CaptiveResource with OffersAPI with SessionAPI with InvoiceAPI {
 
   /**
    * Serves all static files in the given folder
@@ -30,8 +30,7 @@ trait MiniPortal extends PaymentChannelAPI with CaptiveResource with OffersAPI w
   def staticFilesRoute: Route = getFromDirectory(miniportalStaticFilesDir)
 
   val miniportalRoute: Route =
-    paymentChannelRoute ~
-      staticFilesRoute ~
+    staticFilesRoute ~
       invoiceRoute ~
       offersRoute ~
       statusRoute ~

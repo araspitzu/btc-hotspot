@@ -21,16 +21,16 @@ package resources.miniportal
 import akka.http.scaladsl.server.Route
 import commons.AppExecutionContextRegistry.context._
 import commons.JsonSupport
-import protocol.webDto.WebOfferDto
+import protocol.webDto.OfferDto
 import resources.CommonResource
 import services.OfferServiceRegistry
 
-trait OffersAPI extends CommonResource with JsonSupport {
+trait OffersAPI extends CommonResource {
 
   def offersRoute: Route = get {
     pathPrefix("api" / "offer") {
       pathEnd {
-        complete(OfferServiceRegistry.offerService.allOffers.map(xs => xs.map(WebOfferDto(_))))
+        complete(OfferServiceRegistry.offerService.allOffers.map(xs => xs.map(OfferDto(_))))
       } ~ path(LongNumber) { id =>
         complete(OfferServiceRegistry.offerService.offerById(id).future)
       }

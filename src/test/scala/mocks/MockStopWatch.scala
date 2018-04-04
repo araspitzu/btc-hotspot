@@ -24,17 +24,17 @@ import protocol.domain.Session
 import watchdog.StopWatch
 
 class MockStopWatch(val dependencies: {
-  val ipTablesService:IpTablesInterface
-},aSession: Session, aDuration: Long) extends StopWatch {
-  override val session: Session= aSession
+  val ipTablesService: IpTablesInterface
+}, aSession: Session, aDuration: Long) extends StopWatch {
+  override val session: Session = aSession
   override val duration: Long = aDuration
-  
+
   override def start(onLimitReach: => Unit): FutureOption[Unit] = ???
-  
+
   override def stop(): FutureOption[Unit] = ???
-  
+
   override def remainingUnits(): Long = ???
-  
+
   override def isPending(): Boolean = ???
 
 }

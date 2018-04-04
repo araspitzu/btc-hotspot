@@ -27,50 +27,50 @@ import util.Helpers._
 
 class SessionRepositorySpec extends Specification with CleanSessionRepository with LazyLogging {
   sequential
-  
+
   "Session repository" should {
-    
+
     "save and retrieve a session by ID" in {
-  
+
       val sessionRepositoryImpl = new SessionRepositoryImpl
       sessionRepositoryImpl.allSession.futureValue.length === 0
-  
+
       val session = Session(clientMac = "someMac")
       session.id === -1
-      
+
       val sessionId = sessionRepositoryImpl.insert(session).futureValue
-  
+
       sessionId !== -1
-      
+
       val Some(savedSession) = sessionRepositoryImpl.bySessionId(sessionId).futureValue
       savedSession.id === sessionId
       savedSession.clientMac === "someMac"
-      
+
     }
-    
+
     "update or insert a session (UPSERT)" in {
-  
+
       val sessionRepositoryImpl = new SessionRepositoryImpl
       sessionRepositoryImpl.allSession.futureValue.length === 0
-  
+
       val session = Session(clientMac = "someMacForTest")
       session.id === -1
-      
+
       val Some(upsertedSessionId) = sessionRepositoryImpl.upsert(session).futureValue
       upsertedSessionId !== -1 //must have been set by DB
-      
+
       val Some(savedSession) = sessionRepositoryImpl.bySessionId(upsertedSessionId).futureValue
-      
+
       //Alter the session and save it again
       sessionRepositoryImpl.upsert(savedSession.copy(remainingUnits = 12345L)).futureValue
-      
+
       val Some(updatedSession) = sessionRepositoryImpl.bySessionId(upsertedSessionId).futureValue
-  
+
       updatedSession.clientMac === "someMacForTest"
       updatedSession.id === upsertedSessionId
       updatedSession.remainingUnits === 12345L
     }
-    
+
   }
-  
+
 }

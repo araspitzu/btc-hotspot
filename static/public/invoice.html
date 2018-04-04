@@ -22,7 +22,7 @@
           //var href = window.location.href;
           var offerId = param('offerId') || 1; //fallback to offer #1
 
-          $.ajax({url: "/api/invoice/"+offerId, success: function(lnInvoice){
+          $.ajax({url: "/api/invoice/offer"+offerId, success: function(lnInvoice){
               var lnInvoiceEl = document.getElementById("ln-invoice");
               var offerIdEl = document.getElementById("offer-id");
 

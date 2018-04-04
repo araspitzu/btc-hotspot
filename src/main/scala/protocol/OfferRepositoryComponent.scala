@@ -30,16 +30,11 @@ trait OfferRepositoryComponent {
 
 }
 
-class OfferRepositoryImpl {
+class OfferRepositoryImpl extends DbSerializers {
   import DatabaseRegistry.database.database.profile.api._
   val db = DatabaseRegistry.database.db
 
   class OfferTable(tag: Tag) extends Table[Offer](tag, "OFFERS") {
-
-    implicit val qtyUnitMapper = MappedColumnType.base[QtyUnit, String](
-      e => e.toString,
-      s => QtyUnit.withName(s)
-    )
 
     def offerId = column[Long]("offerId", O.PrimaryKey, O.AutoInc)
     def qty = column[Long]("qty")

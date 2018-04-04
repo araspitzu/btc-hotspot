@@ -34,17 +34,12 @@ trait SessionRepositoryComponent {
 
 }
 
-class SessionRepositoryImpl extends LazyLogging {
+class SessionRepositoryImpl extends DbSerializers {
   import DatabaseRegistry.database.database.profile.api._
 
   lazy val db: Database = DatabaseRegistry.database.db
 
   class SessionTable(tag: Tag) extends Table[DomainSession](tag, "SESSIONS") {
-
-    implicit val localDateTimeMapper = MappedColumnType.base[LocalDateTime, Timestamp](
-      localDateTime => Timestamp.valueOf(localDateTime),
-      date => date.toLocalDateTime
-    )
 
     def id = column[Long]("id", O.PrimaryKey, O.AutoInc)
     def createdAt = column[LocalDateTime]("createdAt", O.SqlType("DATETIME")) //mapped via java.time.LocalDateTime -> java.sql.Timestamp -> DATATYPE(DATETIME)

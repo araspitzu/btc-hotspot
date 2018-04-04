@@ -18,76 +18,64 @@
 
 package resources.miniportal
 
-import akka.http.scaladsl.model.{ HttpEntity, HttpRequest }
-import akka.http.scaladsl.server.directives.LoggingMagnet
-import akka.http.scaladsl.server.{ Route, ValidationRejection }
-import akka.http.scaladsl.unmarshalling.{ FromRequestUnmarshaller, Unmarshaller }
-import akka.util.ByteString
-import org.bitcoin.protocols.payments.Protos
-import org.bitcoin.protocols.payments.Protos.PaymentRequest
-import protocol.domain.Session
-import registry.IpTablesServiceRegistry
-import resources.ExtraHttpHeaders.{ paymentAckContentType, paymentRequestContentType }
 import resources.{ CommonResource, ExtraDirectives }
-import services.SessionServiceRegistry
-import wallet.WalletServiceRegistry
-import commons.AppExecutionContextRegistry.context._
 
 trait PaymentChannelAPI extends CommonResource with ExtraDirectives {
 
-  def sessionService = SessionServiceRegistry.sessionService
-
-  def headerLogger: LoggingMagnet[HttpRequest ⇒ Unit] = LoggingMagnet { loggingAdapter => request =>
-    loggingAdapter.debug(s"Headers: ${request._3.toString()}")
-    loggingAdapter.debug(s"HTTP Method: ${request._1}")
-  }
-
-  implicit val paymentUnmarshaller: FromRequestUnmarshaller[Protos.Payment] = Unmarshaller { ec => httpRequest =>
-    httpRequest._4.dataBytes.runFold(ByteString.empty)(_ ++ _) map { byteString =>
-      Protos.Payment.parseFrom(byteString.toArray[Byte])
-    }
-  }
-
-  private def paymentRequestForSession(session: Session, offerId: Long) = get {
-    complete {
-      WalletServiceRegistry.walletService.generateInvoice(session, offerId) map { req: String =>
-        HttpEntity(req).withContentType(paymentRequestContentType)
-      }
-    }
-  }
-
-  private def paymentDataForSession(session: Session, offerId: Long) = post {
-    entity(as[Protos.Payment]) { payment =>
-      complete {
-        sessionService.payAndEnableSessionForOffer(session, offerId, payment) map { ack =>
-          HttpEntity(ack.toByteArray).withContentType(paymentAckContentType)
-        }
-      }
-    }
-  }
-
-  def enableMeRoute = extractClientMAC {
-    _ match {
-      case Some(mac) => enableMe(mac)
-      case None      => reject(ValidationRejection("Mac not found"))
-    }
-  }
-
-  def enableMe(macAddress: String) = get {
-    path("api" / "enableme") {
-      complete(IpTablesServiceRegistry.ipTablesServiceImpl.enableClient(macAddress).future)
-    } ~ path("api" / "disableme") {
-      complete(IpTablesServiceRegistry.ipTablesServiceImpl.disableClient(macAddress).future)
-    }
-  }
-
-  def paymentChannelRoute: Route = {
-    path("api" / "pay" / LongNumber) { offerId =>
-      sessionOrReject { session =>
-        paymentRequestForSession(session, offerId) ~
-          paymentDataForSession(session, offerId)
-      }
-    }
-  }
+  //  def sessionService = SessionServiceRegistry.sessionService
+  //
+  //  def headerLogger: LoggingMagnet[HttpRequest ⇒ Unit] = LoggingMagnet { loggingAdapter => request =>
+  //    loggingAdapter.debug(s"Headers: ${request._3.toString()}")
+  //    loggingAdapter.debug(s"HTTP Method: ${request._1}")
+  //  }
+  //
+  //  implicit val paymentUnmarshaller: FromRequestUnmarshaller[Protos.Payment] = Unmarshaller { ec => httpRequest =>
+  //    httpRequest._4.dataBytes.runFold(ByteString.empty)(_ ++ _) map { byteString =>
+  //      Protos.Payment.parseFrom(byteString.toArray[Byte])
+  //    }
+  //  }
+  //
+  //  private def paymentRequestForSession(session: Session, offerId: Long) = get {
+  //    complete {
+  //      ""
+  //      //      WalletServiceRegistry.walletService.generateInvoice(session, offerId) map { req: String =>
+  //      //        HttpEntity(req).withContentType(paymentRequestContentType)
+  //      //      }
+  //    }
+  //  }
+  //
+  //  private def paymentDataForSession(session: Session, offerId: Long) = post {
+  //    entity(as[Protos.Payment]) { payment =>
+  //      complete {
+  //        sessionService.payAndEnableSessionForOffer(session, offerId, payment) map { ack =>
+  //          HttpEntity(ack.toByteArray).withContentType(paymentAckContentType)
+  //        }
+  //      }
+  //    }
+  //  }
+  //
+  //  def enableMeRoute = extractClientMAC {
+  //    _ match {
+  //      case Some(mac) => enableMe(mac)
+  //      case None      => reject(ValidationRejection("Mac not found"))
+  //    }
+  //  }
+  //
+  //  def enableMe(macAddress: String) = get {
+  //    path("api" / "enableme") {
+  //      complete(IpTablesServiceRegistry.ipTablesServiceImpl.enableClient(macAddress).future)
+  //    } ~ path("api" / "disableme") {
+  //      complete(IpTablesServiceRegistry.ipTablesServiceImpl.disableClient(macAddress).future)
+  //    }
+  //  }
+  //
+  //  def paymentChannelRoute: Route = {
+  //    path("api" / "pay" / LongNumber) { offerId =>
+  //      sessionOrReject { session =>
+  //        paymentRequestForSession(session, offerId) ~
+  //          paymentDataForSession(session, offerId)
+  //      }
+  //    }
+  //  }
 
 }

@@ -1,6 +1,5 @@
 package ln
 
-import akka.actor.ActorSystem
 import akka.http.scaladsl.Http
 import akka.http.scaladsl.model.headers.{ BasicHttpCredentials, `Content-Type` }
 import akka.http.scaladsl.model.MediaTypes._
@@ -11,12 +10,12 @@ import commons.AppExecutionContextRegistry.context._
 import org.json4s.native._
 import org.json4s.native.Serialization._
 import com.typesafe.scalalogging.LazyLogging
-import commons.Configuration.EclairConfig
+import commons.Configuration.EclairConfig._
 import commons.JsonSupport
-import ln.model.{ JsonRPCRequest, JsonRPCResponse }
+import ln.model._
 import org.json4s.JsonAST.{ JBool, JString }
 
-import scala.concurrent.{ Await, ExecutionContext, Future }
+import scala.concurrent.{ Await, Future }
 import scala.concurrent.duration._
 
 trait EclairClient {
@@ -31,13 +30,37 @@ trait EclairClient {
 
   def sendTo(lnInvoice: String, msat: Long): Future[String]
 
+  def isReady(): Future[Boolean]
+
 }
 
 class EclairClientImpl extends EclairClient with JsonSupport with LazyLogging {
 
-  val eclairHost = EclairConfig.host
-  val eclairPort = EclairConfig.port
-  val apiPassword = EclairConfig.apiPassword
+  override def isReady(): Future[Boolean] = ???
+  //  override def isReady(): Future[Boolean] = {
+  //    for {
+  //      getInfo <- rpcCall(JsonRPCRequest(method = "getinfo")).map(_.result.as[EclairGetInfoResponse])
+  //      channels <- rpcCall(JsonRPCRequest(method = "getinfo")).map(_.result.as[EclairGetInfoResponse])
+  //    } yield {
+  //      getInfo.blockHeight > 1200 &&
+  //        getInfo.alias.nonEmpty
+  //    }
+  //
+  //  }
+
+  //  def peers(): Future[Seq[EclairPeerResponse]] = {
+  //    rpcCall(JsonRPCRequest(method = "peers")).map(_.result.as[Seq[EclairPeerResponse]])
+  //  }
+  //
+  //  def channels(): Future[Seq[EclairChannelResponse]] = {
+  //
+  //    peers().map(_.filter(_.state == "CONNECTED")).map { peerList =>
+  //      peerList.map { peer =>
+  //        rpcCall(JsonRPCRequest(method = "channels", params = Seq(peer.nodeId))).map(_.result.as[Seq[EclairChannelResponse]])
+  //      }
+  //    }
+  //
+  //  }
 
   override def connect(uri: String): Future[String] = ???
 
@@ -55,7 +78,7 @@ class EclairClientImpl extends EclairClient with JsonSupport with LazyLogging {
 
   override def checkInvoice(invoiceHash: String): Future[Boolean] = {
     rpcCall(JsonRPCRequest(
-      method = "checkinvoice",
+      method = "checkpayment",
       params = invoiceHash :: Nil
     )).map(_.result match {
       case JBool(isPaid) => isPaid
@@ -66,26 +89,24 @@ class EclairClientImpl extends EclairClient with JsonSupport with LazyLogging {
   override def sendTo(lnInvoice: String, msat: Long): Future[String] = ???
 
   private def rpcCall(rpcRequest: JsonRPCRequest): Future[JsonRPCResponse] = {
-    val request = makeHttpRequest(rpcRequest)
-    logger.info(s"calling eclair RPC ${request.toString()}")
+    val request = createHttpRequest(rpcRequest)
+    logger.info(s"calling eclair RPC '${rpcRequest.method}'")
     Http().singleRequest(request).map(handleResponse)
   }
 
-  private def makeHttpRequest(payload: JsonRPCRequest): HttpRequest = {
+  private def createHttpRequest(payload: JsonRPCRequest): HttpRequest = {
     HttpRequest()
       .withMethod(POST)
-      .withUri(s"http://$eclairHost:$eclairPort")
+      .withUri(s"$protocol://$host:$port")
       .addCredentials(BasicHttpCredentials("", apiPassword)) // name is not used
-      .withEntity(HttpEntity(
-        (write(payload)))
-        .withContentType(ContentType(`application/json`))
-      )
+      .withEntity(HttpEntity((write(payload)))
+        .withContentType(ContentType(`application/json`)))
   }
 
   private def handleResponse(httpResponse: HttpResponse): JsonRPCResponse = {
     //FIXME remove Await and hardcoded timeouts!!
     val entityAsString = Await.result(httpResponse.entity.toStrict(5 seconds).map(_.data.decodeString("UTF-8")), 10 seconds)
-    logger.info(s"Eclair response: $entityAsString")
+    logger.debug(s"Eclair response: $entityAsString")
     httpResponse.status match {
       case OK    => parseJson(entityAsString).extract[JsonRPCResponse]
       case notOk => throw new IllegalArgumentException(s"Received status $notOk while calling eclair")

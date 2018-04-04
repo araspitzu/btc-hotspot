@@ -22,8 +22,6 @@ import com.typesafe.scalalogging.LazyLogging
 import protocol.domain.{ Offer, Session }
 import commons.AppExecutionContextRegistry.context._
 import commons.Helpers.FutureOption
-import org.bitcoin.protocols.payments.Protos
-import org.bitcoin.protocols.payments.Protos.PaymentACK
 import protocol.SessionRepositoryImpl
 import protocol.domain.QtyUnit.MB
 import registry.{ IpTablesServiceRegistry, SchedulerRegistry, SessionRepositoryRegistry }
@@ -35,7 +33,7 @@ import scala.concurrent.{ Await, Future }
 
 object SessionServiceRegistry extends SessionServiceComponent {
 
-  val sessionService: SessionServiceInterface = new SessionServiceImpl()
+  val sessionService: SessionServiceInterface = new SessionServiceImpl
 
 }
 
@@ -47,7 +45,7 @@ trait SessionServiceComponent {
 
 trait SessionServiceInterface {
 
-  def payAndEnableSessionForOffer(session: Session, offerId: Long, payment: Protos.Payment): Future[PaymentACK]
+  def payAndEnableSessionForOffer(session: Session, offerId: Long, payment: Int): Future[String]
 
   def disableSession(session: Session): FutureOption[Unit]
 
@@ -93,10 +91,10 @@ class SessionServiceImpl(dependencies: {
     }
   }
 
-  def payAndEnableSessionForOffer(session: Session, offerId: Long, payment: Protos.Payment): Future[PaymentACK] = {
+  def payAndEnableSessionForOffer(session: Session, offerId: Long, payment: Int): Future[String] = {
     logger.info(s"Paying session ${session.id} for offer $offerId")
     for {
-      paymentAck <- validateBIP70Payment(payment) orFailWith "Payment error"
+
       offer <- offerById(offerId) orFailWith "Offer not found"
       _ <- upsert(session.copy(offerId = Some(offerId), remainingUnits = offer.qty)).future
       stopWatch = selectStopwatchForOffer(session, offer)
@@ -104,7 +102,7 @@ class SessionServiceImpl(dependencies: {
     } yield {
       sessionIdToStopwatch += session.id -> stopWatch
       logger.info(s"Enabled session ${session.id} for offer $offerId")
-      paymentAck
+      ""
     }
   }
 

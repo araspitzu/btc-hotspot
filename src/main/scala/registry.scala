@@ -23,10 +23,7 @@ import protocol._
 import commons.AppExecutionContextRegistry.context._
 import akka.http.scaladsl.Http
 import iptables.{ IpTablesInterface, IpTablesServiceComponent, IpTablesServiceImpl }
-import resources.miniportal.{ MiniPortal, PaymentChannelAPI }
-import slick.driver.JdbcProfile
-import slick.jdbc
-import slick.jdbc.meta.MTable
+import resources.miniportal.{ MiniPortal }
 import watchdog.{ SchedulerComponent, SchedulerImpl }
 
 import scala.concurrent.{ Await, Future }
@@ -69,7 +66,8 @@ package object registry {
       logger.info(s"Setting up schemas and populating tables")
       DBIO.seq(
         (OfferRepositoryRegistry.offerRepositoryImpl.offersTable.schema ++
-          SessionRepositoryRegistry.sessionRepositoryImpl.sessionsTable.schema).create,
+          SessionRepositoryRegistry.sessionRepositoryImpl.sessionsTable.schema ++
+          InvoiceRepositoryRegistry.invoiceRepositoryImpl.invoiceTable.schema).create,
 
         //Insert some offers
         OfferRepositoryRegistry.offerRepositoryImpl.offersTable ++= TestData.offers
@@ -84,6 +82,10 @@ package object registry {
 
   object OfferRepositoryRegistry extends Registry with OfferRepositoryComponent {
     override val offerRepositoryImpl = new OfferRepositoryImpl
+  }
+
+  object InvoiceRepositoryRegistry extends Registry with InvoiceRepositoryComponent {
+    override val invoiceRepositoryImpl = new InvoiceRepositoryImpl
   }
 
   object SchedulerRegistry extends Registry with SchedulerComponent {

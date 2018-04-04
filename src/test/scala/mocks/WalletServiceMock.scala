@@ -18,23 +18,21 @@
 
 package mocks
 
-import commons.Helpers.FutureOption
-import org.bitcoin.protocols.payments.Protos
-import org.bitcoin.protocols.payments.Protos.{Payment, PaymentACK, PaymentRequest}
 import protocol.domain
-import protocol.domain.Session
+import protocol.domain.{Invoice, Session}
+import protocol.webDto.InvoiceDto
 import wallet.WalletServiceInterface
 
 import scala.concurrent.Future
 
 class WalletServiceMock extends WalletServiceInterface {
-  override def generateInvoice(session: Session, offerId: Long): Future[String] = ???
-  
-  override def validateBIP70Payment(payment: Protos.Payment): FutureOption[Protos.PaymentACK] = ???
-  
+  override def generateInvoice(session: Session, offerId: Long): Future[InvoiceDto] = ???
+
   override def getBalance(): Long = ???
-  
+
   override def allTransactions(): Seq[domain.BitcoinTransaction] = ???
-  
+
   override def spendTo(address: String, value: Long): Future[String] = ???
+
+  override def checkInvoicePaid(invoiceId: Long): Future[Boolean] = ???
 }

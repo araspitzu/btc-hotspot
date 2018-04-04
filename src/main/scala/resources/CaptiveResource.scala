@@ -27,7 +27,7 @@ import commons.AppExecutionContextRegistry.context._
 import commons.Configuration.MiniPortalConfig.{ miniPortalHost, miniPortalPort }
 import services.{ SessionServiceImpl, SessionServiceRegistry }
 
-trait CaptiveResource extends CommonResource with ExtraDirectives {
+trait CaptiveResource extends ExtraDirectives {
 
   /**
    * Redirect empty url to index
@@ -53,9 +53,7 @@ trait CaptiveResource extends CommonResource with ExtraDirectives {
       extractClientMAC { clientMac =>
         complete {
           SessionServiceRegistry.sessionService.getOrCreate(clientMac.getOrElse("unknown")).map { _ =>
-            HttpEntity(
-              browserRedirectPage
-            ).withContentType(`text/html`.toContentType(`UTF-8`))
+            HttpEntity(browserRedirectPage).withContentType(`text/html`.toContentType(`UTF-8`))
           }
         }
       }
