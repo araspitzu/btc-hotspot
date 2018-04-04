@@ -27,7 +27,6 @@ object Boot extends App with LazyLogging {
 
   try {
     logger.info(s"Starting btc-hotspot")
-    WalletServiceRegistry.start
     AdminPanelRegistry.start
     MiniPortalRegistry.start
     DatabaseRegistry.start

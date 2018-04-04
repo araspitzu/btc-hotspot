@@ -90,7 +90,7 @@ class EclairClientImpl extends EclairClient with JsonSupport with LazyLogging {
 
   private def rpcCall(rpcRequest: JsonRPCRequest): Future[JsonRPCResponse] = {
     val request = createHttpRequest(rpcRequest)
-    logger.info(s"calling eclair RPC ${request.toString()}")
+    logger.info(s"calling eclair RPC '${rpcRequest.method}'")
     Http().singleRequest(request).map(handleResponse)
   }
 
@@ -99,16 +99,14 @@ class EclairClientImpl extends EclairClient with JsonSupport with LazyLogging {
       .withMethod(POST)
       .withUri(s"$protocol://$host:$port")
       .addCredentials(BasicHttpCredentials("", apiPassword)) // name is not used
-      .withEntity(HttpEntity(
-        (write(payload)))
-        .withContentType(ContentType(`application/json`))
-      )
+      .withEntity(HttpEntity((write(payload)))
+      .withContentType(ContentType(`application/json`)))
   }
 
   private def handleResponse(httpResponse: HttpResponse): JsonRPCResponse = {
     //FIXME remove Await and hardcoded timeouts!!
     val entityAsString = Await.result(httpResponse.entity.toStrict(5 seconds).map(_.data.decodeString("UTF-8")), 10 seconds)
-    logger.info(s"Eclair response: $entityAsString")
+    logger.debug(s"Eclair response: $entityAsString")
     httpResponse.status match {
       case OK    => parseJson(entityAsString).extract[JsonRPCResponse]
       case notOk => throw new IllegalArgumentException(s"Received status $notOk while calling eclair")

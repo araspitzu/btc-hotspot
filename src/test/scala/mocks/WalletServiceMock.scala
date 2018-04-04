@@ -18,6 +18,7 @@
 
 package mocks
 
+import commons.Helpers.FutureOption
 import protocol.domain
 import protocol.domain.{Invoice, Session}
 import wallet.WalletServiceInterface
@@ -33,5 +34,5 @@ class WalletServiceMock extends WalletServiceInterface {
 
   override def spendTo(address: String, value: Long): Future[String] = ???
 
-  override def checkInvoicePaid(invoice: domain.Invoice): Future[Boolean] = ???
+  override def checkInvoicePaid(invoiceId: Long): FutureOption[Boolean] = ???
 }

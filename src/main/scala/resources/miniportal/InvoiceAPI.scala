@@ -6,14 +6,18 @@ import wallet.WalletServiceRegistry
 
 trait InvoiceAPI extends CommonResource with ExtraDirectives {
 
+  def walletService = WalletServiceRegistry.walletService
+
   def invoiceRoute = get {
-    sessionOrReject { session =>
-      pathPrefix("api" / "invoice") {
+    pathPrefix("api" / "invoice") {
+      sessionOrReject { session =>
+
         path("offer" / LongNumber) { offerId =>
-          complete(WalletServiceRegistry.walletService.generateInvoice(session, offerId))
-        } ~ path(Segment) { asd =>
-          complete("true")
+          complete(walletService.generateInvoice(session, offerId))
+        } ~ path(LongNumber / "paid") { invoiceId =>
+          complete(walletService.checkInvoicePaid(invoiceId))
         }
+
       }
 
     }

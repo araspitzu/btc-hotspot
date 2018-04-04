@@ -18,26 +18,16 @@
 
 package wallet
 
-import java.io.File
-import java.time.{ LocalDate, LocalDateTime }
-import java.util.Date
-
 import com.typesafe.scalalogging.LazyLogging
-import commons.Configuration.WalletConfig._
-import commons.Configuration.MiniPortalConfig._
 import protocol.domain._
 import services.{ OfferServiceRegistry, SessionServiceRegistry }
-
-import scala.collection.JavaConverters._
 import commons.AppExecutionContextRegistry.context._
-import commons.Helpers
 import commons.Helpers.FutureOption
 import ln.{ EclairClient, EclairClientImpl }
 
 import scala.concurrent.{ Future, Promise }
-import protocol.domain
-import protocol.webDto.InvoiceDto
-import registry.Registry
+import protocol.{ InvoiceRepositoryImpl, domain }
+import registry.{ InvoiceRepositoryRegistry, Registry }
 
 object WalletServiceRegistry extends Registry with WalletServiceComponent {
 
@@ -55,7 +45,7 @@ trait WalletServiceInterface {
 
   def generateInvoice(session: Session, offerId: Long): Future[Invoice]
 
-  def checkInvoicePaid(invoice: Invoice): Future[Boolean]
+  def checkInvoicePaid(invoiceId: Long): FutureOption[Boolean]
 
   def getBalance(): Long //satoshis
 
@@ -67,24 +57,37 @@ trait WalletServiceInterface {
 
 class LightningServiceImpl(dependencies: {
   val eclairClient: EclairClient
+  val invoiceRepository: InvoiceRepositoryImpl
 }) extends WalletServiceInterface with LazyLogging {
 
   private def eclairClient = dependencies.eclairClient
+  private def invoiceRepository = dependencies.invoiceRepository
 
   def this() = this(new {
     val eclairClient = new EclairClientImpl
+    val invoiceRepository = InvoiceRepositoryRegistry.invoiceRepositoryImpl
   })
 
   override def generateInvoice(session: domain.Session, offerId: Long): Future[Invoice] = {
-    logger.info(s"Issuing payment request for session ${session.id} and offer $offerId")
-    (for {
-      offer <- OfferServiceRegistry.offerService.offerById(offerId)
-      eclairResponse <- eclairClient.getInvoice(offer.price, s"Please pay ${offer.price} satoshis for ${offer.description}").map(Some(_))
-    } yield eclairResponse
-    ).future.map(???)
+    logger.info(s"Creating invoice for session ${session.id} and offer $offerId")
+    for {
+      offer <- OfferServiceRegistry.offerService.offerById(offerId).future.map(_.get)
+      invoiceMsg = s"Please pay ${offer.price} satoshis for ${offer.description}, MAC:${session.clientMac}"
+      eclairResponse <- eclairClient.getInvoice(offer.price, invoiceMsg)
+      invoice = Invoice(paid = false, lnInvoice = eclairResponse, sessionId = Some(session.id), offerId = Some(offerId))
+      invoiceId <- invoiceRepository.upsert(invoice).future
+    } yield invoice
+
   }
 
-  override def checkInvoicePaid(invoice: Invoice): Future[Boolean] = ???
+  override def checkInvoicePaid(invoiceId: Long): FutureOption[Boolean] = {
+    for {
+      invoice <- invoiceRepository.invoiceById(invoiceId)
+      isPaid <- eclairClient.checkInvoice(invoice.lnInvoice).map(Some(_)).asInstanceOf[FutureOption[Boolean]]
+      updated <- invoiceRepository.upsert(invoice.copy(paid = isPaid))
+    } yield isPaid
+
+  }
 
   override def getBalance(): Long = 666
 
