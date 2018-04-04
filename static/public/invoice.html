@@ -39,32 +39,97 @@
 <body>
 
 
-<!--<div class="navbar navbar-fixed-top open">-->
-    <!--<div class="container">-->
-        <!--<div class="navbar-header">-->
-            <!--<button type="button" class="navbar-toggle" >-->
-            <!--</button>-->
-        <!--</div>-->
-        <!--<ul class="nav navbar-nav navbar-right">-->
-            <!--<li><a href="#pricing">Pricing</a></li>-->
-            <!--<li><a href="login.html">Sign in</a></li>-->
-        <!--</ul>-->
-    <!--</div>-->
-<!--</div>-->
+<!-- Modal -->
+<div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLongTitle" aria-hidden="true">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="exampleModalLongTitle">Paypercom</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+         <table class="table table-striped">
+                  <thead>
+                    <tr>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr class="text-center">
+                      <td>Router</td>
+                      <td >My WiFi</td>
+                      
+                    </tr>
+
+                    <tr class="text-center">
+                      <td>Offer</td>
+                      <td>10 min</td>
+                    </tr>
+
+                    <tr class="text-center">
+                      <td>Price</td>
+                      <td>123 sat</td>
+                    </tr>
+                    
+                  </tbody>
+                </table>
+                <div class="row row-content">
+                  <div id="checkswitch" class="col-sm-12">
+                    <label class="switch">
+                      <input type="checkbox">
+                      <span class="slider"></span>
+                    </label>
+                  </div>
+                  <div class="col-sm-12">
+                      <div id="qrcode" class="hide"></div>
+                      <div id="textarea" class="show">
+                          lnbc1pvjluezpp5qqqsyqcyq5rqwzqfqqqsyqcyq5rqwzqfqqqsyqcyq5rqwzqfqypqdpl2pkx2ctnv5sxxmmwwd5kgetjypeh2ursdae8g6twvus8g6rfwvs8qun0dfjkxaq8rkx3yf5tcsyz3d73gafnh3cax9rn449d9p5uxz9ezhhypd0elx87sjle52x86fux2ypatgddc6k63n7erqz25le42c4u4ecky03ylcqca784w
+
+                </div>
+
+      <div class="modal-footer">
+          <button class="btn btn-lg btn-warning btn-block" style="">Open wallet</button>
+      </div>
 
 
-<div class="row">
-    <div class="col-lg-6">
-        <ul class="list-unstyled pricing-table text-center">
-            <li class="headline"><h3 class="white">Invoice</h3></li>
-            <li class="features" id="session-id">Session ID:</li>
-            <li class="features" id="offer-id">Offer ID: </li>
-            <li class="features">LN Invoice: </li>
-            <li class="info" id="ln-invoice"> [invoice here] </li>
-        </ul>
     </div>
-
+  </div>
 </div>
+
+
+
+
+
+
+
+
+<script>
+
+
+window.onload = function (){
+
+       $('#myModal').modal('show');
+      jQuery('#qrcode').qrcode({
+        text    : "lnbc1pvjluezpp5qqqsyqcyq5rqwzqfqqqsyqcyq5rqwzqfqqqsyqcyq5rqwzqfqypqdpl2pkx2ctnv5sxxmmwwd5kgetjypeh2ursdae8g6twvus8g6rfwvs8qun0dfjkxaq8rkx3yf5tcsyz3d73gafnh3cax9rn449d9p5uxz9ezhhypd0elx87sjle52x86fux2ypatgddc6k63n7erqz25le42c4u4ecky03ylcqca784w"
+    });
+
+
+
+
+
+}
+
+
+
+
+</script>
+
+
+<footer>
+  
+</footer>
+
 
 
 
@@ -76,6 +141,6 @@
 <script src="js/bootstrap.min.js"></script>
 <script src="js/wow.min.js"></script>
 <script src="js/main.js"></script>
-
+<script type="text/javascript" src="js/jquery.qrcode.min.js"></script>
 </body>
 </html>
