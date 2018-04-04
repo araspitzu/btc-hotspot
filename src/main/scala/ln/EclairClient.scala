@@ -100,7 +100,7 @@ class EclairClientImpl extends EclairClient with JsonSupport with LazyLogging {
       .withUri(s"$protocol://$host:$port")
       .addCredentials(BasicHttpCredentials("", apiPassword)) // name is not used
       .withEntity(HttpEntity((write(payload)))
-      .withContentType(ContentType(`application/json`)))
+        .withContentType(ContentType(`application/json`)))
   }
 
   private def handleResponse(httpResponse: HttpResponse): JsonRPCResponse = {
