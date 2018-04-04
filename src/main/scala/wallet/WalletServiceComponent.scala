@@ -24,6 +24,7 @@ import services.{ OfferServiceRegistry, SessionServiceRegistry }
 import commons.AppExecutionContextRegistry.context._
 import commons.Helpers.FutureOption
 import ln.{ EclairClient, EclairClientImpl }
+import protocol.webDto.InvoiceDto
 
 import scala.concurrent.{ Future, Promise }
 import protocol.{ InvoiceRepositoryImpl, domain }
@@ -43,9 +44,9 @@ trait WalletServiceComponent {
 
 trait WalletServiceInterface {
 
-  def generateInvoice(session: Session, offerId: Long): Future[Invoice]
+  def generateInvoice(session: Session, offerId: Long): Future[InvoiceDto]
 
-  def checkInvoicePaid(invoiceId: Long): FutureOption[Boolean]
+  def checkInvoicePaid(invoiceId: Long): Future[Boolean]
 
   def getBalance(): Long //satoshis
 
@@ -68,24 +69,24 @@ class LightningServiceImpl(dependencies: {
     val invoiceRepository = InvoiceRepositoryRegistry.invoiceRepositoryImpl
   })
 
-  override def generateInvoice(session: domain.Session, offerId: Long): Future[Invoice] = {
+  override def generateInvoice(session: domain.Session, offerId: Long): Future[InvoiceDto] = {
     logger.info(s"Creating invoice for session ${session.id} and offer $offerId")
     for {
       offer <- OfferServiceRegistry.offerService.offerById(offerId).future.map(_.get)
       invoiceMsg = s"Please pay ${offer.price} satoshis for ${offer.description}, MAC:${session.clientMac}"
       eclairResponse <- eclairClient.getInvoice(offer.price, invoiceMsg)
       invoice = Invoice(paid = false, lnInvoice = eclairResponse, sessionId = Some(session.id), offerId = Some(offerId))
-      invoiceId <- invoiceRepository.upsert(invoice).future
-    } yield invoice
+      invoiceId <- invoiceRepository.insert(invoice)
+    } yield InvoiceDto(invoiceId, invoice.createdAt, invoice.lnInvoice, invoice.paid)
 
   }
 
-  override def checkInvoicePaid(invoiceId: Long): FutureOption[Boolean] = {
-    for {
+  override def checkInvoicePaid(invoiceId: Long): Future[Boolean] = {
+    (for {
       invoice <- invoiceRepository.invoiceById(invoiceId)
       isPaid <- eclairClient.checkInvoice(invoice.lnInvoice).map(Some(_)).asInstanceOf[FutureOption[Boolean]]
       updated <- invoiceRepository.upsert(invoice.copy(paid = isPaid))
-    } yield isPaid
+    } yield isPaid).future.map(_.getOrElse(false))
 
   }
 

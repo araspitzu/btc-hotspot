@@ -7,6 +7,8 @@ import protocol.domain.Invoice
 import registry.DatabaseRegistry
 import registry.SessionRepositoryRegistry._
 
+import scala.concurrent.Future
+
 trait InvoiceRepositoryComponent {
 
   val invoiceRepositoryImpl: InvoiceRepositoryImpl
@@ -36,6 +38,10 @@ class InvoiceRepositoryImpl extends DbSerializers {
   }
 
   val invoiceTable = TableQuery[InvoiceTable]
+
+  def insert(invoice: Invoice): Future[Long] = db.run {
+    (invoiceTable returning invoiceTable.map(_.id)) += invoice
+  }
 
   def upsert(invoice: Invoice): FutureOption[Long] = db.run {
     (invoiceTable returning invoiceTable.map(_.id)).insertOrUpdate(invoice)

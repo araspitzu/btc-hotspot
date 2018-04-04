@@ -28,7 +28,7 @@ package object webDto {
 
   case class InvoiceDto(
     id: Long,
-    createdAt: Date,
+    createdAt: LocalDateTime,
     lnInvoice: String,
     paid: Boolean
   )
@@ -41,7 +41,7 @@ package object webDto {
   object OfferDto {
     def apply(offer: Offer): OfferDto = OfferDto(
       offer,
-      paymentURI = s"bitcoin:?r=http://$miniPortalHost:$miniPortalPort/api/pay/${offer.offerId}"
+      paymentURI = s"http://$miniPortalHost:$miniPortalPort/invoice.html?offerId=${offer.offerId}"
     )
   }
 
