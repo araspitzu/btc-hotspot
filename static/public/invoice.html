@@ -12,28 +12,6 @@
 
     <script src="js/modernizr-2.7.1.js"></script>
 
-    <script>
-    function param(name) {
-        return (location.search.split(name + '=')[1] || '').split('&')[0];
-    }
-
-    window.onload = function(){
-
-          //var href = window.location.href;
-          var offerId = param('offerId') || 1; //fallback to offer #1
-
-          $.ajax({url: "/api/invoice/offer"+offerId, success: function(lnInvoice){
-              var lnInvoiceEl = document.getElementById("ln-invoice");
-              var offerIdEl = document.getElementById("offer-id");
-
-              lnInvoiceEl.innerText = lnInvoice;
-              offerIdEl.innerText = offerIdEl.innerText + offerId;
-          }});
-
-    };
-
-  </script>
-
 </head>
 
 <body>
@@ -105,23 +83,30 @@
 
 
 <script>
+    function param(name) {
+        return (location.search.split(name + '=')[1] || '').split('&')[0];
+    }
 
 
 window.onload = function (){
+          //var href = window.location.href;
+          var offerId = param('offerId') || 1; //fallback to offer #1
 
+          $.ajax({url: "/api/invoice/offer/"+offerId, success: function(invoiceDto){
+              var lnInvoiceEl = document.getElementById("textarea");
+              var offerIdEl = document.getElementById("offer-id");
+
+              lnInvoiceEl.innerText = invoiceDto.lnInvoice;
+              offerIdEl.innerText = offerIdEl.innerText + offerId;
+          }});
        $('#myModal').modal('show');
+
       jQuery('#qrcode').qrcode({
         text    : "lnbc1pvjluezpp5qqqsyqcyq5rqwzqfqqqsyqcyq5rqwzqfqqqsyqcyq5rqwzqfqypqdpl2pkx2ctnv5sxxmmwwd5kgetjypeh2ursdae8g6twvus8g6rfwvs8qun0dfjkxaq8rkx3yf5tcsyz3d73gafnh3cax9rn449d9p5uxz9ezhhypd0elx87sjle52x86fux2ypatgddc6k63n7erqz25le42c4u4ecky03ylcqca784w"
     });
 
 
-
-
-
 }
-
-
-
 
 </script>
 
