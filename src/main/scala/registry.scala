@@ -17,20 +17,20 @@
  */
 
 import akka.http.scaladsl.server.Route
-import commons.Configuration.MiniPortalConfig.{miniPortalHost, miniPortalPort}
+import commons.Configuration.MiniPortalConfig.{ miniPortalHost, miniPortalPort }
 import commons.TestData
 import protocol._
 import commons.AppExecutionContextRegistry.context._
 import akka.http.scaladsl.Http
-import iptables.{IpTablesInterface, IpTablesServiceComponent, IpTablesServiceImpl}
-import resources.miniportal.{MiniPortal, PaymentChannelAPI}
+import iptables.{ IpTablesInterface, IpTablesServiceComponent, IpTablesServiceImpl }
+import resources.miniportal.{ MiniPortal, PaymentChannelAPI }
 import services.InvoiceServiceRegistry
 import slick.driver.JdbcProfile
 import slick.jdbc
 import slick.jdbc.meta.MTable
-import watchdog.{SchedulerComponent, SchedulerImpl}
+import watchdog.{ SchedulerComponent, SchedulerImpl }
 
-import scala.concurrent.{Await, Future}
+import scala.concurrent.{ Await, Future }
 import scala.concurrent.duration._
 
 package object registry {

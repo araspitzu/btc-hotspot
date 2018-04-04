@@ -4,13 +4,13 @@ import commons.JsonSupport
 import resources.{ CommonResource, ExtraDirectives }
 import wallet.WalletServiceRegistry
 
-trait InvoiceAPI extends CommonResource with ExtraDirectives with JsonSupport {
+trait InvoiceAPI extends CommonResource with ExtraDirectives {
 
   def invoiceRoute = get {
-    withSession { session =>
+    sessionOrReject { session =>
       pathPrefix("api" / "invoice") {
         path("offer" / LongNumber) { offerId =>
-          complete(WalletServiceRegistry.walletService.generateInvoice(session.get, offerId))
+          complete(WalletServiceRegistry.walletService.generateInvoice(session, offerId))
         } ~ path(Segment) { asd =>
           complete("true")
         }

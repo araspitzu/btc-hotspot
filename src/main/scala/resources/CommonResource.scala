@@ -21,16 +21,16 @@ package resources
 import akka.http.scaladsl.server.{ Directive, Directive1, Directives, Route }
 import akka.util.Timeout
 import protocol.domain.Session
-import services.{ SessionServiceRegistry }
-
+import services.SessionServiceRegistry
 import scala.compat.java8.OptionConverters._
 import iptables.ArpService._
 import scala.concurrent.duration._
 import com.typesafe.scalalogging.LazyLogging
 import de.heikoseeberger.akkahttpjson4s.Json4sSupport
 import akka.http.scaladsl.model._
+import commons.JsonSupport
 
-trait CommonResource extends Directives with Json4sSupport with LazyLogging {
+trait CommonResource extends Directives with Json4sSupport with JsonSupport with LazyLogging {
 
   implicit val timeout = Timeout(10 seconds)
 

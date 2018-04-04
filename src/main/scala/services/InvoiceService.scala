@@ -1,8 +1,9 @@
 package services
 
+import protocol.{ InvoiceRepository, InvoiceRepositoryImpl, SessionRepositoryComponent, SessionRepositoryImpl }
 import protocol.domain._
-import registry.Registry
-
+import registry.{ InvoiceRepositoryRegistry, Registry }
+import wallet.WalletServiceInterface
 
 object InvoiceServiceRegistry extends Registry with InvoiceServiceComponent {
 
@@ -18,12 +19,22 @@ trait InvoiceServiceComponent {
 
 trait InvoiceService {
 
-    def invoiceFor(session: Session, offer: Offer): Invoice
+  def invoiceFor(session: Session, offer: Offer): Invoice
 
 }
 
-class InvoiceServiceImpl extends InvoiceService {
+class InvoiceServiceImpl(dependencies: {
+  val invoiceRepository: InvoiceRepository
+}) extends InvoiceService {
 
-  override def invoiceFor(session: Session, offer: Offer): Invoice = ???
+  private def invoiceRepository = dependencies.invoiceRepository.invoiceRepository
+
+  def this() = this(new {
+    val invoiceRepository: InvoiceRepository = InvoiceRepositoryRegistry
+  })
+
+  override def invoiceFor(session: Session, offer: Offer) = {
+    ???
+  }
 
 }

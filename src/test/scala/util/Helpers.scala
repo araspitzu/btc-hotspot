@@ -39,29 +39,29 @@ package util
 import commons.Helpers.FutureOption
 
 import scala.concurrent.duration._
-import scala.concurrent.{Await, Future}
+import scala.concurrent.{ Await, Future }
 
 /**
-  * Created by andrea on 09/12/16.
-  */
+ * Created by andrea on 09/12/16.
+ */
 object Helpers {
-  
+
   implicit class FutureWait[T](f: Future[T]) {
-    
+
     def futureValue: T = Await.result(f, 30 seconds)
-        
+
   }
-  
+
   implicit class FutureOptionWait[T](f: FutureOption[T]) {
-    
+
     def futureValue: Option[T] = f.future.futureValue
-    
+
   }
-  
+
   val futureNone = FutureOption(Future.successful(None))
-  
-  def futureSome[T]:T => FutureOption[T] = { t =>
+
+  def futureSome[T]: T => FutureOption[T] = { t =>
     FutureOption(Future.successful(Some(t)))
   }
-  
+
 }

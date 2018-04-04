@@ -37,6 +37,7 @@ object Configuration {
     val host = config.getString("eclair.host")
     val port = config.getString("eclair.port")
     val apiPassword = config.getString("eclair.apiToken")
+    val protocol = if (config.getBoolean("eclair.useSsl")) "https" else "http"
   }
 
   object MiniPortalConfig {

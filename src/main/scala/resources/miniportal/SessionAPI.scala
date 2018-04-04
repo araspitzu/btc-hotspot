@@ -22,7 +22,7 @@ import akka.http.scaladsl.server.{ AuthorizationFailedRejection, Route }
 import commons.JsonSupport
 import resources.{ CommonResource, ExtraDirectives }
 
-trait SessionAPI extends CommonResource with JsonSupport with ExtraDirectives {
+trait SessionAPI extends CommonResource with ExtraDirectives {
 
   def statusRoute: Route =
     path("api" / "session" / LongNumber) { sessionId =>

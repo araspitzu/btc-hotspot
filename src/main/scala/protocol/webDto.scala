@@ -26,13 +26,20 @@ import commons.Configuration.MiniPortalConfig._
 
 package object webDto {
 
-  case class WebOfferDto(
+  case class InvoiceDto(
+    id: Long,
+    createdAt: Date,
+    lnInvoice: String,
+    paid: Boolean
+  )
+
+  case class OfferDto(
     offer: Offer,
     paymentURI: String
   )
 
-  object WebOfferDto {
-    def apply(offer: Offer): WebOfferDto = WebOfferDto(
+  object OfferDto {
+    def apply(offer: Offer): OfferDto = OfferDto(
       offer,
       paymentURI = s"bitcoin:?r=http://$miniPortalHost:$miniPortalPort/api/pay/${offer.offerId}"
     )

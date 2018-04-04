@@ -50,9 +50,10 @@ trait PaymentChannelAPI extends CommonResource with ExtraDirectives {
 
   private def paymentRequestForSession(session: Session, offerId: Long) = get {
     complete {
-      WalletServiceRegistry.walletService.generateInvoice(session, offerId) map { req: String =>
-        HttpEntity(req).withContentType(paymentRequestContentType)
-      }
+      ""
+      //      WalletServiceRegistry.walletService.generateInvoice(session, offerId) map { req: String =>
+      //        HttpEntity(req).withContentType(paymentRequestContentType)
+      //      }
     }
   }
 

@@ -4,7 +4,7 @@ import java.time.LocalDateTime
 
 import commons.Helpers.FutureOption
 import protocol.domain.Invoice
-import registry.{DatabaseRegistry, OfferRepositoryRegistry, SessionRepositoryRegistry}
+import registry.{ DatabaseRegistry, OfferRepositoryRegistry, SessionRepositoryRegistry }
 
 import scala.concurrent.Future
 
@@ -29,16 +29,15 @@ class InvoiceRepositoryImpl extends DbSerializers {
     def sessionId = column[Option[Long]]("sessionId")
     def offerId = column[Option[Long]]("offerId")
 
-
     def session = foreignKey("sessionFK", sessionId, SessionRepositoryRegistry.sessionRepositoryImpl.sessionsTable)(_.id.?)
-    def offer = foreignKey("offerFK", offerId, OfferRepositoryRegistry.offerRepositoryImpl.offersTable)(_.offerId.?)
+    //causes JdbcSQLException: Constraint "offerFK" already exists
+    //def offer = foreignKey("offerFK", offerId, OfferRepositoryRegistry.offerRepositoryImpl.offersTable)(_.offerId.?)
 
     override def * = (id, createdAt, paid, lnInvoice, sessionId, offerId) <> (Invoice.tupled, Invoice.unapply)
 
   }
 
   val invoiceTable = TableQuery[InvoiceTable]
-
 
   def insert(invoice: Invoice): Future[Long] = db.run {
     (invoiceTable returning invoiceTable.map(_.id)) += invoice
@@ -51,11 +50,10 @@ class InvoiceRepositoryImpl extends DbSerializers {
       .headOption
   }
 
-  def invoicesBySessionId(sessionId: Long):Future[Seq[Invoice]] = db.run {
-    invoiceTable
-      .filter( invoice => invoice.sessionId.getOrElse(-1) === sessionId )
-      .result
-  }
-
+  //  def invoicesBySessionId(sessionId: Long): Future[Seq[Invoice]] = db.run {
+  //    invoiceTable
+  //      .filter(invoice => invoice.sessionId.getOrElse(-1) === sessionId)
+  //      .result
+  //  }
 
 }

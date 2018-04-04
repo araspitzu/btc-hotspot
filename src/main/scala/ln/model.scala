@@ -8,7 +8,7 @@ package object model {
     jsonrpc: String = "1.0",
     id: String = "btc-hotspot",
     method: String,
-    params: Seq[Any]
+    params: Seq[Any] = Seq.empty
   )
 
   case class JsonRPCError(code: Int, message: String)
@@ -19,9 +19,25 @@ package object model {
     id: String
   )
 
-  case class GetEclairInvoice(
-    msat: Long,
-    msg: String
+  case class EclairGetInfoResponse(
+    nodeId: String,
+    alias: String,
+    port: Int,
+    chainHash: String,
+    blockHeight: Long
+  )
+
+  case class EclairPeerResponse(
+    nodeId: String,
+    state: String, //TODO map with enum
+    address: String,
+    channels: Int
+  )
+
+  case class EclairChannelResponse(
+    nodeId: String,
+    channelId: String,
+    status: String //TODO map with Enum
   )
 
 }

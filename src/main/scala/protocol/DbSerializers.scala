@@ -10,7 +10,6 @@ import registry.DatabaseRegistry
 trait DbSerializers {
   import DatabaseRegistry.database.database.profile.api._
 
-
   implicit val localDateTimeMapper = MappedColumnType.base[LocalDateTime, Timestamp](
     localDateTime => Timestamp.valueOf(localDateTime),
     date => date.toLocalDateTime
