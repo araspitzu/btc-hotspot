@@ -46,9 +46,6 @@ lazy val root = (project in file(".")).
       "ch.qos.logback" % "logback-classic" % "1.2.3",
       "com.typesafe.scala-logging" %% "scala-logging" % "3.5.+",
 
-      //BITCOINJ
-      "org.bitcoinj" % "bitcoinj-core" % "0.14.+",
-
       //DB
       "com.typesafe.slick" %% "slick" % "3.2.+",
       "com.h2database" % "h2" % "1.4.+",

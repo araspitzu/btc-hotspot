@@ -19,7 +19,6 @@
 package commons
 
 import java.io.{ BufferedReader, File, InputStreamReader }
-import com.google.common.util.concurrent.{ FutureCallback, Futures, ListenableFuture }
 import com.typesafe.scalalogging.LazyLogging
 import scala.collection.JavaConverters._
 import scala.concurrent._
@@ -31,22 +30,6 @@ package object Helpers {
     Runtime.getRuntime.addShutdownHook(new Thread {
       override def run: Unit = hook
     })
-  }
-
-  object ScalaConversions {
-
-    implicit class ListenableFutureToScalaFuture[T](lfuture: ListenableFuture[T]) {
-      def asScala: Future[T] = {
-        val promise = Promise[T]()
-        Futures.addCallback(lfuture, new FutureCallback[T] {
-          override def onFailure(t: Throwable): Unit = promise failure t
-          override def onSuccess(result: T): Unit = promise success result
-        })
-
-        promise.future
-      }
-    }
-
   }
 
   implicit class FutureOption[+T](val future: Future[Option[T]]) {

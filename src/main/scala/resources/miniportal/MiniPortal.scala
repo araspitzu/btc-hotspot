@@ -30,8 +30,7 @@ trait MiniPortal extends PaymentChannelAPI with CaptiveResource with OffersAPI w
   def staticFilesRoute: Route = getFromDirectory(miniportalStaticFilesDir)
 
   val miniportalRoute: Route =
-    paymentChannelRoute ~
-      staticFilesRoute ~
+    staticFilesRoute ~
       invoiceRoute ~
       offersRoute ~
       statusRoute ~

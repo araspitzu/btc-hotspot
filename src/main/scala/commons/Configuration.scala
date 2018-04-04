@@ -18,8 +18,6 @@
 
 package commons
 
-import org.bitcoinj.core.NetworkParameters
-
 object Configuration {
 
   lazy val config = com.typesafe.config.ConfigFactory.load()
@@ -28,7 +26,6 @@ object Configuration {
 
   object WalletConfig {
     val isEnabled = config.getBoolean("wallet.enabled")
-    val network: NetworkParameters = NetworkParameters.fromID(config.getString("wallet.net"))
     val walletFileName = config.getString("wallet.walletFile")
     val walletDir = config.getString("wallet.walletDir")
   }

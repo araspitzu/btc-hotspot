@@ -18,23 +18,37 @@
 
 package resources.miniportal
 
-import akka.http.scaladsl.server.{ AuthorizationFailedRejection, Route }
-import commons.JsonSupport
+import akka.http.scaladsl.server.{ AuthorizationFailedRejection, Route, ValidationRejection }
+import registry.IpTablesServiceRegistry
 import resources.{ CommonResource, ExtraDirectives }
 
 trait SessionAPI extends CommonResource with ExtraDirectives {
 
-  def statusRoute: Route =
-    path("api" / "session" / LongNumber) { sessionId =>
-      sessionOrReject { session =>
-        if (session.id != sessionId)
-          reject(AuthorizationFailedRejection)
-        else {
-          get {
-            complete(session)
-          }
+  def statusRoute: Route = path("api" / "session" / LongNumber) { sessionId =>
+    sessionOrReject { session =>
+      if (session.id != sessionId)
+        reject(AuthorizationFailedRejection)
+      else {
+        get {
+          complete(session)
         }
       }
     }
+  }
+
+  def enableMeRoute = extractClientMAC {
+    _ match {
+      case Some(mac) => enableMe(mac)
+      case None      => reject(ValidationRejection("Mac not found"))
+    }
+  }
+
+  def enableMe(macAddress: String) = get {
+    path("api" / "enableme") {
+      complete(IpTablesServiceRegistry.ipTablesServiceImpl.enableClient(macAddress).future)
+    } ~ path("api" / "disableme") {
+      complete(IpTablesServiceRegistry.ipTablesServiceImpl.disableClient(macAddress).future)
+    }
+  }
 
 }

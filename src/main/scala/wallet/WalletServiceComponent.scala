@@ -22,17 +22,10 @@ import java.io.File
 import java.time.{ LocalDate, LocalDateTime }
 import java.util.Date
 
-import com.google.protobuf.ByteString
 import com.typesafe.scalalogging.LazyLogging
 import commons.Configuration.WalletConfig._
 import commons.Configuration.MiniPortalConfig._
-import org.bitcoin.protocols.payments.Protos
-import org.bitcoin.protocols.payments.Protos.PaymentRequest
-import org.bitcoinj.core._
-import org.bitcoinj.kits.WalletAppKit
-import org.bitcoinj.protocols.payments.PaymentProtocol
-import org.bitcoinj.wallet.KeyChain.KeyPurpose
-import protocol.domain.{ BitcoinTransaction, Offer, QtyUnit, Session }
+import protocol.domain._
 import services.{ OfferServiceRegistry, SessionServiceRegistry }
 
 import scala.collection.JavaConverters._
@@ -42,7 +35,6 @@ import commons.Helpers.FutureOption
 import ln.{ EclairClient, EclairClientImpl }
 
 import scala.concurrent.{ Future, Promise }
-import org.bitcoinj.core.listeners.DownloadProgressTracker
 import protocol.domain
 import protocol.webDto.InvoiceDto
 import registry.Registry
@@ -61,10 +53,9 @@ trait WalletServiceComponent {
 
 trait WalletServiceInterface {
 
-  def generateInvoice(session: Session, offerId: Long): Future[InvoiceDto]
+  def generateInvoice(session: Session, offerId: Long): Future[Invoice]
 
-  //Deprecated with LN
-  def validateBIP70Payment(payment: Protos.Payment): FutureOption[Protos.PaymentACK]
+  def checkInvoicePaid(invoice: Invoice): Future[Boolean]
 
   def getBalance(): Long //satoshis
 
@@ -84,7 +75,7 @@ class LightningServiceImpl(dependencies: {
     val eclairClient = new EclairClientImpl
   })
 
-  override def generateInvoice(session: domain.Session, offerId: Long): Future[InvoiceDto] = {
+  override def generateInvoice(session: domain.Session, offerId: Long): Future[Invoice] = {
     logger.info(s"Issuing payment request for session ${session.id} and offer $offerId")
     (for {
       offer <- OfferServiceRegistry.offerService.offerById(offerId)
@@ -93,7 +84,7 @@ class LightningServiceImpl(dependencies: {
     ).future.map(???)
   }
 
-  override def validateBIP70Payment(payment: Protos.Payment): Helpers.FutureOption[Protos.PaymentACK] = ???
+  override def checkInvoicePaid(invoice: Invoice): Future[Boolean] = ???
 
   override def getBalance(): Long = 666
 

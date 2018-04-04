@@ -21,7 +21,6 @@ package service
 import commons.Helpers.FutureOption
 import iptables.IpTablesInterface
 import mocks.{ IpTablesServiceMock, MockStopWatch, WalletServiceMock }
-import org.bitcoin.protocols.payments.Protos.{ Payment, PaymentACK }
 import org.specs2.mock.Mockito
 import org.specs2.mutable._
 import org.specs2.specification.Scope
@@ -37,7 +36,7 @@ class SessionServiceSpecs extends Specification with CleanSessionRepository with
   sequential
 
   trait MockSessionServiceScope extends Scope {
-    val bip70Payment = Payment.newBuilder.build
+    val bip70Payment = 222
 
     val stopWatchDepencencies = new {
       val ipTablesService: IpTablesInterface = new IpTablesServiceMock {}
@@ -48,7 +47,7 @@ class SessionServiceSpecs extends Specification with CleanSessionRepository with
     val sessionRepository: SessionRepositoryImpl = new SessionRepositoryImpl
     val offerService: OfferServiceInterface = new OfferService
     val walletService: WalletServiceInterface = new WalletServiceMock {
-      override def validateBIP70Payment(payment: Payment): FutureOption[PaymentACK] = futureSome(PaymentACK.getDefaultInstance)
+
     }
   }
 
@@ -135,7 +134,7 @@ class SessionServiceSpecs extends Specification with CleanSessionRepository with
 
       stopWatchStarted must beFalse
       stopWatchStopped must beFalse
-      sessionService.payAndEnableSessionForOffer(newSession, offer.offerId, bip70Payment).futureValue
+      sessionService.payAndEnableSessionForOffer(newSession, offer.offerId, 666).futureValue
       stopWatchStarted must beTrue
       stopWatchStopped must beFalse
 
