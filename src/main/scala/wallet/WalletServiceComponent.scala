@@ -24,7 +24,7 @@ import services.{ OfferServiceRegistry, SessionServiceRegistry }
 import commons.AppExecutionContextRegistry.context._
 import commons.Helpers.FutureOption
 import ln.{ EclairClient, EclairClientImpl }
-import protocol.webDto.InvoiceDto
+import protocol.webDto._
 
 import scala.concurrent.{ Future, Promise }
 import protocol.{ InvoiceRepositoryImpl, domain }
@@ -77,7 +77,7 @@ class LightningServiceImpl(dependencies: {
       eclairResponse <- eclairClient.getInvoice(offer.price, invoiceMsg)
       invoice = Invoice(paid = false, lnInvoice = eclairResponse, sessionId = Some(session.id), offerId = Some(offerId))
       invoiceId <- invoiceRepository.insert(invoice)
-    } yield InvoiceDto(invoiceId, invoice.createdAt, invoice.lnInvoice, invoice.paid)
+    } yield invoiceToDto(invoice.copy(id = invoiceId), offer)
 
   }
 

@@ -21,25 +21,50 @@ package protocol
 import java.time.LocalDateTime
 import java.util.Date
 
-import protocol.domain.{ BitcoinTransaction, Offer }
+import protocol.domain._
 import commons.Configuration.MiniPortalConfig._
 
 package object webDto {
 
+  def invoiceToDto(invoice: Invoice, offer: Offer): InvoiceDto = {
+    InvoiceDto(
+      invoice.id,
+      invoice.createdAt,
+      OfferDto(
+        offer.offerId,
+        offer.qty,
+        offer.qtyUnit.toString,
+        offer.price,
+        offer.description
+      ),
+      invoice.lnInvoice,
+      invoice.paid
+    )
+  }
+
   case class InvoiceDto(
     id: Long,
     createdAt: LocalDateTime,
+    offer: OfferDto,
     lnInvoice: String,
     paid: Boolean
   )
 
   case class OfferDto(
+    offerId: Long = -1,
+    qty: Long,
+    qtyUnit: String,
+    price: Long,
+    description: String
+  )
+
+  case class OfferWebDto(
     offer: Offer,
     paymentURI: String
   )
 
-  object OfferDto {
-    def apply(offer: Offer): OfferDto = OfferDto(
+  object OfferWebDto {
+    def apply(offer: Offer): OfferWebDto = OfferWebDto(
       offer,
       paymentURI = s"http://$miniPortalHost:$miniPortalPort/invoice.html?offerId=${offer.offerId}"
     )

@@ -21,7 +21,7 @@ package resources.miniportal
 import akka.http.scaladsl.server.Route
 import commons.AppExecutionContextRegistry.context._
 import commons.JsonSupport
-import protocol.webDto.OfferDto
+import protocol.webDto.OfferWebDto
 import resources.CommonResource
 import services.OfferServiceRegistry
 
@@ -30,7 +30,7 @@ trait OffersAPI extends CommonResource {
   def offersRoute: Route = get {
     pathPrefix("api" / "offer") {
       pathEnd {
-        complete(OfferServiceRegistry.offerService.allOffers.map(xs => xs.map(OfferDto(_))))
+        complete(OfferServiceRegistry.offerService.allOffers.map(xs => xs.map(OfferWebDto(_))))
       } ~ path(LongNumber) { id =>
         complete(OfferServiceRegistry.offerService.offerById(id).future)
       }
