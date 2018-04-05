@@ -661,7 +661,7 @@ row-header {
   min-height: 0px; }
 
 
-#textarea {
+#invoice-text {
   overflow-y: auto;
   margin: auto;
   height: 150px;
@@ -680,17 +680,13 @@ canvas {
     padding: 0;
     margin: auto;
     display: block;
-    position: absolute;
+    width: 150px;
     top: 450;
     bottom: 10;
     left: 0;
-    right: 0;
-}
-.hide{
-  display: none;
-}
-.show{
-  display: block;
+    right: 0
+    float: right;
+
 }
 
 .switch {
@@ -744,4 +740,9 @@ input:checked + .slider:before {
     margin-left: 42%;
 
 
+}
+div#invoice-text{
+    width: 284px;
+    height: 215px;
+    padding: 10%;
 }
