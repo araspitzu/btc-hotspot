@@ -46,7 +46,7 @@ trait WalletServiceInterface {
 
   def generateInvoice(session: Session, offerId: Long): Future[InvoiceDto]
 
-  def checkInvoicePaid(invoiceId: Long): Future[Boolean]
+  def checkInvoicePaid(invoiceId: Long): FutureOption[Boolean]
 
   def getBalance(): Long //satoshis
 
@@ -102,13 +102,12 @@ class LightningServiceImpl(dependencies: {
 
   }
 
-  override def checkInvoicePaid(invoiceId: Long): Future[Boolean] = {
-    (for {
+  override def checkInvoicePaid(invoiceId: Long): FutureOption[Boolean] = {
+    for {
       invoice <- invoiceRepository.invoiceById(invoiceId)
       isPaid <- eclairClient.checkInvoice(invoice.lnInvoice).map(Some(_)).asInstanceOf[FutureOption[Boolean]]
       updated <- invoiceRepository.upsert(invoice.copy(paid = isPaid))
-    } yield isPaid).future.map(_.getOrElse(false))
-
+    } yield isPaid
   }
 
   override def getBalance(): Long = 666

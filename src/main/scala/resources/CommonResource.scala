@@ -18,14 +18,18 @@
 
 package resources
 
+import akka.http.scaladsl.marshalling.{ GenericMarshallers, Marshaller }
 import akka.http.scaladsl.server.{ Directive1, Directives }
 import akka.util.Timeout
 import protocol.domain.Session
 import services.SessionServiceRegistry
+
 import scala.compat.java8.OptionConverters._
 import iptables.ArpService._
+
 import scala.concurrent.duration._
 import com.typesafe.scalalogging.LazyLogging
+import commons.Helpers.FutureOption
 import de.heikoseeberger.akkahttpjson4s.Json4sSupport
 import commons.JsonSupport
 
@@ -53,6 +57,14 @@ trait ExtraDirectives extends Directives with LazyLogging {
       case None          => throw new IllegalArgumentException("Session not found") //FIXME
       case Some(session) => session
     }
+  }
+
+}
+
+trait ExtraMarshallers extends GenericMarshallers {
+
+  implicit def futureOptionMarshaller[A, B](implicit m: Marshaller[Option[A], B]): Marshaller[FutureOption[A], B] = {
+    Marshaller(implicit ec => _.future.flatMap(m(_)))
   }
 
 }

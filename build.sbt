@@ -20,7 +20,7 @@ val akkaVersion = "2.4.20"
 val akkaHttpVersion = "10.+"
 val json4sVersion = "3.+"
 
-lazy val root = (project in file(".")).
+lazy val btc_hotspot = (project in file(".")).
   settings(
     inThisBuild(List(
       organization    := "araspitzu",

@@ -1,10 +1,9 @@
 package resources.miniportal
 
-import commons.JsonSupport
-import resources.{ CommonResource, ExtraDirectives }
+import resources.{ CommonResource, ExtraDirectives, ExtraMarshallers }
 import wallet.WalletServiceRegistry
 
-trait InvoiceAPI extends CommonResource with ExtraDirectives {
+trait InvoiceAPI extends CommonResource with ExtraDirectives with ExtraMarshallers {
 
   def walletService = WalletServiceRegistry.walletService
 
