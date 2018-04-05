@@ -36,18 +36,18 @@
                   <tbody>
                     <tr class="text-center">
                       <td>Router</td>
-                      <td id="network-el">My WiFi</td>
+                      <td id="network-el">swaggetty-yolognese</td>
                       
                     </tr>
 
                     <tr class="text-center">
                       <td>Offer</td>
-                      <td id="desc-el">10 min</td>
+                      <td id="desc-el">XXXXX</td>
                     </tr>
 
                     <tr class="text-center">
                       <td>Price</td>
-                      <td id="price-el">123 sat</td>
+                      <td id="price-el">XXXXX</td>
                     </tr>
                     
                   </tbody>
@@ -60,8 +60,9 @@
                     </label>
                   </div>
                   <div class="col-sm-12">
-                      <div id="qrcode" class="hide"></div>
-                      <div id="invoice-text" class="show">
+                      <div id="result" class="hide"> Not paid ...</div>
+                      <div id="qrcode" class="show"></div>
+                      <div id="invoice-text" class="hide">
                           lnbc1pvjluezpp5qqqsyqcyq5rqwzqfqqqsyqcyq5rqwzqfqqqsyqcyq5rqwzqfqypqdpl2pkx2ctnv5sxxmmwwd5kgetjypeh2ursdae8g6twvus8g6rfwvs8qun0dfjkxaq8rkx3yf5tcsyz3d73gafnh3cax9rn449d9p5uxz9ezhhypd0elx87sjle52x86fux2ypatgddc6k63n7erqz25le42c4u4ecky03ylcqca784w
 
                 </div>
@@ -94,6 +95,7 @@ window.onload = function (){
 
           $.ajax({url: "/api/invoice/offer/"+offerId, success: function(invoiceDto){
 
+              var invoiceId = invoiceDto.id;
               var lnInvoiceEl = $('invoice-text');
               var qrCodeEl = $('#qrcode');
               //var routerEl = $('#network-el');
@@ -109,6 +111,13 @@ window.onload = function (){
 
 
        $('#myModal').modal('show');
+
+       setInterval(function(){
+          $.ajax({url: "/api/invoice/1/paid", success: function(isPaid){
+                console.log('Invoice 1 isPaid:'+isPaid);
+          }});
+       }, 3000, 3000);
+
 
 }
 

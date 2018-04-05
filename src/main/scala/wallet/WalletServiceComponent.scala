@@ -46,7 +46,7 @@ trait WalletServiceInterface {
 
   def generateInvoice(session: Session, offerId: Long): Future[InvoiceDto]
 
-  def checkInvoicePaid(invoiceId: Long): FutureOption[Boolean]
+  def checkInvoicePaid(invoiceId: Long): Future[Boolean]
 
   def getBalance(): Long //satoshis
 
@@ -93,7 +93,7 @@ class LightningServiceImpl(dependencies: {
       return Future.successful(existingResult.get)
 
     for {
-      offer <- OfferServiceRegistry.offerService.offerById(offerId).future.map(_.get)
+      offer <- OfferServiceRegistry.offerService.offerById(offerId) orFailWith s"Offer $offerId not found"
       invoiceMsg = s"Please pay ${offer.price} satoshis for ${offer.description}, MAC:${session.clientMac}"
       eclairResponse <- eclairClient.getInvoice(offer.price, invoiceMsg)
       invoice = Invoice(paid = false, lnInvoice = eclairResponse, sessionId = Some(session.id), offerId = Some(offerId))
@@ -102,12 +102,12 @@ class LightningServiceImpl(dependencies: {
 
   }
 
-  override def checkInvoicePaid(invoiceId: Long): FutureOption[Boolean] = {
-    for {
+  override def checkInvoicePaid(invoiceId: Long): Future[Boolean] = {
+    (for {
       invoice <- invoiceRepository.invoiceById(invoiceId)
       isPaid <- eclairClient.checkInvoice(invoice.lnInvoice).map(Some(_)).asInstanceOf[FutureOption[Boolean]]
       updated <- invoiceRepository.upsert(invoice.copy(paid = isPaid))
-    } yield isPaid
+    } yield isPaid).future.map(_.getOrElse(false))
   }
 
   override def getBalance(): Long = 666
