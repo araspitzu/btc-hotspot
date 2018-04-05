@@ -25,8 +25,8 @@ import commons.AppExecutionContextRegistry.context._
 import commons.Helpers.FutureOption
 import ln.{ EclairClient, EclairClientImpl }
 import protocol.webDto._
-
-import scala.concurrent.{ Future, Promise }
+import scala.concurrent.{ Await, Future, Promise }
+import scala.concurrent.duration._
 import protocol.{ InvoiceRepositoryImpl, domain }
 import registry.{ InvoiceRepositoryRegistry, Registry }
 
@@ -69,8 +69,29 @@ class LightningServiceImpl(dependencies: {
     val invoiceRepository = InvoiceRepositoryRegistry.invoiceRepositoryImpl
   })
 
+  def getFirstActiveInvoiceBySessionAndOffer(sessionId: Long, offerId: Long): FutureOption[Invoice] = {
+    invoiceRepository
+      .activeInvoicesBySessionId(sessionId)
+      .map { invoices =>
+        invoices
+          .filter(i => i.offerId == Some(offerId)) //TODO add expiration
+          .sortWith((a, b) => a.createdAt.isAfter(b.createdAt))
+          .headOption
+      }
+  }
+
   override def generateInvoice(session: domain.Session, offerId: Long): Future[InvoiceDto] = {
-    logger.info(s"Creating invoice for session ${session.id} and offer $offerId")
+    logger.info(s"Fetching invoice for session ${session.id} and offer $offerId")
+
+    lazy val existing = for {
+      offer <- OfferServiceRegistry.offerService.offerById(offerId)
+      exInv <- getFirstActiveInvoiceBySessionAndOffer(session.id, offerId)
+    } yield invoiceToDto(exInv, offer)
+
+    val existingResult = Await.result(existing.future, 5 seconds)
+    if (existingResult.isDefined)
+      return Future.successful(existingResult.get)
+
     for {
       offer <- OfferServiceRegistry.offerService.offerById(offerId).future.map(_.get)
       invoiceMsg = s"Please pay ${offer.price} satoshis for ${offer.description}, MAC:${session.clientMac}"

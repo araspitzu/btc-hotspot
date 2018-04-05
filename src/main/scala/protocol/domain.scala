@@ -28,11 +28,19 @@ package object domain {
   case class Invoice(
     id: Long = -1,
     createdAt: LocalDateTime = LocalDateTime.now,
+    expiresAt: LocalDateTime = LocalDateTime.now.plusMinutes(15),
     paid: Boolean = false,
     lnInvoice: String,
     sessionId: Option[Long],
     offerId: Option[Long]
-  )
+  ) {
+
+    def isExpired() = {
+      val now = LocalDateTime.now
+      now.isAfter(createdAt) && now.isBefore(expiresAt)
+    }
+
+  }
 
   case class Session(
     id: Long = -1,

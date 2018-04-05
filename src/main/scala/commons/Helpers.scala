@@ -24,7 +24,7 @@ import scala.collection.JavaConverters._
 import scala.concurrent._
 import commons.AppExecutionContextRegistry.context._
 
-package object Helpers {
+package object Helpers extends LazyLogging {
 
   def addShutDownHook(hook: => Unit) = {
     Runtime.getRuntime.addShutdownHook(new Thread {
@@ -51,9 +51,25 @@ package object Helpers {
       case None    => throw new NoSuchElementException(error)
     }
 
+    //    def orElse[U >: T](other: U): FutureOption[U] = future map {
+    //      case Some(t) => Some(t)
+    //      case None    => Some(other)
+    //    }
+    //
+    //    def colleziona[U](pf: PartialFunction[T, U])(implicit executor: ExecutionContext): FutureOption[U] = future.map {
+    //      case Some(t) => ???
+    //      case None => ???
+    //    }
+    //
+    //    def recoverWith[U >: T](other: FutureOption[U]): FutureOption[U] = future.recoverWith {
+    //      case t: Throwable =>
+    //        logger.warn(s"Future failed: ${t.getMessage}", t)
+    //        other.future
+    //    }
+
   }
 
-  implicit class CmdExecutor(cmd: String) extends LazyLogging {
+  implicit class CmdExecutor(cmd: String) {
     def exec: Future[String] = Future {
       logger.debug(s"Executing $cmd")
       val proc = Runtime.getRuntime.exec(cmd)
