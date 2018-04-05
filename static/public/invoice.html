@@ -36,18 +36,18 @@
                   <tbody>
                     <tr class="text-center">
                       <td>Router</td>
-                      <td >My WiFi</td>
+                      <td id="network-el">My WiFi</td>
                       
                     </tr>
 
                     <tr class="text-center">
                       <td>Offer</td>
-                      <td>10 min</td>
+                      <td id="desc-el">10 min</td>
                     </tr>
 
                     <tr class="text-center">
                       <td>Price</td>
-                      <td>123 sat</td>
+                      <td id="price-el">123 sat</td>
                     </tr>
                     
                   </tbody>
@@ -61,7 +61,7 @@
                   </div>
                   <div class="col-sm-12">
                       <div id="qrcode" class="hide"></div>
-                      <div id="textarea" class="show">
+                      <div id="invoice-text" class="show">
                           lnbc1pvjluezpp5qqqsyqcyq5rqwzqfqqqsyqcyq5rqwzqfqqqsyqcyq5rqwzqfqypqdpl2pkx2ctnv5sxxmmwwd5kgetjypeh2ursdae8g6twvus8g6rfwvs8qun0dfjkxaq8rkx3yf5tcsyz3d73gafnh3cax9rn449d9p5uxz9ezhhypd0elx87sjle52x86fux2ypatgddc6k63n7erqz25le42c4u4ecky03ylcqca784w
 
                 </div>
@@ -93,18 +93,22 @@ window.onload = function (){
           var offerId = param('offerId') || 1; //fallback to offer #1
 
           $.ajax({url: "/api/invoice/offer/"+offerId, success: function(invoiceDto){
-              var lnInvoiceEl = document.getElementById("textarea");
-              var offerIdEl = document.getElementById("offer-id");
 
-              lnInvoiceEl.innerText = invoiceDto.lnInvoice;
-              offerIdEl.innerText = offerIdEl.innerText + offerId;
+              var lnInvoiceEl = $('invoice-text');
+              var qrCodeEl = $('#qrcode');
+              //var routerEl = $('#network-el');
+              var descEl = $('#desc-el');
+              var priceEl = $('#price-el');
+
+              descEl.text(invoiceDto.offer.description);
+              priceEl.text(invoiceDto.offer.price + " satoshi");
+              lnInvoiceEl.text(invoiceDto.lnInvoice);
+              qrCodeEl.qrcode({ text: invoiceDto.lnInvoice });
+
           }});
+
+
        $('#myModal').modal('show');
-
-      jQuery('#qrcode').qrcode({
-        text    : "lnbc1pvjluezpp5qqqsyqcyq5rqwzqfqqqsyqcyq5rqwzqfqqqsyqcyq5rqwzqfqypqdpl2pkx2ctnv5sxxmmwwd5kgetjypeh2ursdae8g6twvus8g6rfwvs8qun0dfjkxaq8rkx3yf5tcsyz3d73gafnh3cax9rn449d9p5uxz9ezhhypd0elx87sjle52x86fux2ypatgddc6k63n7erqz25le42c4u4ecky03ylcqca784w"
-    });
-
 
 }
 
