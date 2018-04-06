@@ -19,8 +19,8 @@
 package mocks
 
 import protocol.domain
-import protocol.domain.{Invoice, Session}
-import protocol.webDto.InvoiceDto
+import protocol.domain.{ Invoice, Session }
+import protocol.webDto.{ InvoiceDto, InvoicePaid }
 import wallet.WalletServiceInterface
 
 import scala.concurrent.Future
@@ -34,5 +34,5 @@ class WalletServiceMock extends WalletServiceInterface {
 
   override def spendTo(address: String, value: Long): Future[String] = ???
 
-  override def checkInvoicePaid(invoiceId: Long): Future[Boolean] = ???
+  override def checkInvoicePaid(invoiceId: Long): Future[InvoicePaid] = ???
 }

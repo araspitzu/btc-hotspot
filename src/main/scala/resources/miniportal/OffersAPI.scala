@@ -18,21 +18,25 @@
 
 package resources.miniportal
 
+import akka.http.scaladsl.model.StatusCodes._
 import akka.http.scaladsl.server.Route
-import commons.AppExecutionContextRegistry.context._
-import commons.JsonSupport
-import protocol.webDto.OfferWebDto
-import resources.CommonResource
-import services.OfferServiceRegistry
+import resources.{ CommonResource, ExtraDirectives }
+import services.InvoiceServiceRegistry._
 
-trait OffersAPI extends CommonResource {
+trait OffersAPI extends CommonResource with ExtraDirectives {
 
   def offersRoute: Route = get {
     pathPrefix("api" / "offer") {
       pathEnd {
-        complete(OfferServiceRegistry.offerService.allOffers.map(xs => xs.map(OfferWebDto(_))))
+        complete(invoiceService.allOffers)
       } ~ path(LongNumber) { id =>
-        complete(OfferServiceRegistry.offerService.offerById(id).future)
+        path("buy") {
+          sessionOrReject { session =>
+            redirect(s"/invoice.html?invoiceId=${invoiceService.makeNewInvoice(session, id)}", TemporaryRedirect)
+          }
+        } ~ pathEnd {
+          complete(invoiceService.offerById(id).future)
+        }
       }
     }
   }

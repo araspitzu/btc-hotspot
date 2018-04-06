@@ -57,7 +57,6 @@ trait AdminService {
 class AdminServiceImpl(dependencies: {
   val sessionRepository: SessionRepositoryImpl
   val sessionService: SessionServiceInterface
-  val offerService: OfferServiceInterface
   val walletService: WalletServiceInterface
 }) extends AdminService with LazyLogging {
 
@@ -68,7 +67,6 @@ class AdminServiceImpl(dependencies: {
   def this() = this(new {
     val sessionRepository: SessionRepositoryImpl = SessionRepositoryRegistry.sessionRepositoryImpl
     val sessionService: SessionServiceInterface = SessionServiceRegistry.sessionService
-    val offerService: OfferServiceInterface = OfferServiceRegistry.offerService
     val walletService: WalletServiceInterface = WalletServiceRegistry.walletService
   })
 

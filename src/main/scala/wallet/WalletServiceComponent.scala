@@ -20,15 +20,16 @@ package wallet
 
 import com.typesafe.scalalogging.LazyLogging
 import protocol.domain._
-import services.{ OfferServiceRegistry, SessionServiceRegistry }
+import services.SessionServiceRegistry
 import commons.AppExecutionContextRegistry.context._
 import commons.Helpers.FutureOption
-import ln.{ EclairClient, EclairClientImpl }
+import ln.{ EclairClient, EclairClientImpl, EclairClientRegistry }
 import protocol.webDto._
+
 import scala.concurrent.{ Await, Future, Promise }
 import scala.concurrent.duration._
-import protocol.{ InvoiceRepositoryImpl, domain }
-import registry.{ InvoiceRepositoryRegistry, Registry }
+import protocol.{ InvoiceRepositoryImpl, OfferRepositoryImpl, domain }
+import registry.{ InvoiceRepositoryRegistry, OfferRepositoryRegistry, Registry }
 
 object WalletServiceRegistry extends Registry with WalletServiceComponent {
 
@@ -59,14 +60,17 @@ trait WalletServiceInterface {
 class LightningServiceImpl(dependencies: {
   val eclairClient: EclairClient
   val invoiceRepository: InvoiceRepositoryImpl
+  val offerRepository: OfferRepositoryImpl
 }) extends WalletServiceInterface with LazyLogging {
 
   private def eclairClient = dependencies.eclairClient
   private def invoiceRepository = dependencies.invoiceRepository
+  private def offerRepository = dependencies.offerRepository
 
   def this() = this(new {
-    val eclairClient = new EclairClientImpl
+    val eclairClient = EclairClientRegistry.eclairClient
     val invoiceRepository = InvoiceRepositoryRegistry.invoiceRepositoryImpl
+    val offerRepository: OfferRepositoryImpl = OfferRepositoryRegistry.offerRepositoryImpl
   })
 
   def getFirstActiveInvoiceBySessionAndOffer(sessionId: Long, offerId: Long): FutureOption[Invoice] = {
@@ -84,7 +88,7 @@ class LightningServiceImpl(dependencies: {
     logger.info(s"Fetching invoice for session ${session.id} and offer $offerId")
 
     lazy val existing = for {
-      offer <- OfferServiceRegistry.offerService.offerById(offerId)
+      offer <- offerRepository.byId(offerId)
       exInv <- getFirstActiveInvoiceBySessionAndOffer(session.id, offerId)
     } yield invoiceToDto(exInv, offer)
 
@@ -92,8 +96,9 @@ class LightningServiceImpl(dependencies: {
     if (existingResult.isDefined)
       return Future.successful(existingResult.get)
 
+    logger.info("")
     for {
-      offer <- OfferServiceRegistry.offerService.offerById(offerId) orFailWith s"Offer $offerId not found"
+      offer <- offerRepository.byId(offerId) orFailWith s"Offer $offerId not found"
       invoiceMsg = s"Please pay ${offer.price} satoshis for ${offer.description}, MAC:${session.clientMac}"
       eclairResponse <- eclairClient.getInvoice(offer.price, invoiceMsg)
       invoice = Invoice(paid = false, lnInvoice = eclairResponse, sessionId = Some(session.id), offerId = Some(offerId))
@@ -116,7 +121,7 @@ class LightningServiceImpl(dependencies: {
 
   override def spendTo(lnInvoice: String, value: Long): Future[String] = {
     logger.info(s"Sending $value to $lnInvoice")
-    eclairClient.payInvoice(lnInvoice, value)
+    eclairClient.payInvoice(lnInvoice).map(_.paymentHash)
   }
 
 }

@@ -63,18 +63,6 @@ package object webDto {
     description: String
   )
 
-  case class OfferWebDto(
-    offer: Offer,
-    paymentURI: String
-  )
-
-  object OfferWebDto {
-    def apply(offer: Offer): OfferWebDto = OfferWebDto(
-      offer,
-      paymentURI = s"http://$miniPortalHost:$miniPortalPort/invoice.html?offerId=${offer.offerId}"
-    )
-  }
-
   case class BitcoinTransactionDto(
     hash: String,
     value: Long,

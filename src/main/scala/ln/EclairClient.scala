@@ -13,8 +13,21 @@ import com.typesafe.scalalogging.LazyLogging
 import commons.Configuration.EclairConfig._
 import commons.JsonSupport
 import ln.model._
+import registry.Registry
 import scala.concurrent.{ Await, Future }
 import scala.concurrent.duration._
+
+object EclairClientRegistry extends Registry with EclairClientComponent {
+
+  override val eclairClient: EclairClient = new EclairClientImpl
+
+}
+
+trait EclairClientComponent {
+
+  val eclairClient: EclairClient
+
+}
 
 trait EclairClient {
 
@@ -41,7 +54,7 @@ class EclairClientImpl extends EclairClient with JsonSupport with LazyLogging {
   }
 
   override def openChannel(msat: Long, peer: String): Future[String] = {
-    rpcCall[String]("open", peer, msat, 1)//1 for push_msat parameter
+    rpcCall[String]("open", peer, msat, 1) //1 for push_msat parameter
   }
 
   def getInfo(): Future[EclairGetInfoResponse] = {
@@ -52,7 +65,7 @@ class EclairClientImpl extends EclairClient with JsonSupport with LazyLogging {
     rpcCall[String]("receive", msat, msg)
   }
 
-  def checkInvoice(invoiceHash: String): Future[Boolean] = {
+  override def checkInvoice(invoiceHash: String): Future[Boolean] = {
     rpcCall[Boolean]("checkpayment", invoiceHash)
   }
 

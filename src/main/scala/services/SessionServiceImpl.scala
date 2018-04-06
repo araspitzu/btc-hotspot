@@ -22,9 +22,9 @@ import com.typesafe.scalalogging.LazyLogging
 import protocol.domain.{ Offer, Session }
 import commons.AppExecutionContextRegistry.context._
 import commons.Helpers.FutureOption
-import protocol.SessionRepositoryImpl
+import protocol.{ OfferRepositoryComponent, OfferRepositoryImpl, SessionRepositoryImpl }
 import protocol.domain.QtyUnit.MB
-import registry.{ IpTablesServiceRegistry, SchedulerRegistry, SessionRepositoryRegistry }
+import registry.{ IpTablesServiceRegistry, OfferRepositoryRegistry, SchedulerRegistry, SessionRepositoryRegistry }
 import wallet.{ WalletServiceInterface, WalletServiceRegistry }
 import watchdog.{ SchedulerImpl, StopWatch, TimebasedStopWatch }
 
@@ -63,16 +63,17 @@ trait SessionServiceInterface {
 
 class SessionServiceImpl(dependencies: {
   val sessionRepository: SessionRepositoryImpl
-  val offerService: OfferServiceInterface
+  val offerRepository: OfferRepositoryImpl
   val walletService: WalletServiceInterface
 }) extends SessionServiceInterface with LazyLogging {
-  import dependencies.walletService._
-  import dependencies.sessionRepository._
-  import dependencies.offerService._
+
+  private def offerRepository = dependencies.offerRepository
+  private def sessionRepository = dependencies.sessionRepository
+  private def walletService = dependencies.walletService
 
   def this() = this(new {
     val sessionRepository: SessionRepositoryImpl = SessionRepositoryRegistry.sessionRepositoryImpl
-    val offerService: OfferServiceInterface = OfferServiceRegistry.offerService
+    val offerRepository: OfferRepositoryImpl = OfferRepositoryRegistry.offerRepositoryImpl
     val walletService: WalletServiceInterface = WalletServiceRegistry.walletService
   })
 
@@ -95,8 +96,8 @@ class SessionServiceImpl(dependencies: {
     logger.info(s"Paying session ${session.id} for offer $offerId")
     for {
 
-      offer <- offerById(offerId) orFailWith "Offer not found"
-      _ <- upsert(session.copy(offerId = Some(offerId), remainingUnits = offer.qty)).future
+      offer <- offerRepository.byId(offerId) orFailWith "Offer not found"
+      _ <- sessionRepository.upsert(session.copy(offerId = Some(offerId), remainingUnits = offer.qty)).future
       stopWatch = selectStopwatchForOffer(session, offer)
       _ <- stopWatch.start(onLimitReach = { disableSession(session) }).future
     } yield {
@@ -109,7 +110,7 @@ class SessionServiceImpl(dependencies: {
   def disableSession(session: Session): FutureOption[Unit] = {
     logger.info(s"Disabling session ${session}")
     for {
-      _ <- upsert(session.copy(offerId = None))
+      _ <- sessionRepository.upsert(session.copy(offerId = None))
       stopWatch <- FutureOption(Future.successful(sessionIdToStopwatch.get(session.id)))
     } yield {
       stopWatch.stop
@@ -119,9 +120,9 @@ class SessionServiceImpl(dependencies: {
 
   def activeSessionIds(): Seq[Long] = sessionIdToStopwatch.keys.toSeq
 
-  def byId(id: Long): FutureOption[Session] = bySessionId(id)
+  def byId(id: Long): FutureOption[Session] = sessionRepository.bySessionId(id)
 
-  def byMac(mac: String): FutureOption[Session] = byMacAddress(mac)
+  def byMac(mac: String): FutureOption[Session] = sessionRepository.byMacAddress(mac)
 
   //TODO fucking remove!
   def byMacSync(mac: String): Option[Session] = {
@@ -136,7 +137,7 @@ class SessionServiceImpl(dependencies: {
     byMac(mac).future flatMap {
       case Some(session) =>
         Future.successful(session.id)
-      case None => insert(Session(clientMac = mac)) map { sessionId =>
+      case None => sessionRepository.insert(Session(clientMac = mac)) map { sessionId =>
         logger.info(s"Created session $sessionId for $mac")
         sessionId
       }

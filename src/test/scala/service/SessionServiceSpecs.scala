@@ -24,9 +24,9 @@ import mocks.{ IpTablesServiceMock, MockStopWatch, WalletServiceMock }
 import org.specs2.mock.Mockito
 import org.specs2.mutable._
 import org.specs2.specification.Scope
-import protocol.SessionRepositoryImpl
+import protocol.{ OfferRepositoryImpl, SessionRepositoryImpl }
 import protocol.domain.{ Offer, QtyUnit, Session }
-import services.{ OfferService, OfferServiceInterface, OfferServiceRegistry, SessionServiceImpl }
+import services._
 import util.CleanRepository.CleanSessionRepository
 import util.Helpers._
 import wallet.WalletServiceInterface
@@ -42,13 +42,11 @@ class SessionServiceSpecs extends Specification with CleanSessionRepository with
       val ipTablesService: IpTablesInterface = new IpTablesServiceMock {}
     }
 
-    val offer = OfferServiceRegistry.offerService.allOffers.futureValue.head
-
+    val offer = InvoiceServiceRegistry.invoiceService.allOffers.futureValue.head
     val sessionRepository: SessionRepositoryImpl = new SessionRepositoryImpl
-    val offerService: OfferServiceInterface = new OfferService
-    val walletService: WalletServiceInterface = new WalletServiceMock {
+    val walletService: WalletServiceInterface = new WalletServiceMock
+    val offerRepository: OfferRepositoryImpl = new OfferRepositoryImpl
 
-    }
   }
 
   "SessionService" should {
