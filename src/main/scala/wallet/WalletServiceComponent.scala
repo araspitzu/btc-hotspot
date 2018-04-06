@@ -46,7 +46,7 @@ trait WalletServiceInterface {
 
   def generateInvoice(session: Session, offerId: Long): Future[InvoiceDto]
 
-  def checkInvoicePaid(invoiceId: Long): Future[Boolean]
+  def checkInvoicePaid(invoiceId: Long): Future[InvoicePaid]
 
   def getBalance(): Long //satoshis
 
@@ -102,12 +102,12 @@ class LightningServiceImpl(dependencies: {
 
   }
 
-  override def checkInvoicePaid(invoiceId: Long): Future[Boolean] = {
-    (for {
-      invoice <- invoiceRepository.invoiceById(invoiceId)
-      isPaid <- eclairClient.checkInvoice(invoice.lnInvoice).map(Some(_)).asInstanceOf[FutureOption[Boolean]]
-      updated <- invoiceRepository.upsert(invoice.copy(paid = isPaid))
-    } yield isPaid).future.map(_.getOrElse(false))
+  override def checkInvoicePaid(invoiceId: Long): Future[InvoicePaid] = {
+    for {
+      invoice <- invoiceRepository.invoiceById(invoiceId) orFailWith s"Invoice $invoiceId not found"
+      isPaid <- eclairClient.checkInvoice(invoice.lnInvoice)
+      //   updated <- invoiceRepository.upsert(invoice.copy(paid = isPaid)) orFailWith s"Error updating $invoice in DB"
+    } yield InvoicePaid(invoiceId, isPaid)
   }
 
   override def getBalance(): Long = 666

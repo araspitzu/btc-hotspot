@@ -66,10 +66,10 @@
                   </div>
                     <div class="col-12 col-sm-6">
                         <div id="qrcode" style="display: none;"></div>
-                        <div id="invoice-text">
-                                  lnbc1pvjluezpp5qqqsyqcyq5rqwzqfqqqsyqcyq5rqwzqfqqqsyqcyq5rqwzqfqypqdpl2pkx2ctnv5sxxmmwwd5kgetjypeh2ursdae8g6twvus8g6rfwvs8qun0dfjkxaq8rkx3yf5tcsyz3d73gafnh3cax9rn449d9p5uxz9ezhhypd0elx87sjle52x86fux2ypatgddc6k63n7erqz25le42c4u4ecky03ylcqca784w
-
-
+                        <div>
+                            <p id="invoice-text">
+                                notArealInvoicelnbc1pvjluezpp5qqqsyqcyq5rqwzqfqqqsyqcyq5rqwzqfqqqsyqcyq5rqwzqfqypqdpl2pkx2ctnv5sxxmmwwd5kgetjypeh2ursdae8g6twvus8g6rfwvs8qun0dfjkxaq8rkx3yf5tcsyz3d73gafnh3cax9rn449d9p5uxz9ezhhypd0elx87sjle52x86fux2ypatgddc6k63n7erqz25le42c4u4ecky03ylcqca784w
+                            </p>
                       </div>
                     </div>
 
@@ -113,7 +113,7 @@ window.onload = function (){
           $.ajax({url: "/api/invoice/offer/"+offerId, success: function(invoiceDto){
 
               var invoiceId = invoiceDto.id;
-              var lnInvoiceEl = $('invoice-text');
+              var lnInvoiceEl = $('#invoice-text');
               var qrCodeEl = $('#qrcode');
               //var routerEl = $('#network-el');
               var descEl = $('#desc-el');
@@ -131,7 +131,7 @@ window.onload = function (){
 
        setInterval(function(){
           $.ajax({url: "/api/invoice/1/paid", success: function(isPaid){
-                console.log('Invoice 1 isPaid:'+isPaid);
+                $('#result').text("INVOICE PAID:"+isPaid.paymentReceived);
           }});
        }, 3000, 3000);
 

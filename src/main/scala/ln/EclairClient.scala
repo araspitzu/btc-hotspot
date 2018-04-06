@@ -13,10 +13,12 @@ import com.typesafe.scalalogging.LazyLogging
 import commons.Configuration.EclairConfig._
 import commons.JsonSupport
 import ln.model._
+import org.json4s.Formats
 import org.json4s.JsonAST.{ JBool, JString }
 
 import scala.concurrent.{ Await, Future }
 import scala.concurrent.duration._
+import scala.util.Try
 
 trait EclairClient {
 
@@ -67,31 +69,28 @@ class EclairClientImpl extends EclairClient with JsonSupport with LazyLogging {
   override def openChannel(msat: Long, peer: String): Future[String] = ???
 
   override def getInvoice(msat: Long, msg: String): Future[String] = {
-    rpcCall(JsonRPCRequest(
+    typedRpcCall[String](JsonRPCRequest(
       method = "receive",
       params = Seq(msat, msg)
-    )).map(_.result match {
-      case JString(lnInvoice) => lnInvoice
-      case _                  => throw new IllegalStateException("Unable to get LN invoice")
-    })
+    ))
   }
 
-  override def checkInvoice(invoiceHash: String): Future[Boolean] = {
-    rpcCall(JsonRPCRequest(
+  def checkInvoice(invoiceHash: String): Future[Boolean] = {
+    typedRpcCall[Boolean](JsonRPCRequest(
       method = "checkpayment",
       params = invoiceHash :: Nil
-    )).map(_.result match {
-      case JBool(isPaid) => isPaid
-      case _             => throw new IllegalArgumentException("CheckInvoice response wasn't boolean")
-    })
+    ))
   }
 
   override def sendTo(lnInvoice: String, msat: Long): Future[String] = ???
 
-  private def rpcCall(rpcRequest: JsonRPCRequest): Future[JsonRPCResponse] = {
+  private def typedRpcCall[T](rpcRequest: JsonRPCRequest)(implicit mf: scala.reflect.Manifest[T]): Future[T] = {
     val request = createHttpRequest(rpcRequest)
     logger.info(s"calling eclair RPC '${rpcRequest.method}'")
-    Http().singleRequest(request).map(handleResponse)
+    Http().singleRequest(request).map(handleResponse).map {
+      case JsonRPCResponse(result, None, _)   => result.extract[T]
+      case JsonRPCResponse(_, Some(error), _) => throw new IllegalStateException(error.message)
+    }
   }
 
   private def createHttpRequest(payload: JsonRPCRequest): HttpRequest = {

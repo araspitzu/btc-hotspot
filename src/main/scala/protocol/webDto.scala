@@ -42,6 +42,11 @@ package object webDto {
     )
   }
 
+  case class InvoicePaid(
+    invoiceId: Long,
+    paymentReceived: Boolean
+  )
+
   case class InvoiceDto(
     id: Long,
     createdAt: LocalDateTime,
