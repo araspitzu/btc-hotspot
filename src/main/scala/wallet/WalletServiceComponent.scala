@@ -116,7 +116,7 @@ class LightningServiceImpl(dependencies: {
 
   override def spendTo(lnInvoice: String, value: Long): Future[String] = {
     logger.info(s"Sending $value to $lnInvoice")
-    eclairClient.sendTo(lnInvoice, value)
+    eclairClient.payInvoice(lnInvoice, value)
   }
 
 }

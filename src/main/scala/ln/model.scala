@@ -40,4 +40,9 @@ package object model {
     status: String //TODO map with Enum
   )
 
+  case class EclairSendResponse(
+    amountMsat: Long,
+    paymentHash: String
+  )
+
 }

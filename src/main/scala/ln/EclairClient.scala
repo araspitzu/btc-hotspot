@@ -13,12 +13,8 @@ import com.typesafe.scalalogging.LazyLogging
 import commons.Configuration.EclairConfig._
 import commons.JsonSupport
 import ln.model._
-import org.json4s.Formats
-import org.json4s.JsonAST.{ JBool, JString }
-
 import scala.concurrent.{ Await, Future }
 import scala.concurrent.duration._
-import scala.util.Try
 
 trait EclairClient {
 
@@ -30,7 +26,7 @@ trait EclairClient {
 
   def checkInvoice(invoice: String): Future[Boolean]
 
-  def sendTo(lnInvoice: String, msat: Long): Future[String]
+  def payInvoice(lnInvoice: String): Future[EclairSendResponse]
 
   def isReady(): Future[Boolean]
 
@@ -39,54 +35,34 @@ trait EclairClient {
 class EclairClientImpl extends EclairClient with JsonSupport with LazyLogging {
 
   override def isReady(): Future[Boolean] = ???
-  //  override def isReady(): Future[Boolean] = {
-  //    for {
-  //      getInfo <- rpcCall(JsonRPCRequest(method = "getinfo")).map(_.result.as[EclairGetInfoResponse])
-  //      channels <- rpcCall(JsonRPCRequest(method = "getinfo")).map(_.result.as[EclairGetInfoResponse])
-  //    } yield {
-  //      getInfo.blockHeight > 1200 &&
-  //        getInfo.alias.nonEmpty
-  //    }
-  //
-  //  }
 
-  //  def peers(): Future[Seq[EclairPeerResponse]] = {
-  //    rpcCall(JsonRPCRequest(method = "peers")).map(_.result.as[Seq[EclairPeerResponse]])
-  //  }
-  //
-  //  def channels(): Future[Seq[EclairChannelResponse]] = {
-  //
-  //    peers().map(_.filter(_.state == "CONNECTED")).map { peerList =>
-  //      peerList.map { peer =>
-  //        rpcCall(JsonRPCRequest(method = "channels", params = Seq(peer.nodeId))).map(_.result.as[Seq[EclairChannelResponse]])
-  //      }
-  //    }
-  //
-  //  }
+  override def connect(uri: String): Future[String] = {
+    rpcCall[String](method = "connect", uri)
+  }
 
-  override def connect(uri: String): Future[String] = ???
+  override def openChannel(msat: Long, peer: String): Future[String] = {
+    rpcCall[String]("open", peer, msat, 1)//1 for push_msat parameter
+  }
 
-  override def openChannel(msat: Long, peer: String): Future[String] = ???
+  def getInfo(): Future[EclairGetInfoResponse] = {
+    rpcCall[EclairGetInfoResponse](method = "getinfo")
+  }
 
   override def getInvoice(msat: Long, msg: String): Future[String] = {
-    typedRpcCall[String](JsonRPCRequest(
-      method = "receive",
-      params = Seq(msat, msg)
-    ))
+    rpcCall[String]("receive", msat, msg)
   }
 
   def checkInvoice(invoiceHash: String): Future[Boolean] = {
-    typedRpcCall[Boolean](JsonRPCRequest(
-      method = "checkpayment",
-      params = invoiceHash :: Nil
-    ))
+    rpcCall[Boolean]("checkpayment", invoiceHash)
   }
 
-  override def sendTo(lnInvoice: String, msat: Long): Future[String] = ???
+  override def payInvoice(lnInvoice: String): Future[EclairSendResponse] = {
+    rpcCall[EclairSendResponse]("send", lnInvoice)
+  }
 
-  private def typedRpcCall[T](rpcRequest: JsonRPCRequest)(implicit mf: scala.reflect.Manifest[T]): Future[T] = {
-    val request = createHttpRequest(rpcRequest)
-    logger.info(s"calling eclair RPC '${rpcRequest.method}'")
+  private def rpcCall[T](method: String, params: Any*)(implicit mf: scala.reflect.Manifest[T]): Future[T] = {
+    val request = createHttpRequest(JsonRPCRequest(method = method, params = params))
+    logger.info(s"calling eclair RPC '$method'")
     Http().singleRequest(request).map(handleResponse).map {
       case JsonRPCResponse(result, None, _)   => result.extract[T]
       case JsonRPCResponse(_, Some(error), _) => throw new IllegalStateException(error.message)
