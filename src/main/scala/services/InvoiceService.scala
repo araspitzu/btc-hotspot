@@ -3,10 +3,12 @@ package services
 import com.typesafe.scalalogging.LazyLogging
 import commons.Helpers.FutureOption
 import ln.{ EclairClient, EclairClientComponent, EclairClientRegistry }
-import protocol.{ InvoiceRepositoryComponent, OfferRepositoryComponent }
+import protocol.{ InvoiceRepositoryComponent, OfferRepositoryComponent, webDto }
+import protocol.webDto._
 import protocol.domain.{ Invoice, Offer, Session }
 import registry.{ InvoiceRepositoryRegistry, OfferRepositoryRegistry, Registry }
 import commons.AppExecutionContextRegistry.context._
+
 import scala.concurrent.Future
 
 object InvoiceServiceRegistry extends Registry with InvoiceServiceComponent {
@@ -24,7 +26,7 @@ trait InvoiceService {
 
   def makeNewInvoice(session: Session, offerId: Long): Future[Long]
 
-  def invoiceById(invoiceId: Long): FutureOption[Invoice]
+  def invoiceById(invoiceId: Long): FutureOption[InvoiceDto]
 
   def allOffers: Future[Seq[Offer]]
 
@@ -67,7 +69,12 @@ class InvoiceServiceImpl(dependencies: {
 
   }
 
-  override def invoiceById(invoiceId: Long) = invoiceRepository.invoiceById(invoiceId)
+  override def invoiceById(invoiceId: Long) = {
+    for {
+      invoice <- invoiceRepository.invoiceById(invoiceId)
+      offer <- offerRepository.byId(invoice.offerId.get) //fixme
+    } yield invoiceToDto(invoice, offer)
+  }
 
   override def allOffers = offerRepository.allOffers
 

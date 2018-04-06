@@ -20,6 +20,7 @@ package resources
 
 import akka.http.scaladsl.model._
 import akka.http.scaladsl.model.MediaTypes._
+import akka.http.scaladsl.model.StatusCodes._
 import akka.http.scaladsl.model.HttpCharsets._
 import akka.http.scaladsl.model.Uri.{ Path, Query }
 import akka.http.scaladsl.server.Route
@@ -33,7 +34,7 @@ trait CaptiveResource extends ExtraDirectives {
    * Redirect empty url to index
    */
   def emptyUrlRedirect(toPage: String) = path("") {
-    redirect(Uri(toPage), StatusCodes.TemporaryRedirect)
+    redirect(Uri(toPage), TemporaryRedirect)
   }
 
   /**
@@ -41,7 +42,7 @@ trait CaptiveResource extends ExtraDirectives {
    */
   def entryPointRoute: Route = get {
     extractRequest { httpRequest =>
-      redirectToPrelogin(Some(httpRequest))
+      redirect(preLoginUrl(Some(httpRequest)), TemporaryRedirect)
     }
   }
 
@@ -60,10 +61,7 @@ trait CaptiveResource extends ExtraDirectives {
     }
   }
 
-  def redirectToPrelogin(request: Option[HttpRequest] = None) =
-    redirect(preLoginUrl(request), StatusCodes.TemporaryRedirect)
-
-  private def preLoginUrl(request: Option[HttpRequest]): Uri = {
+  def preLoginUrl(request: Option[HttpRequest]): Uri = {
     Uri()
       .withScheme("http")
       .withHost(miniPortalHost)

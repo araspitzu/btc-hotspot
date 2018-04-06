@@ -111,7 +111,8 @@ class LightningServiceImpl(dependencies: {
     for {
       invoice <- invoiceRepository.invoiceById(invoiceId) orFailWith s"Invoice $invoiceId not found"
       isPaid <- eclairClient.checkInvoice(invoice.lnInvoice)
-      //   updated <- invoiceRepository.upsert(invoice.copy(paid = isPaid)) orFailWith s"Error updating $invoice in DB"
+      if (invoice.paid != isPaid)
+      _ = invoiceRepository.upsert(invoice.copy(paid = isPaid))
     } yield InvoicePaid(invoiceId, isPaid)
   }
 

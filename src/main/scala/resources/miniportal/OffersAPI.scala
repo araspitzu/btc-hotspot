@@ -31,8 +31,11 @@ trait OffersAPI extends CommonResource with ExtraDirectives {
         complete(invoiceService.allOffers)
       } ~ path(LongNumber) { id =>
         path("buy") {
-          sessionOrReject { session =>
-            redirect(s"/invoice.html?invoiceId=${invoiceService.makeNewInvoice(session, id)}", TemporaryRedirect)
+          pathEnd {
+            sessionOrReject { session =>
+              //wrong url
+              redirect(s"invoice.html?invoiceId=${invoiceService.makeNewInvoice(session, id)}", TemporaryRedirect)
+            }
           }
         } ~ pathEnd {
           complete(invoiceService.offerById(id).future)
