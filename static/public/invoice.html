@@ -54,21 +54,27 @@
                 </table>
                 <div class="row row-content">
                   <div id="checkswitch" class="col-sm-12">
+                      <p>show QR Code</p>
                     <label class="switch">
-                      <input type="checkbox">
+                      <input id="invocaQr" type="checkbox" onchange="nascondilo()">
                       <span class="slider"></span>
                     </label>
                   </div>
-                  <div class="col-sm-12">
-                      <div id="result" class="hide"> Not paid ...</div>
-                      <div id="qrcode" class="show"></div>
-                      <div id="invoice-text" class="hide">
-                          lnbc1pvjluezpp5qqqsyqcyq5rqwzqfqqqsyqcyq5rqwzqfqqqsyqcyq5rqwzqfqypqdpl2pkx2ctnv5sxxmmwwd5kgetjypeh2ursdae8g6twvus8g6rfwvs8qun0dfjkxaq8rkx3yf5tcsyz3d73gafnh3cax9rn449d9p5uxz9ezhhypd0elx87sjle52x86fux2ypatgddc6k63n7erqz25le42c4u4ecky03ylcqca784w
+                  <div class="col-12 col-sm-6">
+                      <br>
+                      <div id="result" > Not paid ...</div>
+                  </div>
+                    <div class="col-12 col-sm-6">
+                        <div id="qrcode" style="display: none;"></div>
+                        <div id="invoice-text">
+                                  lnbc1pvjluezpp5qqqsyqcyq5rqwzqfqqqsyqcyq5rqwzqfqqqsyqcyq5rqwzqfqypqdpl2pkx2ctnv5sxxmmwwd5kgetjypeh2ursdae8g6twvus8g6rfwvs8qun0dfjkxaq8rkx3yf5tcsyz3d73gafnh3cax9rn449d9p5uxz9ezhhypd0elx87sjle52x86fux2ypatgddc6k63n7erqz25le42c4u4ecky03ylcqca784w
 
-                </div>
+
+                      </div>
+                    </div>
 
       <div class="modal-footer">
-          <button class="btn btn-lg btn-warning btn-block" style="">Open wallet</button>
+          <button class="btn btn-lg  btn-warning btn-block">Open wallet</button>
       </div>
 
 
@@ -84,6 +90,17 @@
 
 
 <script>
+    function nascondilo() {
+
+        var checkBox = document.getElementById('invocaQr');
+
+        if (checkBox.checked == true) {
+            document.getElementById('invoice-text').style.display = "none";
+            document.getElementById('qrcode').style.display = 'block';
+        } else {document.getElementById('invoice-text').style.display = "block";
+            document.getElementById('qrcode').style.display = 'none';}
+    }
+
     function param(name) {
         return (location.search.split(name + '=')[1] || '').split('&')[0];
     }
