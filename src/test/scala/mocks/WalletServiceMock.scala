@@ -26,8 +26,6 @@ import wallet.WalletServiceInterface
 import scala.concurrent.Future
 
 class WalletServiceMock extends WalletServiceInterface {
-  override def generateInvoice(session: Session, offerId: Long): Future[InvoiceDto] = ???
-
   override def getBalance(): Long = ???
 
   override def allTransactions(): Seq[domain.BitcoinTransaction] = ???

@@ -45,8 +45,6 @@ trait WalletServiceComponent {
 
 trait WalletServiceInterface {
 
-  def generateInvoice(session: Session, offerId: Long): Future[InvoiceDto]
-
   def checkInvoicePaid(invoiceId: Long): Future[InvoicePaid]
 
   def getBalance(): Long //satoshis
@@ -73,45 +71,14 @@ class LightningServiceImpl(dependencies: {
     val offerRepository: OfferRepositoryImpl = OfferRepositoryRegistry.offerRepositoryImpl
   })
 
-  def getFirstActiveInvoiceBySessionAndOffer(sessionId: Long, offerId: Long): FutureOption[Invoice] = {
-    invoiceRepository
-      .activeInvoicesBySessionId(sessionId)
-      .map { invoices =>
-        invoices
-          .filter(i => i.offerId == Some(offerId)) //TODO add expiration
-          .sortWith((a, b) => a.createdAt.isAfter(b.createdAt))
-          .headOption
-      }
-  }
-
-  override def generateInvoice(session: domain.Session, offerId: Long): Future[InvoiceDto] = {
-    logger.info(s"Fetching invoice for session ${session.id} and offer $offerId")
-
-    lazy val existing = for {
-      offer <- offerRepository.byId(offerId)
-      exInv <- getFirstActiveInvoiceBySessionAndOffer(session.id, offerId)
-    } yield invoiceToDto(exInv, offer)
-
-    val existingResult = Await.result(existing.future, 5 seconds)
-    if (existingResult.isDefined)
-      return Future.successful(existingResult.get)
-
-    logger.info("")
-    for {
-      offer <- offerRepository.byId(offerId) orFailWith s"Offer $offerId not found"
-      invoiceMsg = s"Please pay ${offer.price} satoshis for ${offer.description}, MAC:${session.clientMac}"
-      eclairResponse <- eclairClient.getInvoice(offer.price, invoiceMsg)
-      invoice = Invoice(paid = false, lnInvoice = eclairResponse, sessionId = Some(session.id), offerId = Some(offerId))
-      invoiceId <- invoiceRepository.insert(invoice)
-    } yield invoiceToDto(invoice.copy(id = invoiceId), offer)
-
-  }
-
   override def checkInvoicePaid(invoiceId: Long): Future[InvoicePaid] = {
     for {
       invoice <- invoiceRepository.invoiceById(invoiceId) orFailWith s"Invoice $invoiceId not found"
       isPaid <- eclairClient.checkInvoice(invoice.lnInvoice)
-      _ = if (invoice.paid != isPaid) invoiceRepository.upsert(invoice.copy(paid = isPaid))
+      _ = if (invoice.paid != isPaid) {
+        invoiceRepository.upsert(invoice.copy(paid = isPaid))
+        logger.info(s"Invoice $invoiceId is now paid")
+      }
     } yield InvoicePaid(invoiceId, isPaid)
   }
 

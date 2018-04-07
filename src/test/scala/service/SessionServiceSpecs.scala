@@ -36,7 +36,6 @@ class SessionServiceSpecs extends Specification with CleanSessionRepository with
   sequential
 
   trait MockSessionServiceScope extends Scope {
-    val bip70Payment = 222
 
     val stopWatchDepencencies = new {
       val ipTablesService: IpTablesInterface = new IpTablesServiceMock {}
@@ -99,7 +98,7 @@ class SessionServiceSpecs extends Specification with CleanSessionRepository with
       newSession.offerId must beNone
       newSession.remainingUnits must beLessThan(0L)
 
-      sessionService.payAndEnableSessionForOffer(newSession, offer.offerId, bip70Payment).futureValue
+      sessionService.enableSessionForOffer(newSession, offer.offerId).futureValue
       sessionService.sessionIdToStopwatch.get(newSession.id) must beSome
 
       val Some(enabledSession) = sessionService.byMac(macAddress).futureValue
@@ -132,7 +131,7 @@ class SessionServiceSpecs extends Specification with CleanSessionRepository with
 
       stopWatchStarted must beFalse
       stopWatchStopped must beFalse
-      sessionService.payAndEnableSessionForOffer(newSession, offer.offerId, 666).futureValue
+      sessionService.enableSessionForOffer(newSession, offer.offerId).futureValue
       stopWatchStarted must beTrue
       stopWatchStopped must beFalse
 

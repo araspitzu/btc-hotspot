@@ -23,7 +23,7 @@ import protocol.domain.{ Offer, Session }
 import commons.AppExecutionContextRegistry.context._
 import commons.Helpers.FutureOption
 import protocol.{ OfferRepositoryComponent, OfferRepositoryImpl, SessionRepositoryImpl }
-import protocol.domain.QtyUnit.MB
+import protocol.domain.QtyUnit._
 import registry.{ IpTablesServiceRegistry, OfferRepositoryRegistry, SchedulerRegistry, SessionRepositoryRegistry }
 import wallet.{ WalletServiceInterface, WalletServiceRegistry }
 import watchdog.{ SchedulerImpl, StopWatch, TimebasedStopWatch }
@@ -45,7 +45,7 @@ trait SessionServiceComponent {
 
 trait SessionServiceInterface {
 
-  def payAndEnableSessionForOffer(session: Session, offerId: Long, payment: Int): Future[String]
+  def enableSessionForOffer(session: Session, offerId: Long): Future[Long]
 
   def disableSession(session: Session): FutureOption[Unit]
 
@@ -92,10 +92,8 @@ class SessionServiceImpl(dependencies: {
     }
   }
 
-  def payAndEnableSessionForOffer(session: Session, offerId: Long, payment: Int): Future[String] = {
-    logger.info(s"Paying session ${session.id} for offer $offerId")
+  def enableSessionForOffer(session: Session, offerId: Long): Future[Long] = {
     for {
-
       offer <- offerRepository.byId(offerId) orFailWith "Offer not found"
       _ <- sessionRepository.upsert(session.copy(offerId = Some(offerId), remainingUnits = offer.qty)).future
       stopWatch = selectStopwatchForOffer(session, offer)
@@ -103,7 +101,7 @@ class SessionServiceImpl(dependencies: {
     } yield {
       sessionIdToStopwatch += session.id -> stopWatch
       logger.info(s"Enabled session ${session.id} for offer $offerId")
-      ""
+      session.id
     }
   }
 

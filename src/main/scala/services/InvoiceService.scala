@@ -2,6 +2,7 @@ package services
 
 import com.typesafe.scalalogging.LazyLogging
 import commons.Helpers.FutureOption
+import scala.concurrent.duration._
 import ln.{ EclairClient, EclairClientComponent, EclairClientRegistry }
 import protocol.{ InvoiceRepositoryComponent, OfferRepositoryComponent, webDto }
 import protocol.webDto._
@@ -9,7 +10,7 @@ import protocol.domain.{ Invoice, Offer, Session }
 import registry.{ InvoiceRepositoryRegistry, OfferRepositoryRegistry, Registry }
 import commons.AppExecutionContextRegistry.context._
 
-import scala.concurrent.Future
+import scala.concurrent.{ Await, Future }
 
 object InvoiceServiceRegistry extends Registry with InvoiceServiceComponent {
 
@@ -51,7 +52,14 @@ class InvoiceServiceImpl(dependencies: {
   private def eclairClient = dependencies.eclairClientComponent.eclairClient
 
   override def makeNewInvoice(session: Session, offerId: Long): Future[Long] = {
-    logger.info(s"Creating new invoice for session: ${session.id}, offer:$offerId")
+    logger.info(s"Fetching invoice for session: ${session.id}, offer:$offerId")
+
+    lazy val existing = latestActiveInvoiceBy(session.id, offerId).map(_.id)
+    val existingResult = Await.result(existing.future, 5 seconds)
+
+    if (existingResult.isDefined)
+      return Future.successful(existingResult.get)
+
     for {
       offer <- offerRepository.byId(offerId) orFailWith s"Offer $offerId not found"
       invoiceMsg = s"Please pay ${offer.price} satoshis for ${offer.description}, MAC:${session.clientMac}"
@@ -59,14 +67,21 @@ class InvoiceServiceImpl(dependencies: {
       invoice = Invoice(paid = false, lnInvoice = eclairResponse, sessionId = Some(session.id), offerId = Some(offerId))
       invoiceId <- invoiceRepository.insert(invoice)
     } yield {
-      logger.info(s"New invoice id=$invoiceId with data:\n"+
-        s"Expiration date:${invoice.expiresAt} \n"+
-        s"Price: ${offer.price} \n"
-      )
-
+      logger.info(s"New invoice id=$invoiceId")
       invoiceId
     }
 
+  }
+
+  private def latestActiveInvoiceBy(sessionId: Long, offerId: Long): FutureOption[Invoice] = {
+    invoiceRepository
+      .activeInvoicesBySessionId(sessionId)
+      .map { invoices =>
+        invoices
+          .filter(i => i.offerId == Some(offerId)) //TODO add expiration
+          .sortWith((a, b) => a.createdAt.isAfter(b.createdAt))
+          .headOption
+      }
   }
 
   override def invoiceById(invoiceId: Long) = {
