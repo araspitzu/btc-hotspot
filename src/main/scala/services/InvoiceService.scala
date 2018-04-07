@@ -60,8 +60,8 @@ class InvoiceServiceImpl(dependencies: {
       invoiceId <- invoiceRepository.insert(invoice)
     } yield {
       logger.info(s"New invoice id=$invoiceId with data:\n"+
-        s"Expiration date:${invoice.expiresAt}"+
-        s"Price: ${offer.price}"
+        s"Expiration date:${invoice.expiresAt} \n"+
+        s"Price: ${offer.price} \n"
       )
 
       invoiceId

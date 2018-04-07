@@ -30,6 +30,7 @@ package object webDto {
     InvoiceDto(
       invoice.id,
       invoice.createdAt,
+      invoice.expiresAt,
       OfferDto(
         offer.offerId,
         offer.qty,
@@ -50,6 +51,7 @@ package object webDto {
   case class InvoiceDto(
     id: Long,
     createdAt: LocalDateTime,
+    expiresAt: LocalDateTime,
     offer: OfferDto,
     lnInvoice: String,
     paid: Boolean

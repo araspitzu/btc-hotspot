@@ -108,9 +108,9 @@
 
 window.onload = function (){
           //var href = window.location.href;
-          var offerId = param('offerId') || 1; //fallback to offer #1
+          var invoiceId = param('invoiceId') || 1; //fallback to offer #1
 
-          $.ajax({url: "/api/invoice/offer/"+offerId, success: function(invoiceDto){
+          $.ajax({url: "/api/invoice/"+invoiceId, success: function(invoiceDto){
 
               var invoiceId = invoiceDto.id;
               var lnInvoiceEl = $('#invoice-text');
@@ -130,7 +130,7 @@ window.onload = function (){
        $('#myModal').modal('show');
 
        setInterval(function(){
-          $.ajax({url: "/api/invoice/1/paid", success: function(isPaid){
+          $.ajax({url: "/api/invoice/"+invoiceId+"/paid", success: function(isPaid){
                 $('#result').text("INVOICE PAID:"+isPaid.paymentReceived);
           }});
        }, 3000, 3000);

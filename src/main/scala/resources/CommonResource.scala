@@ -33,7 +33,7 @@ import commons.Helpers.FutureOption
 import de.heikoseeberger.akkahttpjson4s.Json4sSupport
 import commons.JsonSupport
 
-trait CommonResource extends Directives with Json4sSupport with JsonSupport with LazyLogging {
+trait CommonResource extends Directives with Json4sSupport with JsonSupport with ExtraMarshallers {
 
   implicit val timeout = Timeout(10 seconds)
 

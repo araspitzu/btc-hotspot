@@ -18,29 +18,28 @@
 
 package resources.miniportal
 
+import akka.http.scaladsl.model.HttpEntity
 import akka.http.scaladsl.model.StatusCodes._
 import akka.http.scaladsl.server.Route
+import com.typesafe.scalalogging.LazyLogging
 import resources.{ CommonResource, ExtraDirectives }
 import services.InvoiceServiceRegistry._
+import scala.concurrent.duration._
+import scala.concurrent.Await
 
-trait OffersAPI extends CommonResource with ExtraDirectives {
+trait OffersAPI extends CommonResource with ExtraDirectives with LazyLogging {
 
   def offersRoute: Route = get {
-    pathPrefix("api" / "offer") {
-      pathEnd {
-        complete(invoiceService.allOffers)
-      } ~ path(LongNumber) { id =>
-        path("buy") {
-          pathEnd {
-            sessionOrReject { session =>
-              //wrong url
-              redirect(s"invoice.html?invoiceId=${invoiceService.makeNewInvoice(session, id)}", TemporaryRedirect)
-            }
-          }
-        } ~ pathEnd {
-          complete(invoiceService.offerById(id).future)
+    pathPrefix("api" / "offer" / LongNumber) { offerId =>
+      path("buy") {
+        sessionOrReject { session =>
+          redirect(s"/invoice.html?invoiceId=${Await.result(invoiceService.makeNewInvoice(session, offerId), 5 seconds)}", TemporaryRedirect)
         }
+      } ~ pathEndOrSingleSlash {
+        complete(invoiceService.offerById(offerId))
       }
+    } ~ path("api" / "offer") {
+      complete(invoiceService.allOffers)
     }
   }
 
