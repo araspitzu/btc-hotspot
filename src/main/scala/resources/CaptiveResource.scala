@@ -91,8 +91,7 @@ trait CaptiveResource extends ExtraDirectives {
       |<div style="width:100%;height:80%;position:fixed;display:table;">
       |<p style="display: table-cell; line-height: 2.5em;
       |vertical-align:middle;text-align:center;color:black;">
-      |<a href="#" onclick="javascript:return redirect();">
-      |<img src="img/press-02.jpg" alt="" border="0" height="39" width="123"/></a><br>
+      |<a href="#" onclick="javascript:return redirect();"></a><br>
       |<small><img src="img/hamster.gif"/> <br> redirecting...</small></p>
       |<br><br>
       |</div>
