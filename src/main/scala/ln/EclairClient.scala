@@ -93,7 +93,7 @@ class EclairClientImpl extends EclairClient with JsonSupport with LazyLogging {
 
   private def handleResponse(httpResponse: HttpResponse): JsonRPCResponse = {
     //FIXME remove Await and hardcoded timeouts!!
-    val entityAsString = Await.result(httpResponse.entity.toStrict(5 seconds).map(_.data.decodeString("UTF-8")), 10 seconds)
+    val entityAsString = Await.result(httpResponse.entity.toStrict(30 seconds).map(_.data.decodeString("UTF-8")), 30 seconds)
     logger.debug(s"Eclair response: $entityAsString")
     httpResponse.status match {
       case OK    => parseJson(entityAsString).extract[JsonRPCResponse]

@@ -59,7 +59,6 @@ package object registry {
 
     Await.result(setupDb, 10 seconds)
 
-
     def setupDb = database.db.run({
       logger.info(s"Setting up schemas and populating tables")
       DBIO.seq(

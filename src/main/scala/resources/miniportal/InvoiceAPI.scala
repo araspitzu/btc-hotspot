@@ -2,6 +2,7 @@ package resources.miniportal
 
 import resources.{ CommonResource, ExtraDirectives, ExtraMarshallers }
 import services.InvoiceServiceRegistry.invoiceService
+import services.SessionServiceRegistry.sessionService
 import wallet.WalletServiceRegistry.walletService
 
 trait InvoiceAPI extends CommonResource with ExtraDirectives with ExtraMarshallers {
@@ -13,6 +14,8 @@ trait InvoiceAPI extends CommonResource with ExtraDirectives with ExtraMarshalle
           complete(invoiceService.invoiceById(invoiceId))
         } ~ path("paid") {
           complete(walletService.checkInvoicePaid(invoiceId))
+        } ~ path("actualize") {
+          complete(sessionService.enableSessionForInvoice(session, invoiceId))
         }
       }
     }

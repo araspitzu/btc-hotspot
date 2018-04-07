@@ -22,9 +22,9 @@ import com.typesafe.scalalogging.LazyLogging
 import protocol.domain.{ Offer, Session }
 import commons.AppExecutionContextRegistry.context._
 import commons.Helpers.FutureOption
-import protocol.{ OfferRepositoryComponent, OfferRepositoryImpl, SessionRepositoryImpl }
+import protocol.{ InvoiceRepositoryImpl, OfferRepositoryComponent, OfferRepositoryImpl, SessionRepositoryImpl }
 import protocol.domain.QtyUnit._
-import registry.{ IpTablesServiceRegistry, OfferRepositoryRegistry, SchedulerRegistry, SessionRepositoryRegistry }
+import registry._
 import wallet.{ WalletServiceInterface, WalletServiceRegistry }
 import watchdog.{ SchedulerImpl, StopWatch, TimebasedStopWatch }
 
@@ -45,7 +45,7 @@ trait SessionServiceComponent {
 
 trait SessionServiceInterface {
 
-  def enableSessionForOffer(session: Session, offerId: Long): Future[Long]
+  def enableSessionForInvoice(session: Session, invoiceId: Long): FutureOption[Long]
 
   def disableSession(session: Session): FutureOption[Unit]
 
@@ -63,16 +63,20 @@ trait SessionServiceInterface {
 
 class SessionServiceImpl(dependencies: {
   val sessionRepository: SessionRepositoryImpl
+  val invoiceRepository: InvoiceRepositoryImpl
   val offerRepository: OfferRepositoryImpl
   val walletService: WalletServiceInterface
 }) extends SessionServiceInterface with LazyLogging {
 
   private def offerRepository = dependencies.offerRepository
   private def sessionRepository = dependencies.sessionRepository
+  private def invoiceRepository = dependencies.invoiceRepository
+  //FIXME unused
   private def walletService = dependencies.walletService
 
   def this() = this(new {
     val sessionRepository: SessionRepositoryImpl = SessionRepositoryRegistry.sessionRepositoryImpl
+    val invoiceRepository: InvoiceRepositoryImpl = InvoiceRepositoryRegistry.invoiceRepositoryImpl
     val offerRepository: OfferRepositoryImpl = OfferRepositoryRegistry.offerRepositoryImpl
     val walletService: WalletServiceInterface = WalletServiceRegistry.walletService
   })
@@ -92,15 +96,17 @@ class SessionServiceImpl(dependencies: {
     }
   }
 
-  def enableSessionForOffer(session: Session, offerId: Long): Future[Long] = {
+  def enableSessionForInvoice(session: Session, invoiceId: Long): FutureOption[Long] = {
     for {
-      offer <- offerRepository.byId(offerId) orFailWith "Offer not found"
-      _ <- sessionRepository.upsert(session.copy(offerId = Some(offerId), remainingUnits = offer.qty)).future
+      invoice <- invoiceRepository.invoiceById(invoiceId) // orFailWith "Invoice not found"
+      offer <- offerRepository.byId(invoice.offerId.get) // orFailWith "Offer not found"
+      _ = if (!invoice.paid) throw new IllegalStateException(s"Unable to enable session ${session.id}, invoice $invoiceId NOT PAID!")
+      _ <- sessionRepository.upsert(session.copy(offerId = Some(offer.offerId), remainingUnits = offer.qty)) //.future
       stopWatch = selectStopwatchForOffer(session, offer)
-      _ <- stopWatch.start(onLimitReach = { disableSession(session) }).future
+      _ <- stopWatch.start(onLimitReach = { disableSession(session) }) //.future
     } yield {
       sessionIdToStopwatch += session.id -> stopWatch
-      logger.info(s"Enabled session ${session.id} for offer $offerId")
+      logger.info(s"Enabled session ${session.id} for invoice $invoiceId ")
       session.id
     }
   }

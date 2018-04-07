@@ -74,7 +74,7 @@
                     </div>
 
       <div class="modal-footer">
-          <button class="btn btn-lg  btn-warning btn-block">Open wallet</button>
+          <button id="action-button" class="btn btn-lg  btn-warning btn-block">Open wallet</button>
       </div>
 
 
@@ -132,13 +132,15 @@ window.onload = function (){
           }});
        }
 
-       var invoiceCheckInterval = setInterval(checkInvoice, 3000, 3000);
+       var invoiceCheckInterval = setInterval(checkInvoice, 5000, 3000);
 
        setInterval(function(){
           var paid = $('#result').text().endsWith('true');
-          if(paid)
+          if(paid){
             clearInterval(invoiceCheckInterval);
-
+            $('#action-button').text('GOOO!');
+            $('#action-button').removeClass('btn-warning').addClass('btn-success');
+          }
 
        }, 5000, 10000);
 

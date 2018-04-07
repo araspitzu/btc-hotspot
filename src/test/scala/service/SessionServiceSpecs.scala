@@ -20,17 +20,17 @@ package service
 
 import commons.Helpers.FutureOption
 import iptables.IpTablesInterface
-import mocks.{ IpTablesServiceMock, MockStopWatch, WalletServiceMock }
+import mocks.{IpTablesServiceMock, MockStopWatch, WalletServiceMock}
 import org.specs2.mock.Mockito
 import org.specs2.mutable._
 import org.specs2.specification.Scope
-import protocol.{ OfferRepositoryImpl, SessionRepositoryImpl }
-import protocol.domain.{ Offer, QtyUnit, Session }
+import protocol.{InvoiceRepositoryImpl, OfferRepositoryImpl, SessionRepositoryImpl}
+import protocol.domain.{Offer, QtyUnit, Session}
 import services._
 import util.CleanRepository.CleanSessionRepository
 import util.Helpers._
 import wallet.WalletServiceInterface
-import watchdog.{ StopWatch, TimebasedStopWatch }
+import watchdog.{StopWatch, TimebasedStopWatch}
 
 class SessionServiceSpecs extends Specification with CleanSessionRepository with Mockito {
   sequential
@@ -43,6 +43,7 @@ class SessionServiceSpecs extends Specification with CleanSessionRepository with
 
     val offer = InvoiceServiceRegistry.invoiceService.allOffers.futureValue.head
     val sessionRepository: SessionRepositoryImpl = new SessionRepositoryImpl
+    val invoiceRepository: InvoiceRepositoryImpl = new InvoiceRepositoryImpl
     val walletService: WalletServiceInterface = new WalletServiceMock
     val offerRepository: OfferRepositoryImpl = new OfferRepositoryImpl
 
@@ -98,7 +99,7 @@ class SessionServiceSpecs extends Specification with CleanSessionRepository with
       newSession.offerId must beNone
       newSession.remainingUnits must beLessThan(0L)
 
-      sessionService.enableSessionForOffer(newSession, offer.offerId).futureValue
+      sessionService.enableSessionForInvoice(newSession, offer.offerId).futureValue
       sessionService.sessionIdToStopwatch.get(newSession.id) must beSome
 
       val Some(enabledSession) = sessionService.byMac(macAddress).futureValue
@@ -131,7 +132,7 @@ class SessionServiceSpecs extends Specification with CleanSessionRepository with
 
       stopWatchStarted must beFalse
       stopWatchStopped must beFalse
-      sessionService.enableSessionForOffer(newSession, offer.offerId).futureValue
+      sessionService.enableSessionForInvoice(newSession, offer.offerId).futureValue
       stopWatchStarted must beTrue
       stopWatchStopped must beFalse
 
