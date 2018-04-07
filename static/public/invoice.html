@@ -126,16 +126,25 @@ window.onload = function (){
 
           }});
 
-
-       $('#myModal').modal('show');
-
-       setInterval(function(){
+       function checkInvoice(){
           $.ajax({url: "/api/invoice/"+invoiceId+"/paid", success: function(isPaid){
                 $('#result').text("INVOICE PAID:"+isPaid.paymentReceived);
           }});
-       }, 3000, 3000);
+       }
+
+       var invoiceCheckInterval = setInterval(checkInvoice, 3000, 3000);
+
+       setInterval(function(){
+          var paid = $('#result').text().endsWith('true');
+          if(paid)
+            clearInterval(invoiceCheckInterval);
 
 
+       }, 5000, 10000);
+
+
+
+       $('#myModal').modal('show');
 }
 
 </script>
