@@ -62,7 +62,7 @@
                   </div>
                   <div class="col-12 col-sm-6">
                       <br>
-                      <div id="result" > Not paid ...</div>
+                      <div id="result" > </div>
                   </div>
                     <div class="col-12 col-sm-6">
                         <div id="qrcode" style="display: none;"></div>
@@ -129,6 +129,15 @@ window.onload = function (){
        function checkInvoice(){
           $.ajax({url: "/api/invoice/"+invoiceId+"/paid", success: function(isPaid){
                 $('#result').text("INVOICE PAID:"+isPaid.paymentReceived);
+                if (+isPaid.paymentReceived) {
+                    document.getElementById('result').innerHTML =
+                        "Invoice status:  Paid" +
+                        " <span class='fa fa-2x fa-check '></span>";
+                } else {
+                    document.getElementById('result').innerHTML =
+                        "Invoice status:  Not paid                    " +
+                        "<span class='fa fa-2x fa-times '></span>";
+                }
           }});
        }
 

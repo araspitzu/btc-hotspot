@@ -745,4 +745,12 @@ div#invoice-text{
     width: 284px;
     height: 215px;
     padding: 10%;
+
+}
+#action-button {
+    padding: 10px;
+    margin-top: 50px;
+}
+#invoice-text{
+    margin-bottom: 50px;
 }
