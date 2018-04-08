@@ -98,8 +98,8 @@ class SessionServiceImpl(dependencies: {
 
   def enableSessionForInvoice(session: Session, invoiceId: Long): FutureOption[Long] = {
     for {
-      invoice <- invoiceRepository.invoiceById(invoiceId) // orFailWith "Invoice not found"
-      offer <- offerRepository.byId(invoice.offerId.get) // orFailWith "Offer not found"
+      invoice <- invoiceRepository.invoiceById(invoiceId)
+      offer <- offerRepository.byId(invoice.offerId.get)
       _ = if (!invoice.paid) throw new IllegalStateException(s"Unable to enable session ${session.id}, invoice $invoiceId NOT PAID!")
       _ <- sessionRepository.upsert(session.copy(offerId = Some(offer.offerId), remainingUnits = offer.qty)) //.future
       stopWatch = selectStopwatchForOffer(session, offer)
