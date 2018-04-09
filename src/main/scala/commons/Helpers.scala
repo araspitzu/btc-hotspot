@@ -90,8 +90,9 @@ package object Helpers extends LazyLogging {
         output
       }
       result.onComplete {
-        case err:Throwable =>
-          logger.error(s"Error execuding cmd [$cmd]!",err)
+        case other => other
+        case err: Throwable =>
+          logger.error(s"Error execuding cmd [$cmd]!", err)
       }
 
       result
