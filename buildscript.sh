@@ -121,8 +121,8 @@ sudo dpkg -i btc-hotspot_0.0.2-alpha_all.deb
 
 echo -e "########  ENABLE SUDOERS FOR btc-hotspot   ########"
 # btc user append to /etc/sudoers
-sudo su -c "echo $'btc-hotspot ALL = NOPASSWD: /sbin/iptables -I internet_outgoing 1 -t mangle -m mac --mac-source ??\:??\:??\:??\:??\:?? -j RETURN' >> /etc/sudoers"
-sudo su -c "echo $'btc-hotspot ALL = NOPASSWD: /sbin/iptables -D internet_outgoing -t mangle -m mac --mac-source ??\:??\:??\:??\:??\:?? -j RETURN' >> /etc/sudoers"
+sudo su -c "echo $'btc-hotspot ALL = NOPASSWD: /sbin/iptables -t mangle -I internet_outgoing 1 -m mac --mac-source ??\:??\:??\:??\:??\:?? -j RETURN' >> /etc/sudoers"
+sudo su -c "echo $'btc-hotspot ALL = NOPASSWD: /sbin/iptables -t mangle -D internet_outgoing -m mac --mac-source ??\:??\:??\:??\:??\:?? -j RETURN' >> /etc/sudoers"
 
 echo -e "#######   REBOOTING   #######"
 echo -e "To continue the installation please wait ~1min and connect to the wifi network '$ESSID'"

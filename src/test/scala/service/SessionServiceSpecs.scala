@@ -18,7 +18,6 @@
 
 package service
 
-import commons.Helpers.FutureOption
 import iptables.IpTablesInterface
 import mocks.{IpTablesServiceMock, MockStopWatch, WalletServiceMock}
 import org.specs2.mock.Mockito
@@ -31,6 +30,8 @@ import util.CleanRepository.CleanSessionRepository
 import util.Helpers._
 import wallet.WalletServiceInterface
 import watchdog.{StopWatch, TimebasedStopWatch}
+
+import scala.concurrent.Future
 
 class SessionServiceSpecs extends Specification with CleanSessionRepository with Mockito {
   sequential
@@ -89,9 +90,9 @@ class SessionServiceSpecs extends Specification with CleanSessionRepository with
 
       val sessionService = new SessionServiceImpl(this) {
         override def selectStopwatchForOffer(session: Session, offer: Offer): StopWatch = new MockStopWatch(stopWatchDepencencies, session, offer.offerId) {
-          override def start(onLimitReach: => Unit): FutureOption[Unit] = {
+          override def start(onLimitReach: => Unit): Future[Unit] = {
             stopWatchStarted = true
-            futureSome(Unit)
+            Future.successful()
           }
         }
       }
@@ -117,11 +118,11 @@ class SessionServiceSpecs extends Specification with CleanSessionRepository with
         override def selectStopwatchForOffer(session: Session, offer: Offer): StopWatch = new MockStopWatch(stopWatchDepencencies, session, offer.offerId) {
           override def start(onLimitReach: => Unit) = {
             stopWatchStarted = true
-            futureSome(Unit)
+            Future.successful()
           }
           override def stop() = {
             stopWatchStopped = true
-            futureSome(Unit)
+            Future.successful()
           }
         }
       }

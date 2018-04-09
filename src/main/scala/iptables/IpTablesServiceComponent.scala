@@ -34,16 +34,16 @@ trait IpTablesServiceComponent {
 
 trait IpTablesInterface {
 
-  def enableClient(mac: String): FutureOption[String]
+  def enableClient(mac: String): Future[String]
 
-  def disableClient(mac: String): FutureOption[String]
+  def disableClient(mac: String): Future[String]
 
 }
 
 class IpTablesServiceImpl extends IpTablesInterface with LazyLogging {
 
   private def iptables(params: String) = {
-    s"sudo iptables $params"
+    s"sudo /sbin/iptables $params"
   }
 
   def report: Future[Seq[ChainEntry]] = {
@@ -70,13 +70,13 @@ class IpTablesServiceImpl extends IpTablesInterface with LazyLogging {
   }
 
   override def enableClient(mac: String) = env match {
-    case "hotspot" => iptables(s"-t mangle -I internet_outgoing 1 -m mac --mac-source $mac -j RETURN").exec.map(Some(_))
-    case "local"   => Future.successful(Some(""))
+    case "hotspot" => iptables(s"-t mangle -I internet_outgoing 1 -m mac --mac-source $mac -j RETURN").exec
+    case "local"   => Future.successful("")
   }
 
   override def disableClient(mac: String) = env match {
-    case "hotspot" => iptables(s"-t mangle -D internet_outgoing -m mac --mac-source $mac -j RETURN").exec.map(Some(_))
-    case "local"   => Future.successful(Some(""))
+    case "hotspot" => iptables(s"-t mangle -D internet_outgoing -m mac --mac-source $mac -j RETURN").exec
+    case "local"   => Future.successful("")
   }
 
 }

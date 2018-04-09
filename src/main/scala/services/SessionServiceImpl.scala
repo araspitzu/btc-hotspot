@@ -102,9 +102,9 @@ class SessionServiceImpl(dependencies: {
       invoice <- invoiceRepository.invoiceById(invoiceId) orFailWith s"Invoice $invoiceId not found"
       offer <- offerRepository.byId(invoice.offerId.get) orFailWith s"Offer ${invoice.offerId.get} not found"
       _ = if (!invoice.paid) throw new IllegalStateException(s"Unable to enable session ${session.id}, invoice $invoiceId NOT PAID!")
-      _ <- sessionRepository.upsert(session.copy(offerId = Some(offer.offerId), remainingUnits = offer.qty)).future
+      _ = sessionRepository.upsert(session.copy(offerId = Some(offer.offerId), remainingUnits = offer.qty)).future
       stopWatch = selectStopwatchForOffer(session, offer)
-      _ <- stopWatch.start(onLimitReach = { disableSession(session) }).future
+      el <- stopWatch.start(onLimitReach = { disableSession(session) })
     } yield {
       sessionIdToStopwatch += session.id -> stopWatch
       logger.info(s"Enabled session ${session.id} for invoice $invoiceId ")

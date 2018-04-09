@@ -24,7 +24,7 @@ import iptables.IpTablesInterface
 import scala.concurrent.Future
 
 trait IpTablesServiceMock extends IpTablesInterface {
-  override def enableClient(mac: String): FutureOption[String] = ???
-  override def disableClient(mac: String): FutureOption[String] = ???
+  override def enableClient(mac: String): Future[String] = ???
+  override def disableClient(mac: String): Future[String] = ???
 }
 

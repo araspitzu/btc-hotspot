@@ -70,21 +70,31 @@ package object Helpers extends LazyLogging {
   }
 
   implicit class CmdExecutor(cmd: String) {
-    def exec: Future[String] = Future {
-      logger.info(s"Executing '$cmd'")
-      val proc = Runtime.getRuntime.exec(cmd)
+    def exec: Future[String] = {
+      val result = Future {
+        logger.info(s"Executing '$cmd'")
+        val proc = Runtime.getRuntime.exec(cmd)
 
-      val exitValue = proc.waitFor
-      if (exitValue != 0)
-        throw new IllegalStateException(s"\'$cmd\' exited with code $exitValue")
+        val exitValue = proc.waitFor
+        if (exitValue != 0)
+          throw new IllegalStateException(s"\'$cmd\' exited with code $exitValue")
 
-      val reader = new BufferedReader(
-        new InputStreamReader(proc.getInputStream)
-      )
+        val stdIn = new BufferedReader(new InputStreamReader(proc.getInputStream))
+        val stdErr = new BufferedReader(new InputStreamReader(proc.getErrorStream))
 
-      val output = reader.lines.iterator.asScala.fold("")(_ + _)
-      logger.info(output)
-      output
+        val output = stdIn.lines.iterator.asScala.fold("")(_ + _)
+        val errOut = stdErr.lines.iterator.asScala.fold("")(_ + _)
+
+        logger.error(errOut)
+        logger.debug("Output: "+output)
+        output
+      }
+      result.onComplete {
+        case err:Throwable =>
+          logger.error(s"Error execuding cmd [$cmd]!",err)
+      }
+
+      result
     }
 
   }

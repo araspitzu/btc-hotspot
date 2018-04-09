@@ -42,8 +42,8 @@ class StopWatchSpecs extends Specification with LazyLogging {
       var ipTablesDisableClientCalled = false
 
       val ipTablesService: IpTablesInterface = new IpTablesServiceMock {
-        override def enableClient(mac: String) = { ipTablesEnableClientCalled = true; futureSome("") }
-        override def disableClient(mac: String) = { ipTablesDisableClientCalled = true; futureSome("") }
+        override def enableClient(mac: String) = { ipTablesEnableClientCalled = true; Future.successful("") }
+        override def disableClient(mac: String) = { ipTablesDisableClientCalled = true; Future.successful("") }
       }
       val scheduler: SchedulerImpl = new SchedulerImpl
     }

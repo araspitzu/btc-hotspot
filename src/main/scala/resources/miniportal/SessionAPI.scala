@@ -45,9 +45,9 @@ trait SessionAPI extends CommonResource with ExtraDirectives {
 
   def enableMe(macAddress: String) = get {
     path("api" / "enableme") {
-      complete(IpTablesServiceRegistry.ipTablesServiceImpl.enableClient(macAddress).future)
+      complete(IpTablesServiceRegistry.ipTablesServiceImpl.enableClient(macAddress))
     } ~ path("api" / "disableme") {
-      complete(IpTablesServiceRegistry.ipTablesServiceImpl.disableClient(macAddress).future)
+      complete(IpTablesServiceRegistry.ipTablesServiceImpl.disableClient(macAddress))
     }
   }
 

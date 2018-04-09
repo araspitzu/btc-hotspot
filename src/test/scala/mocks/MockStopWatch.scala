@@ -18,10 +18,11 @@
 
 package mocks
 
-import commons.Helpers.FutureOption
 import iptables.IpTablesInterface
 import protocol.domain.Session
 import watchdog.StopWatch
+
+import scala.concurrent.Future
 
 class MockStopWatch(val dependencies: {
   val ipTablesService: IpTablesInterface
@@ -29,9 +30,9 @@ class MockStopWatch(val dependencies: {
   override val session: Session = aSession
   override val duration: Long = aDuration
 
-  override def start(onLimitReach: => Unit): FutureOption[Unit] = ???
+  override def start(onLimitReach: => Unit): Future[Unit] = ???
 
-  override def stop(): FutureOption[Unit] = ???
+  override def stop(): Future[Unit] = ???
 
   override def remainingUnits(): Long = ???
 
