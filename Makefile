@@ -8,7 +8,7 @@ compile:
 	sbt compile
 
 package:
-	sbt -Denv=$(env) -Dversion=$(version) debian:packageBin
+	sbt -Denv=hotspot -Dversion=$(version) debian:packageBin
 
 deploy:
 	sbt -Denv=hotspot -Dversion=$(version) debian:packageBin && \

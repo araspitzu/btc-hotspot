@@ -9,10 +9,12 @@
 
 IPTABLES="/sbin/iptables"
 
-ESSID="swagger"	# Hotspot ap name
-IFACE_WAN=eth0  # Toward the internet
-IFACE_LAN=wlan0 # Offered to local clients
-
+ESSID="swagger"	    # Hotspot ap name
+IFACE_WAN=eth0      # Toward the internet
+IFACE_LAN=wlan0     # Offered to local clients
+SUBNET=10.0.0.1     # Subnet for hotspot
+MASK=255.255.255.0  # Subnet's mask
+DEFAULT_DNS=8.8.8.8 # Default dns server for hotspot
 
 echo -e "######   RUNNING UPDATE   ##########"
 # Update packages
@@ -22,18 +24,10 @@ sudo apt-get update
 echo -e "######   INSTALLING DEPENDENCIES   #########"
 sudo apt-get install -y \
   iptables \
-  net-tools \
   hostapd \
+  dnsmasq \
   openjdk-8-jre-headless
 
-
-echo -e "######   ALTERING NETWORK INTERFACES   #########"
-sudo su -c "echo $'
-interface wlan0
-static ip_address=10.0.0.1/24
-#static ip6_address=fd51:42f8:caae:d92e::ff/64
-static routers=10.0.0.1
-static domain_name_servers=8.8.8.8' >> /etc/dhcpcd.conf"
 
 # Create hostapd conf
 echo -e "######   HOSTAPD CONFIGURATION   #########"
@@ -53,14 +47,39 @@ ssid=$ESSID' > /etc/hostapd/hostapd.conf"
 echo -e "######   EDIT HOSTAPD INIT SCRIPT   #########"
 sudo sed -i '/DAEMON_CONF=/c\DAEMON_CONF=/etc/hostapd/hostapd.conf' /etc/init.d/hostapd
 
-echo -e "######   ENABLE IPV4 PACKET FORWARDING IN KERNEL   #########"
-sudo sysctl -w net.ipv4.ip_forward=1
-
 # Enable hostapd at boot
 echo -e "######   ENABLE HOSTAPD AT BOOT   #########"
 sudo systemctl enable hostapd
 
+echo -e "######   SETTING UP DHCPCD   #########"
+sudo su -c "echo $'
+nohook
+interface $IFACE_LAN
+static ip_address=$SUBNET/24
+static routers=$SUBNET
+#static domain_name_servers=$DEFAULT_DNS
+' >> /etc/dhcpcd.conf"
+
+echo -e "########    SETTING UP DNSMASK   #########"
+sudo su -c "echo $'
+interface=$IFACE_LAN
+bind-dynamic
+domain-needed
+bogus-priv
+dhcp-range=$SUBNET,10.0.0.255,$MASK,12h
+' >> /etc/dnsmasq.conf"
+
+echo -e "######   ENABLE IPV4 PACKET FORWARDING IN KERNEL  #########"
+sudo sed -i '/net.ipv4.ip_forward/c\net.ipv4.ip_forward=1' /etc/sysctl.conf
+
 echo -e "######   SETUP IPTABLES   #########"
+# nat-ing for eth0-wlan0
+sudo $IPTABLES -t nat -A POSTROUTING -o $IFACE_WAN -j MASQUERADE
+# accept packets coming from outside
+sudo $IPTABLES -t filter -A FORWARD -i $IFACE_WAN -o $IFACE_LAN -m state --state RELATED,ESTABLISHED -j ACCEPT
+# accept packets from wlan0 to eth0
+sudo $IPTABLES -t filter -A FORWARD -i $IFACE_LAN -o $IFACE_WAN -j ACCEPT
+
 # Create new chains 'internet_incoming' and 'internet_outgoing' for catching the traffic, non auth clients will be marked with 99 while
 # authenticated clients will jump off the chain asap. Packets with the mark will be redirected to the hotspot's captive portal.
 
@@ -78,26 +97,33 @@ sudo $IPTABLES -t mangle -A internet_outgoing -j MARK --set-mark 99
 sudo $IPTABLES -t mangle -A POSTROUTING -o wlan0 -j internet_incoming
 
 # redirect non authorized http/https requests
-sudo $IPTABLES -t nat -A PREROUTING -m mark --mark 99 -p tcp --dport 80 -j DNAT --to-destination 10.0.0.1:8081
-sudo $IPTABLES -t nat -A PREROUTING -m mark --mark 99 -p tcp --dport 443 -j DNAT --to-destination 10.0.0.1:8081
-
-# nat-ing for eth0-wlan0
-sudo $IPTABLES -t nat -A POSTROUTING -o eth0 -j MASQUERADE
-
-# accept packets coming from outside
-sudo $IPTABLES -t filter -A FORWARD -i eth0 -o wlan0 -m state --state RELATED,ESTABLISHED -j ACCEPT
+sudo $IPTABLES -t nat -A PREROUTING -m mark --mark 99 -p tcp --dport 80 -j DNAT --to-destination $SUBNET:8081
+sudo $IPTABLES -t nat -A PREROUTING -m mark --mark 99 -p tcp --dport 443 -j DNAT --to-destination $SUBNET:8081
 
 # drop all the unauthorized packets
 sudo $IPTABLES -t filter -A FORWARD -m mark --mark 99 -j DROP
 
-# accept packets from wlan0 to eth0
-sudo $IPTABLES -t filter -A FORWARD -i wlan0 -o eth0 -j ACCEPT
-
 # Enable ssh for ott0disk
 sudo $IPTABLES -I internet_outgoing 1 -t mangle -p tcp --dport 22 -m mac --mac-source c4:8e:8f:f8:e4:37 -j RETURN
 
+# Persist iptables
+echo iptables-persistent iptables-persistent/autosave_v4 boolean true | sudo debconf-set-selections
+echo iptables-persistent iptables-persistent/autosave_v6 boolean true | sudo debconf-set-selections
+sudo apt-get install -y iptables-persistent
+
+
+echo -e "########  DOWNLOAD ECLAIR  (Skipped) #########"
+#wget https://github.com/ACINQ/eclair/releases/download/v0.2-beta2/eclair-node-0.2-beta2-7598615.jar
+
+echo -e "########  DOWNLOAD btc-hotspot RELEASE   #########"
+wget https://github.com/araspitzu/btc-hotspot/releases/download/v0.0.1-alpha/btc-hotspot_0.0.1-alpha_all.deb
+sudo dpkg -i btc-hotspot_0.0.1-alpha_all.deb
 
 echo -e "########  ENABLE SUDOERS FOR btc-hotspot   ########"
 # btc user append to /etc/sudoers
-sudo su -c "echo $'btc-hotspot ALL = NOPASSWD: /sbin/iptables -I internet 1 -t mangle -m mac --mac-source ??\:??\:??\:??\:??\:?? -j RETURN' >> /etc/sudoers"
-sudo su -c "echo $'btc-hotspot ALL = NOPASSWD: /sbin/iptables -D internet -t mangle -m mac --mac-source ??\:??\:??\:??\:??\:?? -j RETURN' >> /etc/sudoers"
+sudo su -c "echo $'btc-hotspot ALL = NOPASSWD: /sbin/iptables -I internet_outgoing 1 -t mangle -m mac --mac-source ??\:??\:??\:??\:??\:?? -j RETURN' >> /etc/sudoers"
+sudo su -c "echo $'btc-hotspot ALL = NOPASSWD: /sbin/iptables -D internet_outgoing -t mangle -m mac --mac-source ??\:??\:??\:??\:??\:?? -j RETURN' >> /etc/sudoers"
+
+echo -e "#######   REBOOTING   #######"
+echo -e "To continue the installation please wait ~1min and connect to the wifi network '$ESSID'"
+sudo shutdown -r now
