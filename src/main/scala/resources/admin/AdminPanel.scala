@@ -39,19 +39,19 @@ object AdminPanelRegistry extends Registry with AdminPanel {
   logger.info(s"Using uplink interface \'${NetworkConfig.uplinkInterfaceName}\' @ $hotspotAddress")
   MiniPortalRegistry.bindOrFail(adminPanelRoute, hotspotAddress, adminPanelPort, "Admin Panel")
 
-  val bootupEmail = Mail(
-    from = ("hotspot@paypercom.net", "Your paypercom hotspot"),
-    to = Seq("a.raspitzu@gmail.com"),
-    subject = "New boot",
-    message = " ",
-    richMessage = Some(
-      s"""
-        Click <a href="http://$hotspotAddress:$adminPanelPort">here</a> to access your dashboard.
-      """.stripMargin)
-  )
+  //  val bootupEmail = Mail(
+  //    from = ("hotspot@paypercom.net", "Your paypercom hotspot"),
+  //    to = Seq("a.raspitzu@gmail.com"),
+  //    subject = "New boot",
+  //    message = " ",
+  //    richMessage = Some(
+  //      s"""
+  //        Click <a href="http://$hotspotAddress:$adminPanelPort">here</a> to access your dashboard.
+  //      """.stripMargin)
+  //  )
 
-  if (Configuration.env != "local")
-    MailService.send(bootupEmail)
+  //  if (Configuration.env != "local")
+  //    MailService.send(bootupEmail)
 
   def getUplinkInternalIp(): String = {
 
