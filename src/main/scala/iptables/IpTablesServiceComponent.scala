@@ -24,6 +24,7 @@ import commons.Helpers.CmdExecutor
 import scala.concurrent.Future
 import commons.AppExecutionContextRegistry.context._
 import iptables.domain.ChainEntry
+import commons.Configuration._
 
 trait IpTablesServiceComponent {
 
@@ -68,12 +69,14 @@ class IpTablesServiceImpl extends IpTablesInterface with LazyLogging {
 
   }
 
-  override def enableClient(mac: String) = {
-    iptables(s"-t mangle -I internet_outgoing 1 -m mac --mac-source $mac -j RETURN").exec.map(Some(_))
+  override def enableClient(mac: String) = env match {
+    case "hotspot" => iptables(s"-t mangle -I internet_outgoing 1 -m mac --mac-source $mac -j RETURN").exec.map(Some(_))
+    case "local"   => Future.successful(Some(""))
   }
 
-  override def disableClient(mac: String) = {
-    iptables(s"-t mangle -D internet_outgoing -m mac --mac-source $mac -j RETURN").exec.map(Some(_))
+  override def disableClient(mac: String) = env match {
+    case "hotspot" => iptables(s"-t mangle -D internet_outgoing -m mac --mac-source $mac -j RETURN").exec.map(Some(_))
+    case "local"   => Future.successful(Some(""))
   }
 
 }

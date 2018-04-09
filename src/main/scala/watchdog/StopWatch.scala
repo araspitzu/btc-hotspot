@@ -62,6 +62,7 @@ class TimebasedStopWatch(val dependencies: {
         scheduler.remove(session.id)
         onLimitReach
       }
+      Some(())
     }
   }
 

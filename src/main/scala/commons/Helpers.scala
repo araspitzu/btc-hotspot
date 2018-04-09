@@ -71,7 +71,7 @@ package object Helpers extends LazyLogging {
 
   implicit class CmdExecutor(cmd: String) {
     def exec: Future[String] = Future {
-      logger.debug(s"Executing $cmd")
+      logger.info(s"Executing '$cmd'")
       val proc = Runtime.getRuntime.exec(cmd)
 
       val exitValue = proc.waitFor
