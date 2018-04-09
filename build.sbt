@@ -61,7 +61,7 @@ lazy val btc_hotspot = (project in file(".")).
     )
   ).settings(universalPluginSettings)
 
-enablePlugins(JavaServerAppPackaging, SystemdPlugin, DebianPlugin, UniversalPlugin)
+enablePlugins(JavaServerAppPackaging, SystemdPlugin, DebianPlugin, UniversalPlugin, JDebPackaging)
 
 
 /**
