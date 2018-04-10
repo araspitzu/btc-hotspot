@@ -12,16 +12,17 @@ server (eclair) to test the payment process, if in doubt feel free to contact th
 to use the project's test instance.
 
 ## Overview
-btc-hotspot is a captive portal system accepting bitcoin payments over the lightning network protocol.
+This is captive portal system accepting bitcoin payments over the lightning network protocol and it's designed to run on a 
+home server like the raspberry-pi. The app is written in Scala and uses eclair as payment gateway, clients connected to the hotspot
+are captured via an iptable based setup (check it out [here](https://github.com/araspitzu/btc-hotspot/blob/master/buildscript.sh)), 
+the build script also serves as one-liner installer for the users of btc-hotspot. In the local instance the database is wiped everytime 
+you restart the server, 3 test offers are inserted by default ([TestData.scala](https://github.com/araspitzu/btc-hotspot/blob/master/src/main/scala/commons/TestData.scala)) for ease of testing, 
+also when running locally your mac address is mocked with 'unknown'. 
 
 ## Setup
-Clone this repo with:
+Clone and enter the project folder with:
 
-```git clone https://github.com/araspitzu/btc-hotspot```
-
-Now change directory with:
-
-```cd btc-hotspot```
+```git clone https://github.com/araspitzu/btc-hotspot && cd btc-hotspot```
 
 To compile and run type:
 
@@ -34,6 +35,6 @@ To run the test type:
 
 ```sbt test```
 
-When running locally the configuration will be read from "src/main/resources/application.conf",
+When running locally the configuration will be read from __src/main/resources/application.conf__,
 this is where you need to set host and api-token of the eclair node. The finished application aims
 at having an _internal_ (inside the raspberry-pi) eclair node to connect to.
