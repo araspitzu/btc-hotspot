@@ -1,4 +1,4 @@
-# btc-hotspot :lightning:
+# btc-hotspot :zap: :zap:
 
 ## Overview
 
