@@ -15,7 +15,7 @@ Currently it has been tested only on a raspberry-pi 3 model B, it has shown to b
 major drawbacks and it's a popular and cheap solution. 
 
 # Setup
-Coming soon a non technical guide to set up your own btc-hotspot at home!
+Please refer to [install](https://github.com/araspitzu/btc-hotspot/blob/master/INSTALL.md)
 
 # Developer resources
 Please check out the [build instructions](https://github.com/araspitzu/btc-hotspot/blob/master/BUILD.md) and feel free to open
