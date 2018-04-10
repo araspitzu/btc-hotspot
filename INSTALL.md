@@ -28,3 +28,10 @@ You can grap a cup of coffee while the installer runs on the PI, it takes ~3 min
 it tells you the name of the hotspot wifi network but you don't need to connect to it now. 
 
 To continue please visit `http://<ADDRESS_OF_PI>:8082` you will find instructions in the admin panel.
+
+# :zap: Lightning setup
+//TODO
+Connect to node
+Open a channel
+Make sure you're not 100% foundee 
+
