@@ -79,5 +79,9 @@ class IpTablesServiceImpl extends IpTablesInterface with LazyLogging {
     case "local"   => Future.successful("")
   }
 
+  /*
+    Set 10MB quota per IP
+    $IPTABLES -t mangle -A internet_in -d 192.168.0.67 -m quota ! --quota 10000000 -j DROP
+   */
 }
 

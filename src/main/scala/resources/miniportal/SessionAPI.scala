@@ -19,7 +19,7 @@
 package resources.miniportal
 
 import akka.http.scaladsl.server.{ AuthorizationFailedRejection, Route, ValidationRejection }
-import registry.IpTablesServiceRegistry
+import registry.IpTablesServiceRegistry._
 import resources.{ CommonResource, ExtraDirectives }
 
 trait SessionAPI extends CommonResource with ExtraDirectives {
@@ -45,9 +45,9 @@ trait SessionAPI extends CommonResource with ExtraDirectives {
 
   def enableMe(macAddress: String) = get {
     path("api" / "enableme") {
-      complete(IpTablesServiceRegistry.ipTablesServiceImpl.enableClient(macAddress))
+      complete(ipTablesServiceImpl.enableClient(macAddress))
     } ~ path("api" / "disableme") {
-      complete(IpTablesServiceRegistry.ipTablesServiceImpl.disableClient(macAddress))
+      complete(ipTablesServiceImpl.disableClient(macAddress))
     }
   }
 
