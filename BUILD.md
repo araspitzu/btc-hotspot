@@ -44,3 +44,15 @@ To run the test type:
 When running locally the configuration will be read from __src/main/resources/application.conf__,
 this is where you need to set host and api-token of the eclair node. The finished application aims
 at having an _internal_ (inside the raspberry-pi) eclair node to connect to.
+
+## Packaging and deploying
+
+There is a Makefile that provides useful alias for common operations, namely:
+
+- To package the application into a debian package
+> make package version=0.0.1-dev 
+
+- To deploy a new version into the raspberry 
+> make deploy version=0.0.1-dev host=1.0.0.1
+
+The above command will pack the app, push it in the PI and install it.
