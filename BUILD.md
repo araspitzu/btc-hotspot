@@ -7,9 +7,10 @@ to start developing `btc-hotspot` you  need the following tools:
 - sbt [https://www.scala-sbt.org/download.html]
 - Optionally eclair [https://github.com/ACINQ/eclair]
 
-This minimal setup will let you run `btc-hotspot` locally but remember to wire it to a lightning protocol
+
+:warning: This minimal setup will let you run `btc-hotspot` locally but remember to wire it to a lightning protocol
 server (eclair) to test the payment process, if in doubt feel free to contact the repo owner for help or 
-to use the project's test instance.
+to use the project's test instance. :warning:
 
 ## Overview
 This is captive portal system accepting bitcoin payments over the lightning network protocol and it's designed to run on a 
