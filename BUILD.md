@@ -18,7 +18,12 @@ home server like the raspberry-pi. The app is written in Scala and uses eclair a
 are captured via an iptable based setup (check it out [here](https://github.com/araspitzu/btc-hotspot/blob/master/buildscript.sh)), 
 the build script also serves as one-liner installer for the users of btc-hotspot. In the local instance the database is wiped everytime 
 you restart the server, 3 test offers are inserted by default ([TestData.scala](https://github.com/araspitzu/btc-hotspot/blob/master/src/main/scala/commons/TestData.scala)) for ease of testing, 
-also when running locally your mac address is mocked with 'unknown'. 
+also when running locally your mac address is mocked with 'unknown'. To check out the hotspot main page visit `http://127.0.0.1:8081/anything`,
+you will be caught and redirected to the index.html, in this process a new session  for your MAC address is being created. 
+You can now choose an offer and click __buy__, the backend will create an invoice for you and redirect your browser to the invoice page, 
+there you can pay with a :zap: wallet. As the owner of the hotspot you get an admin panel where you can configure the offers and check 
+the current active clients connected, to open the admin panel visit `http://127.0.0.1:8082`
+
 
 ## Setup
 Clone and enter the project folder with:
