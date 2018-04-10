@@ -1,6 +1,6 @@
 #Development instructions
 
-#Prerequisites 
+##Prerequisites 
 The current setup has been tried only on ubuntu 17.10 but should work on other platforms too,
 to start developing `btc-hotspot` you  need the following tools:
 - java JDK-8 (both open-jdk and oracle-jdk are fine) 
@@ -11,7 +11,7 @@ This minimal setup will let you run `btc-hotspot` locally but remember to wire i
 server (eclair) to test the payment process, if in doubt feel free to contact the repo owner for help or 
 to use the project's test instance.
 
-#Setup
+##Setup
 Clone this repo with:
 
 ```git clone https://github.com/araspitzu/btc-hotspot```
