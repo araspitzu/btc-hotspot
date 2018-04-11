@@ -26,7 +26,11 @@ import commons.AppExecutionContextRegistry.context._
 import commons.Helpers.FutureOption
 import protocol.domain.{ Offer, Session => DomainSession }
 import registry.{ DatabaseRegistry, OfferRepositoryRegistry }
+import slick.basic.DatabaseConfig
+import slick.jdbc.JdbcProfile
+
 import scala.concurrent.Future
+import scala.util.{ Failure, Success }
 
 trait SessionRepositoryComponent {
 
@@ -34,12 +38,14 @@ trait SessionRepositoryComponent {
 
 }
 
-class SessionRepositoryImpl extends DbSerializers {
-  import DatabaseRegistry.database.database.profile.api._
+class SessionRepositoryImpl(val databaseComponent: DatabaseComponent) extends DbSerializers with LazyLogging {
 
-  lazy val db: Database = DatabaseRegistry.database.db
+  def this() = this(DatabaseRegistry)
 
-  class SessionTable(tag: Tag) extends Table[DomainSession](tag, "SESSIONS") {
+  import databaseComponent.database.database.profile.api._
+  private lazy val db: Database = databaseComponent.database.db
+
+  protected class SessionTable(tag: Tag) extends Table[DomainSession](tag, "SESSIONS") {
 
     def id = column[Long]("id", O.PrimaryKey, O.AutoInc)
     def createdAt = column[LocalDateTime]("createdAt", O.SqlType("DATETIME")) //mapped via java.time.LocalDateTime -> java.sql.Timestamp -> DATATYPE(DATETIME)
@@ -58,10 +64,22 @@ class SessionRepositoryImpl extends DbSerializers {
     (sessionsTable returning sessionsTable.map(_.id)) += DomainSession
   }
 
-  def upsert(session: DomainSession): FutureOption[Long] = db.run {
-    (sessionsTable returning sessionsTable.map(_.id)).insertOrUpdate(session)
-  }
+  def upsert(session: DomainSession): FutureOption[Long] = {
+    logger.info(s"UPSERTING...")
+    val action = db.run {
+      (sessionsTable returning sessionsTable.map(_.id)).insertOrUpdate(session)
+    }
 
+    action.onComplete {
+      case Failure(thr: Throwable) =>
+        logger.error(s"ERROR UPSERTING SESSION:", thr)
+      case Success(other) =>
+        logger.info(s"Upsert completed with $other")
+        other
+    }
+
+    action
+  }
   def byIdWithOffer(id: Long): FutureOption[(DomainSession, Offer)] = db.run {
     sessionsTable
       .filter(_.id === id)

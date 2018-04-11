@@ -4,17 +4,16 @@
 ##  OS: 2018-03-13-raspbian-stretch-lite.img
 ##
 ##  Raspberry Pi3
-
 #! /bin/sh
 
 IPTABLES="/sbin/iptables"
 
-ESSID="swagger"	    # Hotspot ap name
-IFACE_WAN=eth0      # Toward the internet
-IFACE_LAN=wlan0     # Offered to local clients
-SUBNET=10.0.0.1     # Subnet for hotspot
-MASK=255.255.255.0  # Subnet's mask
-DEFAULT_DNS=8.8.8.8 # Default dns server for hotspot
+ESSID="swagger"	       # Hotspot ap name
+IFACE_WAN="eth0"       # Toward the internet
+IFACE_LAN="wlan0"      # Offered to local clients
+SUBNET="10.0.0.1"      # Subnet for hotspot
+MASK="255.255.255.0"   # Subnet's mask
+DEFAULT_DNS="8.8.8.8"  # Default dns server for hotspot
 
 echo -e "######   RUNNING UPDATE   ##########"
 # Update packages

@@ -18,13 +18,14 @@
 
 package util
 import Helpers._
+import com.typesafe.scalalogging.LazyLogging
 import org.specs2.mutable.BeforeAfter
 import org.specs2.specification.BeforeAfterEach
 import registry.SessionRepositoryRegistry
 
 object CleanRepository {
 
-  trait CleanSessionRepository extends BeforeAfterEach {
+  trait CleanSessionRepository extends BeforeAfterEach with LazyLogging {
 
     import registry.DatabaseRegistry.database.database.profile.api._
 
@@ -35,7 +36,10 @@ object CleanRepository {
         .delete
     } futureValue
 
-    override def after = before
+    override def after = {
+      logger.info("Shutting down DB")
+      registry.DatabaseRegistry.database.db.shutdown.futureValue
+    }
 
   }
 

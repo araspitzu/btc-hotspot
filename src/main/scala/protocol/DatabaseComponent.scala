@@ -32,7 +32,7 @@ trait DatabaseComponent extends LazyLogging {
 
   class DatabaseImpl {
 
-    val database = {
+    val database: DatabaseConfig[JdbcProfile] = {
       logger.info(s"Opening database for conf '$configPath' @ $jdbcUrl")
 
       if (webUI) {
@@ -49,6 +49,7 @@ trait DatabaseComponent extends LazyLogging {
       logger.info("Shutting down db")
       Await.result(db.shutdown, Duration(2, "seconds"))
     }
+
   }
 
 }
