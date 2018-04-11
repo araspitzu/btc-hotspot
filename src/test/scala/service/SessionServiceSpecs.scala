@@ -18,6 +18,7 @@
 
 package service
 
+import commons.TestData
 import iptables.IpTablesInterface
 import mocks.{ DatabaseComponentMock, IpTablesServiceMock, MockStopWatch, WalletServiceMock }
 import org.specs2.mock.Mockito
@@ -33,7 +34,7 @@ import watchdog.{ StopWatch, TimebasedStopWatch }
 
 import scala.concurrent.Future
 
-class SessionServiceSpecs extends Specification with CleanSessionRepository with Mockito {
+class SessionServiceSpecs extends Specification {
   sequential
 
   trait MockSessionServiceScope extends Scope {
@@ -42,11 +43,12 @@ class SessionServiceSpecs extends Specification with CleanSessionRepository with
       val ipTablesService: IpTablesInterface = new IpTablesServiceMock {}
     }
 
-    val offer = InvoiceServiceRegistry.invoiceService.allOffers.futureValue.head
+    val offer = TestData.offers.head //InvoiceServiceRegistry.invoiceService.allOffers.futureValue.head
 
     val sessionRepository: SessionRepositoryImpl = new SessionRepositoryImpl(DatabaseComponentMock)
-    val invoiceRepository: InvoiceRepositoryImpl = new InvoiceRepositoryImpl
-    val offerRepository: OfferRepositoryImpl = new OfferRepositoryImpl
+    val invoiceRepository: InvoiceRepositoryImpl = new InvoiceRepositoryImpl(DatabaseComponentMock)
+    //val invoiceRepository: InvoiceRepositoryImpl = mock[InvoiceRepositoryImpl]
+    val offerRepository: OfferRepositoryImpl = new OfferRepositoryImpl(DatabaseComponentMock)
 
   }
 
@@ -103,6 +105,7 @@ class SessionServiceSpecs extends Specification with CleanSessionRepository with
         offerId = Some(offer.offerId)
       )
       val newInvoiceId = invoiceRepository.insert(newInvoice).futureValue
+
       val Some(newSession) = sessionRepository.bySessionId(newSessionId).futureValue
 
       sessionService.enableSessionForInvoice(newSession, newInvoiceId).futureValue

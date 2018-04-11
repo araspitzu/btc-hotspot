@@ -19,6 +19,7 @@
 package util
 import Helpers._
 import com.typesafe.scalalogging.LazyLogging
+import mocks.DatabaseComponentMock
 import org.specs2.mutable.BeforeAfter
 import org.specs2.specification.BeforeAfterEach
 import registry.SessionRepositoryRegistry
@@ -27,9 +28,9 @@ object CleanRepository {
 
   trait CleanSessionRepository extends BeforeAfterEach with LazyLogging {
 
-    import registry.DatabaseRegistry.database.database.profile.api._
+    import DatabaseComponentMock.database.database.profile.api._
 
-    override def before = registry.DatabaseRegistry.database.db.run {
+    override def before = DatabaseComponentMock.database.db.run {
       SessionRepositoryRegistry
         .sessionRepositoryImpl
         .sessionsTable
@@ -38,7 +39,7 @@ object CleanRepository {
 
     override def after = {
       logger.info("Shutting down DB")
-      registry.DatabaseRegistry.database.db.shutdown.futureValue
+      DatabaseComponentMock.database.db.shutdown.futureValue
     }
 
   }

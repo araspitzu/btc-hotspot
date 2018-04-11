@@ -30,9 +30,11 @@ trait OfferRepositoryComponent {
 
 }
 
-class OfferRepositoryImpl extends DbSerializers {
-  import DatabaseRegistry.database.database.profile.api._
-  val db = DatabaseRegistry.database.db
+class OfferRepositoryImpl(val databaseComponent: DatabaseComponent) extends DbSerializers {
+  def this() = this(DatabaseRegistry)
+
+  import databaseComponent.database.database.profile.api._
+  val db = databaseComponent.database.db
 
   class OfferTable(tag: Tag) extends Table[Offer](tag, "OFFERS") {
 
