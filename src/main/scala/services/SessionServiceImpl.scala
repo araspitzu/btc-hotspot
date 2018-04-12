@@ -65,20 +65,16 @@ class SessionServiceImpl(dependencies: {
   val sessionRepository: SessionRepositoryImpl
   val invoiceRepository: InvoiceRepositoryImpl
   val offerRepository: OfferRepositoryImpl
-  val walletService: WalletServiceInterface
 }) extends SessionServiceInterface with LazyLogging {
 
   private def offerRepository = dependencies.offerRepository
   private def sessionRepository = dependencies.sessionRepository
   private def invoiceRepository = dependencies.invoiceRepository
-  //FIXME unused
-  private def walletService = dependencies.walletService
 
   def this() = this(new {
     val sessionRepository: SessionRepositoryImpl = SessionRepositoryRegistry.sessionRepositoryImpl
     val invoiceRepository: InvoiceRepositoryImpl = InvoiceRepositoryRegistry.invoiceRepositoryImpl
     val offerRepository: OfferRepositoryImpl = OfferRepositoryRegistry.offerRepositoryImpl
-    val walletService: WalletServiceInterface = WalletServiceRegistry.walletService
   })
 
   val sessionIdToStopwatch = new scala.collection.mutable.HashMap[Long, StopWatch]
@@ -100,8 +96,10 @@ class SessionServiceImpl(dependencies: {
     logger.info(s"Enabling session ${session.id} for invoice $invoiceId")
     for {
       invoice <- invoiceRepository.invoiceById(invoiceId) orFailWith s"Invoice $invoiceId not found"
+      _ = logger.info("Getting offer..")
       offer <- offerRepository.byId(invoice.offerId.get) orFailWith s"Offer ${invoice.offerId.get} not found"
       _ = if (!invoice.paid) throw new IllegalStateException(s"Unable to enable session ${session.id}, invoice $invoiceId NOT PAID!")
+      _ = logger.info("Upserting..")
       _ = sessionRepository.upsert(session.copy(offerId = Some(offer.offerId), remainingUnits = offer.qty)).future
       stopWatch = selectStopwatchForOffer(session, offer)
       el <- stopWatch.start(onLimitReach = { disableSession(session) })
@@ -118,7 +116,7 @@ class SessionServiceImpl(dependencies: {
       _ <- sessionRepository.upsert(session.copy(offerId = None))
       stopWatch <- FutureOption(Future.successful(sessionIdToStopwatch.get(session.id)))
     } yield {
-      stopWatch.stop
+      stopWatch.stop()
       sessionIdToStopwatch.remove(session.id)
     }
   }

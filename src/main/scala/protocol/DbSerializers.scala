@@ -8,7 +8,10 @@ import protocol.domain.QtyUnit.QtyUnit
 import registry.DatabaseRegistry
 
 trait DbSerializers {
-  import DatabaseRegistry.database.database.profile.api._
+
+  val databaseComponent: DatabaseComponent
+
+  import databaseComponent.database.database.profile.api._
 
   //mapped via java.time.LocalDateTime -> java.sql.Timestamp -> DATATYPE(DATETIME)
   implicit val localDateTimeMapper = MappedColumnType.base[LocalDateTime, Timestamp](

@@ -20,9 +20,12 @@ package protocol
 
 import com.typesafe.scalalogging.LazyLogging
 import commons.Configuration.DbConfig._
-import commons.Helpers
+import commons.{ Helpers, TestData }
+import registry.DatabaseRegistry.logger
+import registry.{ InvoiceRepositoryRegistry, OfferRepositoryRegistry, SessionRepositoryRegistry }
 import slick.basic.DatabaseConfig
 import slick.jdbc.JdbcProfile
+
 import scala.concurrent.duration.Duration
 import scala.concurrent.{ Await, Future }
 
@@ -32,7 +35,7 @@ trait DatabaseComponent extends LazyLogging {
 
   class DatabaseImpl {
 
-    val database = {
+    val database: DatabaseConfig[JdbcProfile] = {
       logger.info(s"Opening database for conf '$configPath' @ $jdbcUrl")
 
       if (webUI) {
@@ -49,6 +52,7 @@ trait DatabaseComponent extends LazyLogging {
       logger.info("Shutting down db")
       Await.result(db.shutdown, Duration(2, "seconds"))
     }
+
   }
 
 }

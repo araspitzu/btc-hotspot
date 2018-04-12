@@ -21,19 +21,36 @@ package iptables
 import scala.io.Source
 import commons.Configuration._
 
+import scala.collection.mutable
+
 //TODO add caching
 object ArpService {
 
   private final val arpFile = "/proc/net/arp"
 
-  def arpLookup(ipAddr: String): Option[String] = {
-    if (env == "local") return Some("unknown")
+  private val arpCache = new mutable.HashMap[String, String]()
 
+  def checkFile(ipAddr: String): Option[String] = {
     Source
       .fromFile(arpFile)
       .getLines
       .drop(1)
-      .find(_.startsWith(ipAddr)).map(_.substring(41, 58))
+      .find(_.startsWith(ipAddr))
+      .map(_.substring(41, 58))
+  }
+
+  def arpLookup(ipAddr: String): Option[String] = {
+    if (env == "local") return Some("unknown")
+
+    arpCache.get(ipAddr) match {
+      case None =>
+        checkFile(ipAddr).map { newEntry =>
+          arpCache += ipAddr -> newEntry
+          newEntry
+        }
+      case other => other
+    }
+
   }
 
 }

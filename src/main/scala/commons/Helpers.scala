@@ -19,10 +19,14 @@
 package commons
 
 import java.io.{ BufferedReader, File, InputStreamReader }
+
 import com.typesafe.scalalogging.LazyLogging
+
 import scala.collection.JavaConverters._
 import scala.concurrent._
 import commons.AppExecutionContextRegistry.context._
+
+import scala.util.Failure
 
 package object Helpers extends LazyLogging {
 
@@ -85,12 +89,15 @@ package object Helpers extends LazyLogging {
         val output = stdIn.lines.iterator.asScala.fold("")(_ + _)
         val errOut = stdErr.lines.iterator.asScala.fold("")(_ + _)
 
-        logger.error(errOut)
+        if (!errOut.isEmpty) {
+          logger.error(errOut)
+        }
+
         logger.debug("Output: "+output)
         output
       }
       result.onComplete {
-        case err: Throwable =>
+        case Failure(err: Throwable) =>
           logger.error(s"Error executing cmd [$cmd]!", err)
         case other => other
       }

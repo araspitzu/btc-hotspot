@@ -16,20 +16,37 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+import Boot.logger
 import akka.http.scaladsl.server.Route
 import commons.Configuration.MiniPortalConfig.{ miniPortalHost, miniPortalPort }
 import commons.TestData
 import protocol._
 import commons.AppExecutionContextRegistry.context._
 import akka.http.scaladsl.Http
+import com.typesafe.scalalogging.LazyLogging
 import iptables.{ IpTablesInterface, IpTablesServiceComponent, IpTablesServiceImpl }
-import resources.miniportal.{ MiniPortal }
+import resources.miniportal.MiniPortal
 import watchdog.{ SchedulerComponent, SchedulerImpl }
 
 import scala.concurrent.{ Await, Future }
 import scala.concurrent.duration._
 
-package object registry {
+package object registry extends LazyLogging {
+
+  def setupDb(db: DatabaseComponent) = {
+    import db.database.database.profile.api._
+    db.database.db.run({
+      logger.info(s"Setting up schemas and populating tables")
+      DBIO.seq(
+        (OfferRepositoryRegistry.offerRepositoryImpl.offersTable.schema ++
+          SessionRepositoryRegistry.sessionRepositoryImpl.sessionsTable.schema ++
+          InvoiceRepositoryRegistry.invoiceRepositoryImpl.invoiceTable.schema).create,
+
+        //Insert some offers
+        OfferRepositoryRegistry.offerRepositoryImpl.offersTable ++= TestData.offers
+      )
+    })
+  }
 
   trait Registry {
     //Dummy call to trigger object initialization thus the registry instantiation
@@ -53,24 +70,9 @@ package object registry {
   }
 
   object DatabaseRegistry extends Registry with DatabaseComponent {
-    override val database = new DatabaseImpl
+    override lazy val database = new DatabaseImpl
 
-    import database.database.profile.api._
-
-    Await.result(setupDb, 10 seconds)
-
-    def setupDb = database.db.run({
-      logger.info(s"Setting up schemas and populating tables")
-      DBIO.seq(
-        (OfferRepositoryRegistry.offerRepositoryImpl.offersTable.schema ++
-          SessionRepositoryRegistry.sessionRepositoryImpl.sessionsTable.schema ++
-          InvoiceRepositoryRegistry.invoiceRepositoryImpl.invoiceTable.schema).create,
-
-        //Insert some offers
-        OfferRepositoryRegistry.offerRepositoryImpl.offersTable ++= TestData.offers
-      )
-    })
-
+    Await.result(setupDb(this), 10 seconds)
   }
 
   object SessionRepositoryRegistry extends Registry with SessionRepositoryComponent {
