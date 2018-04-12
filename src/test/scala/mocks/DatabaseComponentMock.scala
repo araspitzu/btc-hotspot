@@ -15,4 +15,7 @@ object DatabaseComponentMock extends DatabaseComponent {
     }
 
   }
+
+  registry.setupDb(this)
+
 }

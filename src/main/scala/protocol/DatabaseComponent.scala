@@ -20,9 +20,12 @@ package protocol
 
 import com.typesafe.scalalogging.LazyLogging
 import commons.Configuration.DbConfig._
-import commons.Helpers
+import commons.{ Helpers, TestData }
+import registry.DatabaseRegistry.logger
+import registry.{ InvoiceRepositoryRegistry, OfferRepositoryRegistry, SessionRepositoryRegistry }
 import slick.basic.DatabaseConfig
 import slick.jdbc.JdbcProfile
+
 import scala.concurrent.duration.Duration
 import scala.concurrent.{ Await, Future }
 
