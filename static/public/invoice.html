@@ -1,16 +1,16 @@
 <!DOCTYPE html>
 <html lang="it"><head>
-    <meta charset="utf-8">
-    <title>Paypercom hotspot</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta charset="utf-8">
+  <title>Paypercom hotspot</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 
-    <!-- Styles -->
-    <link rel="stylesheet" href="css/font-awesome.min.css">
-    <link rel='stylesheet' href='css/raleway.css'>
-    <link rel="stylesheet" href="css/bootstrap.min.css">
-    <link rel="stylesheet" href="css/main.css">
+  <!-- Styles -->
+  <link rel="stylesheet" href="css/font-awesome.min.css">
+  <link rel='stylesheet' href='css/raleway.css'>
+  <link rel="stylesheet" href="css/bootstrap.min.css">
+  <link rel="stylesheet" href="css/main.css">
 
-    <script src="js/modernizr-2.7.1.js"></script>
+  <script src="js/modernizr-2.7.1.js"></script>
 
 </head>
 
@@ -28,59 +28,60 @@
         </button>
       </div>
       <div class="modal-body">
-         <table class="table table-striped">
-                  <thead>
-                    <tr>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <tr class="text-center">
-                      <td>Router</td>
-                      <td id="network-el">swaggetty-yolognese</td>
-                      
-                    </tr>
+        <table class="table table-striped">
+          <thead>
+          <tr>
+          </tr>
+          </thead>
+          <tbody>
+          <tr class="text-center">
+            <td>Router</td>
+            <td id="network-el">swaggetty-yolognese</td>
 
-                    <tr class="text-center">
-                      <td>Offer</td>
-                      <td id="desc-el">XXXXX</td>
-                    </tr>
+          </tr>
 
-                    <tr class="text-center">
-                      <td>Price</td>
-                      <td id="price-el">XXXXX</td>
-                    </tr>
-                    
-                  </tbody>
-                </table>
-                <div class="row row-content">
-                  <div id="checkswitch" class="col-sm-12">
-                      <p>show QR Code</p>
-                    <label class="switch">
-                      <input id="invoice-switch" type="checkbox" onchange="toggleInvoiceTextQr()">
-                      <span class="slider"></span>
-                    </label>
-                  </div>
-                  <div class="col-12 col-sm-6">
-                      <br>
-                      <div id="result" > </div>
-                  </div>
-                    <div class="col-12 col-sm-6">
-                        <div id="qrcode" style="display: none;"></div>
-                        <div>
-                            <p id="invoice-text">
-                                notArealInvoicelnbc1pvjluezpp5qqqsyqcyq5rqwzqfqqqsyqcyq5rqwzqfqqqsyqcyq5rqwzqfqypqdpl2pkx2ctnv5sxxmmwwd5kgetjypeh2ursdae8g6twvus8g6rfwvs8qun0dfjkxaq8rkx3yf5tcsyz3d73gafnh3cax9rn449d9p5uxz9ezhhypd0elx87sjle52x86fux2ypatgddc6k63n7erqz25le42c4u4ecky03ylcqca784w
-                            </p>
-                      </div>
-                    </div>
+          <tr class="text-center">
+            <td>Offer</td>
+            <td id="desc-el">XXXXX</td>
+          </tr>
 
-      <div class="modal-footer">
-          <button id="action-button" class="btn btn-lg  btn-warning btn-block">Open wallet</button>
+          <tr class="text-center">
+            <td>Price</td>
+            <td id="price-el">XXXXX</td>
+          </tr>
+
+          </tbody>
+        </table>
+        <div class="row row-content">
+          <div id="checkswitch" class="col-sm-12">
+            <p>show QR Code</p>
+            <label class="switch">
+              <input id="invoice-switch" type="checkbox" onchange="toggleInvoiceTextQr()">
+              <span class="slider"></span>
+            </label>
+          </div>
+          <div class="col-12 col-sm-6">
+            <br>
+            <div id="result" > </div>
+          </div>
+          <div class="col-12 col-sm-6">
+            <div id="qrcode" style="display: none;"></div>
+            <div>
+              <p id="invoice-text">
+                notArealInvoicelnbc1pvjluezpp5qqqsyqcyq5rqwzqfqqqsyqcyq5rqwzqfqqqsyqcyq5rqwzqfqypqdpl2pkx2ctnv5sxxmmwwd5kgetjypeh2ursdae8g6twvus8g6rfwvs8qun0dfjkxaq8rkx3yf5tcsyz3d73gafnh3cax9rn449d9p5uxz9ezhhypd0elx87sjle52x86fux2ypatgddc6k63n7erqz25le42c4u4ecky03ylcqca784w
+              </p>
+            </div>
+          </div>
+
+          <div class="modal-footer">
+            <button id="action-button" class="btn btn-lg  btn-warning btn-block">Open wallet</button>
+            <button id="action-activate-session" class="btn btn-lg  btn-success btn-block hidden" onclick="activateSession()">Activate Session</button>
+          </div>
+
+
+        </div>
       </div>
-
-
     </div>
-  </div>
-</div>
 
 
 
@@ -89,93 +90,110 @@
 
 
 
-<script>
-    function toggleInvoiceTextQr() {
+    <script>
+      function activateSession(event) {
+        const invoiceId = param('invoiceId');
+
+        $.get(`/api/invoice/${invoiceId}/actualize`, function() {
+          window.location.replace("/status.html");
+        })
+
+
+
+        // - chiama api/invoice/:invoice_id/actualize GET
+
+      }
+
+
+      function toggleInvoiceTextQr() {
 
         var checkBox = document.getElementById('invoice-switch');
 
         if (checkBox.checked == true) {
-            document.getElementById('invoice-text').style.display = "none";
-            document.getElementById('qrcode').style.display = 'block';
+          document.getElementById('invoice-text').style.display = "none";
+          document.getElementById('qrcode').style.display = 'block';
         } else {document.getElementById('invoice-text').style.display = "block";
-            document.getElementById('qrcode').style.display = 'none';}
-    }
+          document.getElementById('qrcode').style.display = 'none';}
+      }
 
-    function param(name) {
+      function param(name) {
         return (location.search.split(name + '=')[1] || '').split('&')[0];
-    }
+      }
 
 
-window.onload = function (){
-          //var href = window.location.href;
-          var invoiceId = param('invoiceId') || 1; //fallback to offer #1
+      window.onload = function (){
+        //var href = window.location.href;
+        var invoiceId = param('invoiceId') || 1; //fallback to offer #1
 
-          $.ajax({url: "/api/invoice/"+invoiceId, success: function(invoiceDto){
+        $.ajax({url: "/api/invoice/"+invoiceId, success: function(invoiceDto){
 
-              var invoiceId = invoiceDto.id;
-              var lnInvoiceEl = $('#invoice-text');
-              var qrCodeEl = $('#qrcode');
-              //var routerEl = $('#network-el');
-              var descEl = $('#desc-el');
-              var priceEl = $('#price-el');
+            var invoiceId = invoiceDto.id;
+            var lnInvoiceEl = $('#invoice-text');
+            var qrCodeEl = $('#qrcode');
+            //var routerEl = $('#network-el');
+            var descEl = $('#desc-el');
+            var priceEl = $('#price-el');
 
-              descEl.text(invoiceDto.offer.description);
-              priceEl.text(invoiceDto.offer.price + " satoshi");
-              lnInvoiceEl.text(invoiceDto.lnInvoice);
-              qrCodeEl.qrcode({ text: invoiceDto.lnInvoice });
+            descEl.text(invoiceDto.offer.description);
+            priceEl.text(invoiceDto.offer.price + " satoshi");
+            lnInvoiceEl.text(invoiceDto.lnInvoice);
+            qrCodeEl.qrcode({ text: invoiceDto.lnInvoice });
 
           }});
 
-       function checkInvoice(){
+        function checkInvoice(){
           $.ajax({url: "/api/invoice/"+invoiceId+"/paid", success: function(isPaid){
-                $('#result').text("INVOICE PAID:"+isPaid.paymentReceived);
-                if (+isPaid.paymentReceived) {
-                    document.getElementById('result').innerHTML =
-                        "Invoice status:  Paid" +
-                        " <span class='fa fa-2x fa-check '></span>";
-                } else {
-                    document.getElementById('result').innerHTML =
-                        "Invoice status:  Not paid                    " +
-                        "<span class='fa fa-2x fa-times '></span>";
-                }
-          }});
-       }
+              $('#result').text("INVOICE PAID:"+isPaid.paymentReceived);
+              if (+isPaid.paymentReceived) {
+                document.getElementById('result').innerHTML =
+                  "Invoice status:  Paid" +
+                  " <span class='fa fa-2x fa-check '></span>";
 
-       var invoiceCheckInterval = setInterval(checkInvoice, 5000, 3000);
+                $('#action-button').hide();
+                $('#action-activate-session').removeClass('hidden');
+              } else {
+                document.getElementById('result').innerHTML =
+                  "Invoice status:  Not paid                    " +
+                  "<span class='fa fa-2x fa-times '></span>";
+              }
+            }});
+        }
 
-       setInterval(function(){
+        var invoiceCheckInterval = setInterval(checkInvoice, 5000, 3000);
+
+        setInterval(function(){
           var paid = $('#result').text().endsWith('true');
-          if(paid){
+          if (paid) {
             clearInterval(invoiceCheckInterval);
             $('#action-button').text('GOOO!');
             $('#action-button').removeClass('btn-warning').addClass('btn-success');
           }
 
-       }, 5000, 10000);
+        }, 1000, 100);
 
 
 
-       $('#myModal').modal('show');
-}
+        $('#myModal').modal('show');
+      }
 
-</script>
-
-
-<footer>
-  
-</footer>
+    </script>
 
 
+    <footer>
+
+    </footer>
 
 
-<!-- Javascript
-================================================== -->
-<!-- Placed at the end of the document so the pages load faster -->
-<script src="js/jquery.min.js"></script>
-<script>window.jQuery || document.write('<script src="js/jquery-1.11.0.min.js"><\/script>')</script>
-<script src="js/bootstrap.min.js"></script>
-<script src="js/wow.min.js"></script>
-<script src="js/main.js"></script>
-<script type="text/javascript" src="js/jquery.qrcode.min.js"></script>
+
+
+    <!-- Javascript
+    ================================================== -->
+    <!-- Placed at the end of the document so the pages load faster -->
+    <script src="js/jquery.min.js"></script>
+    <script>window.jQuery || document.write('<script src="js/jquery-1.11.0.min.js"><\/script>')</script>
+    <script src="js/bootstrap.min.js"></script>
+    <script src="js/wow.min.js"></script>
+    <script src="js/main.js"></script>
+    <script type="text/javascript" src="js/jquery.qrcode.min.js"></script>
 </body>
 </html>
