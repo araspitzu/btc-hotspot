@@ -18,7 +18,6 @@
 
 package protocol
 
-import registry.DatabaseRegistry
 import commons.Helpers.FutureOption
 import protocol.domain.{ Offer, QtyUnit }
 import protocol.domain.QtyUnit.QtyUnit
@@ -30,10 +29,9 @@ trait OfferRepositoryComponent {
 
 }
 
-class OfferRepositoryImpl(val databaseComponent: DatabaseComponent) extends DbSerializers {
-  def this() = this(DatabaseRegistry)
+class OfferRepositoryImpl(val databaseComponent: Database) extends DbSerializers {
 
-  import databaseComponent.database.database.profile.api._
+  import databaseComponent.database.profile.api._
   val db = databaseComponent.database.db
 
   class OfferTable(tag: Tag) extends Table[Offer](tag, "OFFERS") {

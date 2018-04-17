@@ -4,10 +4,7 @@ import java.time.LocalDateTime
 
 import commons.Helpers.FutureOption
 import protocol.domain.Invoice
-import registry.DatabaseRegistry
 import registry.SessionRepositoryRegistry._
-import registry.OfferRepositoryRegistry._
-
 import scala.concurrent.Future
 
 trait InvoiceRepositoryComponent {
@@ -16,11 +13,8 @@ trait InvoiceRepositoryComponent {
 
 }
 
-class InvoiceRepositoryImpl(val databaseComponent: DatabaseComponent) extends DbSerializers {
-
-  def this() = this(DatabaseRegistry)
-
-  import databaseComponent.database.database.profile.api._
+class InvoiceRepositoryImpl(val databaseComponent: Database) extends DbSerializers {
+  import databaseComponent.database.profile.api._
 
   val db: Database = databaseComponent.database.db
 

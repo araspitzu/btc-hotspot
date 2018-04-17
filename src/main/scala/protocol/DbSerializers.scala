@@ -5,13 +5,12 @@ import java.time.LocalDateTime
 
 import protocol.domain.QtyUnit
 import protocol.domain.QtyUnit.QtyUnit
-import registry.DatabaseRegistry
 
 trait DbSerializers {
 
-  val databaseComponent: DatabaseComponent
+  val databaseComponent: Database
 
-  import databaseComponent.database.database.profile.api._
+  import databaseComponent.database.profile.api._
 
   //mapped via java.time.LocalDateTime -> java.sql.Timestamp -> DATATYPE(DATETIME)
   implicit val localDateTimeMapper = MappedColumnType.base[LocalDateTime, Timestamp](

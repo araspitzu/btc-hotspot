@@ -25,7 +25,7 @@ import com.typesafe.scalalogging.LazyLogging
 import commons.AppExecutionContextRegistry.context._
 import commons.Helpers.FutureOption
 import protocol.domain.{ Offer, Session => DomainSession }
-import registry.{ DatabaseRegistry, OfferRepositoryRegistry }
+import registry.{ OfferRepositoryRegistry }
 import slick.basic.DatabaseConfig
 import slick.jdbc.JdbcProfile
 
@@ -38,11 +38,9 @@ trait SessionRepositoryComponent {
 
 }
 
-class SessionRepositoryImpl(val databaseComponent: DatabaseComponent) extends DbSerializers with LazyLogging {
+class SessionRepositoryImpl(val databaseComponent: Database) extends DbSerializers with LazyLogging {
 
-  def this() = this(DatabaseRegistry)
-
-  import databaseComponent.database.database.profile.api._
+  import databaseComponent.database.profile.api._
   private lazy val db: Database = databaseComponent.database.db
 
   protected class SessionTable(tag: Tag) extends Table[DomainSession](tag, "SESSIONS") {

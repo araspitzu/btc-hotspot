@@ -16,7 +16,6 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import Boot.logger
 import akka.http.scaladsl.server.Route
 import commons.Configuration.MiniPortalConfig.{ miniPortalHost, miniPortalPort }
 import commons.TestData
@@ -33,8 +32,8 @@ import scala.concurrent.duration._
 
 package object registry extends LazyLogging {
 
-  def setupDb(db: DatabaseComponent) = {
-    import db.database.database.profile.api._
+  def setupDb(db: Database) = {
+    import db.database.profile.api._
     db.database.db.run({
       logger.info(s"Setting up schemas and populating tables")
       DBIO.seq(
@@ -69,22 +68,16 @@ package object registry extends LazyLogging {
 
   }
 
-  object DatabaseRegistry extends Registry with DatabaseComponent {
-    override lazy val database = new DatabaseImpl
-
-    Await.result(setupDb(this), 10 seconds)
-  }
-
   object SessionRepositoryRegistry extends Registry with SessionRepositoryComponent {
-    override val sessionRepositoryImpl = new SessionRepositoryImpl
+    override val sessionRepositoryImpl = new SessionRepositoryImpl(???)
   }
 
   object OfferRepositoryRegistry extends Registry with OfferRepositoryComponent {
-    override val offerRepositoryImpl = new OfferRepositoryImpl
+    override val offerRepositoryImpl = new OfferRepositoryImpl(???)
   }
 
   object InvoiceRepositoryRegistry extends Registry with InvoiceRepositoryComponent {
-    override val invoiceRepositoryImpl = new InvoiceRepositoryImpl
+    override val invoiceRepositoryImpl = new InvoiceRepositoryImpl(???)
   }
 
   object SchedulerRegistry extends Registry with SchedulerComponent {
