@@ -23,12 +23,6 @@ import protocol.domain.{ Offer, QtyUnit }
 import protocol.domain.QtyUnit.QtyUnit
 import scala.concurrent.Future
 
-trait OfferRepositoryComponent {
-
-  val offerRepositoryImpl: OfferRepositoryImpl
-
-}
-
 class OfferRepositoryImpl(val databaseComponent: DatabaseImpl) extends DbSerializers {
 
   import databaseComponent.database.profile.api._

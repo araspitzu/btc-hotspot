@@ -5,10 +5,10 @@ import commons.Helpers.FutureOption
 
 import scala.concurrent.duration._
 import ln.{ EclairClient, EclairClientComponent, EclairClientRegistry }
-import protocol.{ InvoiceRepositoryImpl, OfferRepositoryComponent, webDto }
+import protocol.{ InvoiceRepositoryImpl, OfferRepositoryImpl, webDto }
 import protocol.webDto._
 import protocol.domain.{ Invoice, Offer, Session }
-import registry.{ Registry }
+import registry.Registry
 import commons.AppExecutionContextRegistry.context._
 
 import scala.concurrent.{ Await, Future }
@@ -38,12 +38,12 @@ trait InvoiceService {
 
 class InvoiceServiceImpl(dependencies: {
   val invoiceRepositoryComponent: InvoiceRepositoryImpl
-  val offerRepositoryComponent: OfferRepositoryComponent
+  val offerRepositoryComponent: OfferRepositoryImpl
   val eclairClientComponent: EclairClientComponent
 }) extends InvoiceService with LazyLogging {
 
   private def invoiceRepository = dependencies.invoiceRepositoryComponent
-  private def offerRepository = dependencies.offerRepositoryComponent.offerRepositoryImpl
+  private def offerRepository = dependencies.offerRepositoryComponent
   private def eclairClient = dependencies.eclairClientComponent.eclairClient
 
   override def makeNewInvoice(session: Session, offerId: Long): Future[Long] = {
