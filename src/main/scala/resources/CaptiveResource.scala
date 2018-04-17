@@ -24,11 +24,13 @@ import akka.http.scaladsl.model.StatusCodes._
 import akka.http.scaladsl.model.HttpCharsets._
 import akka.http.scaladsl.model.Uri.{ Path, Query }
 import akka.http.scaladsl.server.Route
-import commons.AppExecutionContextRegistry.context._
 import commons.Configuration.MiniPortalConfig.{ miniPortalHost, miniPortalPort }
-import services.{ SessionServiceImpl, SessionService }
+import services.{ SessionService, SessionServiceImpl }
+import scala.concurrent.ExecutionContext
 
 trait CaptiveResource extends ExtraDirectives {
+
+  implicit val ec: ExecutionContext
 
   val sessionService: SessionService
 

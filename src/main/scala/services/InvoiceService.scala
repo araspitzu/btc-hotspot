@@ -4,12 +4,12 @@ import com.typesafe.scalalogging.LazyLogging
 import commons.Helpers.FutureOption
 
 import scala.concurrent.duration._
-import ln.{ EclairClient }
+import ln.EclairClient
 import protocol.{ InvoiceRepositoryImpl, OfferRepositoryImpl, webDto }
 import protocol.webDto._
 import protocol.domain.{ Invoice, Offer, Session }
-import commons.AppExecutionContextRegistry.context._
-import scala.concurrent.{ Await, Future }
+
+import scala.concurrent.{ Await, ExecutionContext, Future }
 
 trait InvoiceService {
 
@@ -27,7 +27,7 @@ class InvoiceServiceImpl(dependencies: {
   val invoiceRepository: InvoiceRepositoryImpl
   val offerRepository: OfferRepositoryImpl
   val eclairClient: EclairClient
-}) extends InvoiceService with LazyLogging {
+})(implicit ec: ExecutionContext) extends InvoiceService with LazyLogging {
 
   import dependencies._
 

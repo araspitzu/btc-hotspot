@@ -18,7 +18,9 @@
 
 package resources.admin
 
+import akka.actor.ActorSystem
 import akka.http.scaladsl.server.Route
+import akka.stream.Materializer
 import commons.Configuration.AdminPanelConfig._
 import commons.Configuration.NetworkConfig
 import commons.{ Configuration, MailService }
@@ -27,11 +29,14 @@ import resources.{ CaptiveResource, HttpApi }
 import services.{ AdminService, SessionServiceImpl }
 
 import scala.collection.JavaConverters._
+import scala.concurrent.ExecutionContext
 
 class AdminPanelService(dependencies: {
   val sessionService: SessionServiceImpl
   val adminService: AdminService
-}) extends AdminPanel with HttpApi {
+})(implicit actorSystem: ActorSystem, fm: Materializer, executor: ExecutionContext) extends AdminPanel with HttpApi {
+
+  val ec = executor
 
   val sessionService: SessionServiceImpl = dependencies.sessionService
   val adminService: AdminService = dependencies.adminService

@@ -20,10 +20,10 @@ package watchdog
 
 import java.time.LocalDateTime
 
-import akka.actor.Cancellable
+import akka.actor.{ ActorSystem, Cancellable }
 import com.typesafe.scalalogging.LazyLogging
-import commons.AppExecutionContextRegistry.context._
 
+import scala.concurrent.ExecutionContext
 import scala.concurrent.duration.FiniteDuration
 
 trait Scheduler {
@@ -40,7 +40,9 @@ trait Scheduler {
 
 }
 
-class SchedulerImpl extends Scheduler with LazyLogging {
+class SchedulerImpl(implicit system: ActorSystem) extends Scheduler with LazyLogging {
+
+  import system.dispatcher
 
   private case class Schedule(createdAt: LocalDateTime, cancellable: Cancellable)
 
@@ -48,7 +50,7 @@ class SchedulerImpl extends Scheduler with LazyLogging {
 
   def schedule(sessionId: Long, delay: FiniteDuration)(task: => Unit): Unit = {
 
-    val cancellable = actorSystem.scheduler.scheduleOnce(delay)(task)
+    val cancellable = system.scheduler.scheduleOnce(delay)(task)
 
     sessIdToScheduleMap += sessionId -> Schedule(LocalDateTime.now, cancellable)
   }

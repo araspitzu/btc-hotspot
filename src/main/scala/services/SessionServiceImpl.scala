@@ -20,7 +20,6 @@ package services
 
 import com.typesafe.scalalogging.LazyLogging
 import protocol.domain.{ Offer, Session }
-import commons.AppExecutionContextRegistry.context._
 import commons.Helpers.FutureOption
 import iptables.IpTables
 import protocol.{ InvoiceRepositoryImpl, OfferRepositoryImpl, SessionRepositoryImpl }
@@ -28,7 +27,7 @@ import protocol.domain.QtyUnit._
 import watchdog.{ Scheduler, StopWatch, TimebasedStopWatch }
 
 import scala.concurrent.duration._
-import scala.concurrent.{ Await, Future }
+import scala.concurrent.{ Await, ExecutionContext, Future }
 
 trait SessionService {
 
@@ -54,7 +53,7 @@ class SessionServiceImpl(dependencies: {
   val offerRepository: OfferRepositoryImpl
   val ipTablesService: IpTables
   val schedulerService: Scheduler
-}) extends SessionService with LazyLogging {
+})(implicit ec: ExecutionContext) extends SessionService with LazyLogging {
 
   import dependencies._
 

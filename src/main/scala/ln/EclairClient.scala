@@ -1,19 +1,21 @@
 package ln
 
+import akka.actor.ActorSystem
 import akka.http.scaladsl.Http
 import akka.http.scaladsl.model.headers.{ BasicHttpCredentials, `Content-Type` }
 import akka.http.scaladsl.model.MediaTypes._
 import akka.http.scaladsl.model._
 import akka.http.scaladsl.model.StatusCodes._
 import akka.http.scaladsl.model.HttpMethods._
-import commons.AppExecutionContextRegistry.context._
+import akka.stream.Materializer
 import org.json4s.native._
 import org.json4s.native.Serialization._
 import com.typesafe.scalalogging.LazyLogging
 import commons.Configuration.EclairConfig._
 import commons.JsonSupport
 import ln.model._
-import scala.concurrent.{ Await, Future }
+
+import scala.concurrent.{ Await, ExecutionContext, Future }
 import scala.concurrent.duration._
 
 trait EclairClient {
@@ -32,7 +34,9 @@ trait EclairClient {
 
 }
 
-class EclairClientImpl extends EclairClient with JsonSupport with LazyLogging {
+class EclairClientImpl(implicit system: ActorSystem, implicit val fm: Materializer) extends EclairClient with JsonSupport with LazyLogging {
+
+  implicit val ec: ExecutionContext = system.dispatcher
 
   override def isReady(): Future[Boolean] = ???
 

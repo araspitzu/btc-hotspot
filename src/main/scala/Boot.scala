@@ -16,7 +16,10 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+import akka.actor.ActorSystem
+import akka.stream.ActorMaterializer
 import com.typesafe.scalalogging.LazyLogging
+import commons.Configuration.config
 import commons.TestData
 import iptables.IpTablesServiceImpl
 import ln.EclairClientImpl
@@ -31,6 +34,10 @@ object Boot extends App with LazyLogging {
 
   // try {
   logger.info(s"Starting btc-hotspot")
+
+  implicit val system = ActorSystem(config.getString("akka.actorSystem"))
+  implicit val executionContext = system.dispatcher
+  implicit val fm = ActorMaterializer()
 
   val database = new DatabaseImpl
   val eclairClient = new EclairClientImpl

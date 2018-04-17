@@ -20,12 +20,9 @@ package protocol
 
 import java.time.LocalDateTime
 import com.typesafe.scalalogging.LazyLogging
-import commons.AppExecutionContextRegistry.context._
 import commons.Helpers.FutureOption
-import protocol.domain.{ Offer, Session => DomainSession }
-
+import protocol.domain.{ Offer, Session => DomainSession } //avoid clashing with Slick.Session
 import scala.concurrent.Future
-import scala.util.{ Failure, Success }
 
 class SessionRepositoryImpl(val databaseComponent: DatabaseImpl, val offerRepository: OfferRepositoryImpl) extends DbSerializers with LazyLogging {
 
@@ -54,7 +51,6 @@ class SessionRepositoryImpl(val databaseComponent: DatabaseImpl, val offerReposi
   def upsert(session: DomainSession): FutureOption[Long] = db.run {
     (sessionsTable returning sessionsTable.map(_.id)).insertOrUpdate(session)
   }
-
 
   def byIdWithOffer(id: Long): FutureOption[(DomainSession, Offer)] = db.run {
     sessionsTable

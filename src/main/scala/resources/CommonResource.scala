@@ -18,20 +18,25 @@
 
 package resources
 
-import commons.AppExecutionContextRegistry.context._
+import akka.actor.ActorSystem
 import akka.http.scaladsl.Http
 import akka.http.scaladsl.marshalling.{ GenericMarshallers, Marshaller }
 import akka.http.scaladsl.server.{ Directive1, Directives, Route }
+import akka.stream.Materializer
 import akka.util.Timeout
 import protocol.domain.Session
-import services.{ SessionService }
+import services.SessionService
+
 import scala.compat.java8.OptionConverters._
 import iptables.ArpService._
+
 import scala.concurrent.duration._
 import com.typesafe.scalalogging.LazyLogging
 import commons.Helpers.FutureOption
 import de.heikoseeberger.akkahttpjson4s.Json4sSupport
 import commons.JsonSupport
+
+import scala.concurrent.ExecutionContext
 
 trait CommonResource extends Directives with Json4sSupport with JsonSupport with ExtraMarshallers {
 
@@ -74,7 +79,7 @@ trait ExtraMarshallers extends GenericMarshallers {
 
 trait HttpApi extends LazyLogging {
 
-  def bindOrFail(handler: Route, iface: String, port: Int, serviceName: String): Unit = {
+  def bindOrFail(handler: Route, iface: String, port: Int, serviceName: String)(implicit system: ActorSystem, fm: Materializer, ec: ExecutionContext): Unit = {
     Http().bindAndHandle(handler, iface, port) map { binding =>
       logger.info(s"Service $serviceName bound to ${binding.localAddress}")
     } recover {

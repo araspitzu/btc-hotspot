@@ -24,8 +24,6 @@ import com.typesafe.scalalogging.LazyLogging
 
 import scala.collection.JavaConverters._
 import scala.concurrent._
-import commons.AppExecutionContextRegistry.context._
-
 import scala.util.Failure
 
 package object Helpers extends LazyLogging {
@@ -50,7 +48,7 @@ package object Helpers extends LazyLogging {
 
     def map[U](f: T => U)(implicit ec: ExecutionContext): FutureOption[U] = FutureOption(future.map(_ map f))
 
-    def orFailWith[U >: T](error: String): Future[U] = future map {
+    def orFailWith[U >: T](error: String)(implicit ec: ExecutionContext): Future[U] = future map {
       case Some(t) => t
       case None    => throw new NoSuchElementException(error)
     }
@@ -73,7 +71,7 @@ package object Helpers extends LazyLogging {
 
   }
 
-  implicit class CmdExecutor(cmd: String) {
+  implicit class CmdExecutor(cmd: String)(implicit ec: ExecutionContext) {
     def exec: Future[String] = {
       val result = Future {
         logger.info(s"Executing '$cmd'")

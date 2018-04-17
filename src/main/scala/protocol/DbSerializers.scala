@@ -12,7 +12,7 @@ trait DbSerializers {
 
   import databaseComponent.database.profile.api._
 
-  //mapped via java.time.LocalDateTime -> java.sql.Timestamp -> DATATYPE(DATETIME)
+  //maps java.time.LocalDateTime via java.sql.Timestamp -> DATATYPE(DATETIME)
   implicit val localDateTimeMapper = MappedColumnType.base[LocalDateTime, Timestamp](
     localDateTime => Timestamp.valueOf(localDateTime),
     date => date.toLocalDateTime

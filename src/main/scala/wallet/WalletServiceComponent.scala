@@ -20,10 +20,10 @@ package wallet
 
 import com.typesafe.scalalogging.LazyLogging
 import protocol.domain._
-import commons.AppExecutionContextRegistry.context._
-import ln.{ EclairClient }
+import ln.EclairClient
 import protocol.webDto._
-import scala.concurrent.{ Await, Future, Promise }
+
+import scala.concurrent.{ Await, ExecutionContext, Future, Promise }
 import protocol.{ InvoiceRepositoryImpl, OfferRepositoryImpl, domain }
 
 trait WalletService {
@@ -42,7 +42,7 @@ class LightningServiceImpl(dependencies: {
   val eclairClient: EclairClient
   val invoiceRepository: InvoiceRepositoryImpl
   val offerRepository: OfferRepositoryImpl
-}) extends WalletService with LazyLogging {
+})(implicit ec: ExecutionContext) extends WalletService with LazyLogging {
 
   import dependencies._
 

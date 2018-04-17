@@ -21,16 +21,16 @@ package iptables
 import com.typesafe.scalalogging.LazyLogging
 import commons.Helpers.FutureOption
 import commons.Helpers.CmdExecutor
-import scala.concurrent.Future
-import commons.AppExecutionContextRegistry.context._
+
+import scala.concurrent.{ ExecutionContext, Future }
 import iptables.domain.ChainEntry
 import commons.Configuration._
 
 trait IpTables {
 
-  def enableClient(mac: String): Future[String]
+  def enableClient(mac: String)(implicit ec: ExecutionContext): Future[String]
 
-  def disableClient(mac: String): Future[String]
+  def disableClient(mac: String)(implicit ec: ExecutionContext): Future[String]
 
 }
 
@@ -40,7 +40,7 @@ class IpTablesServiceImpl extends IpTables with LazyLogging {
     s"sudo /sbin/iptables $params"
   }
 
-  def report: Future[Seq[ChainEntry]] = {
+  def report(implicit ec: ExecutionContext): Future[Seq[ChainEntry]] = {
     iptables("-t mangle -nvxL internet").exec.map {
       _.lines
         .drop(2) //drop header and column header
@@ -63,12 +63,12 @@ class IpTablesServiceImpl extends IpTables with LazyLogging {
 
   }
 
-  override def enableClient(mac: String) = env match {
+  override def enableClient(mac: String)(implicit ec: ExecutionContext) = env match {
     case "hotspot" => iptables(s"-t mangle -I internet_outgoing 1 -m mac --mac-source $mac -j RETURN").exec
     case "local"   => Future.successful("")
   }
 
-  override def disableClient(mac: String) = env match {
+  override def disableClient(mac: String)(implicit ec: ExecutionContext) = env match {
     case "hotspot" => iptables(s"-t mangle -D internet_outgoing -m mac --mac-source $mac -j RETURN").exec
     case "local"   => Future.successful("")
   }

@@ -27,9 +27,7 @@ import iptables.IpTables
 import protocol.domain.Session
 
 import scala.concurrent.duration._
-import commons.AppExecutionContextRegistry.context._
-
-import scala.concurrent.Future
+import scala.concurrent.{ ExecutionContext, Future }
 
 trait StopWatch extends LazyLogging {
 
@@ -54,7 +52,7 @@ trait StopWatch extends LazyLogging {
 class TimebasedStopWatch(val dependencies: {
   val ipTablesService: IpTables
   val scheduler: Scheduler
-}, val session: Session, val duration: Long) extends StopWatch {
+}, val session: Session, val duration: Long)(implicit ec: ExecutionContext) extends StopWatch {
   import dependencies._
 
   override def start(onLimitReach: => Unit): Future[Unit] = {
