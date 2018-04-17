@@ -19,7 +19,8 @@
 import com.typesafe.scalalogging.LazyLogging
 import ln.EclairClient
 import protocol.{ DatabaseImpl, InvoiceRepositoryImpl, OfferRepositoryImpl, SessionRepositoryImpl }
-import services.{ InvoiceServiceImpl, SessionServiceImpl }
+import services.{ AdminServiceImpl, InvoiceServiceImpl, SessionServiceImpl }
+import wallet.LightningServiceImpl
 
 object Boot extends App with LazyLogging {
 
@@ -36,6 +37,8 @@ object Boot extends App with LazyLogging {
 
   val sessionService = new SessionServiceImpl(this)
   val invoiceService = new InvoiceServiceImpl(this)
+  val walletService = new LightningServiceImpl(this)
+  val adminService = new AdminServiceImpl(this)
 
   //  } catch {
   //    case thr: Throwable => logger.error("Initialization error", thr)

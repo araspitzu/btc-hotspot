@@ -21,12 +21,9 @@ package wallet
 import com.typesafe.scalalogging.LazyLogging
 import protocol.domain._
 import commons.AppExecutionContextRegistry.context._
-import commons.Helpers.FutureOption
-import ln.{ EclairClient, EclairClientImpl, EclairClientRegistry }
+import ln.{ EclairClient }
 import protocol.webDto._
-
 import scala.concurrent.{ Await, Future, Promise }
-import scala.concurrent.duration._
 import protocol.{ InvoiceRepositoryImpl, OfferRepositoryImpl, domain }
 
 trait WalletServiceInterface {
@@ -47,15 +44,7 @@ class LightningServiceImpl(dependencies: {
   val offerRepository: OfferRepositoryImpl
 }) extends WalletServiceInterface with LazyLogging {
 
-  private def eclairClient = dependencies.eclairClient
-  private def invoiceRepository = dependencies.invoiceRepository
-  private def offerRepository = dependencies.offerRepository
-
-  def this() = this(new {
-    val eclairClient = EclairClientRegistry.eclairClient
-    val invoiceRepository = ???
-    val offerRepository: OfferRepositoryImpl = ???
-  })
+  import dependencies._
 
   override def checkInvoicePaid(invoiceId: Long): Future[InvoicePaid] = {
     for {

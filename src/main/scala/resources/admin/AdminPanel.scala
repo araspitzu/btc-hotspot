@@ -25,7 +25,7 @@ import commons.{ Configuration, MailService }
 import commons.MailService.Mail
 import registry.{ MiniPortalRegistry, Registry }
 import resources.CaptiveResource
-import services.SessionServiceImpl
+import services.{ AdminService, SessionServiceImpl }
 
 import scala.collection.JavaConverters._
 
@@ -41,6 +41,7 @@ object AdminPanelRegistry extends Registry with AdminPanel {
   MiniPortalRegistry.bindOrFail(adminPanelRoute, hotspotAddress, adminPanelPort, "Admin Panel")
 
   val sessionService: SessionServiceImpl = ???
+  val adminService: AdminService = ???
 
   //  val bootupEmail = Mail(
   //    from = ("hotspot@paypercom.net", "Your paypercom hotspot"),

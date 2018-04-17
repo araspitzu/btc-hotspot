@@ -22,11 +22,11 @@ import akka.http.scaladsl.server.{ MalformedQueryParamRejection, Route }
 import commons.JsonSupport
 import protocol.webDto.WithdrawTransactionData
 import resources.CommonResource
-import services.AdminServiceRegistry
+import services.{ AdminService }
 
 trait AdminAPI extends CommonResource with JsonSupport {
 
-  def adminService = AdminServiceRegistry.adminService
+  val adminService: AdminService
 
   def adminRoute: Route =
     walletRoute ~

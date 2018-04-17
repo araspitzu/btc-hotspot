@@ -21,24 +21,10 @@ package services
 import com.typesafe.scalalogging.LazyLogging
 import protocol.SessionRepositoryImpl
 import protocol.domain.Session
-import registry.{ Registry }
 import wallet.{ WalletServiceInterface }
 import commons.AppExecutionContextRegistry.context._
 import protocol.webDto.{ BitcoinTransactionDto, WithdrawTransactionData }
-
 import scala.concurrent.Future
-
-object AdminServiceRegistry extends Registry with AdminServiceComponent {
-
-  val adminService = new AdminServiceImpl()
-
-}
-
-trait AdminServiceComponent {
-
-  val adminService: AdminService
-
-}
 
 trait AdminService {
 
@@ -60,15 +46,7 @@ class AdminServiceImpl(dependencies: {
   val walletService: WalletServiceInterface
 }) extends AdminService with LazyLogging {
 
-  private def sessionRepository = dependencies.sessionRepository
-  private def sessionService = dependencies.sessionService
-  private def walletService = dependencies.walletService
-
-  def this() = this(new {
-    val sessionRepository: SessionRepositoryImpl = ???
-    val sessionService: SessionServiceInterface = ???
-    val walletService: WalletServiceInterface = ???
-  })
+  import dependencies._
 
   override def walletBalance(): Long = walletService.getBalance
 
