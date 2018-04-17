@@ -34,7 +34,6 @@ trait MiniPortal extends CaptiveResource with OffersAPI with SessionAPI with Inv
       invoiceRoute ~
       offersRoute ~
       statusRoute ~
-      enableMeRoute ~
       preloginRoute ~
       entryPointRoute //must stay in the last position because it matches any request
 

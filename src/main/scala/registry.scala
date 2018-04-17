@@ -64,8 +64,4 @@ package object registry extends LazyLogging {
     override val schedulerImpl = new SchedulerImpl
   }
 
-  object IpTablesServiceRegistry extends Registry with IpTablesServiceComponent {
-    override val ipTablesServiceImpl: IpTablesInterface = new IpTablesServiceImpl
-  }
-
 }

@@ -18,6 +18,7 @@
 
 import com.typesafe.scalalogging.LazyLogging
 import commons.TestData
+import iptables.IpTablesServiceImpl
 import ln.{ EclairClient, EclairClientImpl }
 import protocol.{ DatabaseImpl, InvoiceRepositoryImpl, OfferRepositoryImpl, SessionRepositoryImpl }
 import registry.MiniPortalService
@@ -32,6 +33,8 @@ object Boot extends App with LazyLogging {
 
   val database = new DatabaseImpl
   val eclairClient = new EclairClientImpl
+
+  val ipTablesService = new IpTablesServiceImpl
 
   val offerRepository = new OfferRepositoryImpl(database)
   val sessionRepository = new SessionRepositoryImpl(database, offerRepository)
