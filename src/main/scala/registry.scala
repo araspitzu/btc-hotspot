@@ -69,11 +69,7 @@ package object registry extends LazyLogging {
   }
 
   object SessionRepositoryRegistry extends Registry with SessionRepositoryComponent {
-    override val sessionRepositoryImpl = new SessionRepositoryImpl(???)
-  }
-
-  object OfferRepositoryRegistry extends Registry with OfferRepositoryComponent {
-    override val offerRepositoryImpl = new OfferRepositoryImpl(???)
+    override val sessionRepositoryImpl = new SessionRepositoryImpl(???, ???)
   }
 
   object SchedulerRegistry extends Registry with SchedulerComponent {

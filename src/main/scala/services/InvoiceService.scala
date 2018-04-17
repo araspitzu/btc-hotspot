@@ -8,7 +8,7 @@ import ln.{ EclairClient, EclairClientComponent, EclairClientRegistry }
 import protocol.{ InvoiceRepositoryImpl, OfferRepositoryComponent, webDto }
 import protocol.webDto._
 import protocol.domain.{ Invoice, Offer, Session }
-import registry.{ OfferRepositoryRegistry, Registry }
+import registry.{ Registry }
 import commons.AppExecutionContextRegistry.context._
 
 import scala.concurrent.{ Await, Future }

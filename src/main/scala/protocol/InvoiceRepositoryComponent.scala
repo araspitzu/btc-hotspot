@@ -4,10 +4,9 @@ import java.time.LocalDateTime
 
 import commons.Helpers.FutureOption
 import protocol.domain.Invoice
-import registry.SessionRepositoryRegistry._
 import scala.concurrent.Future
 
-class InvoiceRepositoryImpl(val databaseComponent: DatabaseImpl) extends DbSerializers {
+class InvoiceRepositoryImpl(val databaseComponent: DatabaseImpl, val sessionRepository: SessionRepositoryImpl) extends DbSerializers {
   import databaseComponent.database.profile.api._
 
   val db = databaseComponent.database.db
@@ -22,7 +21,7 @@ class InvoiceRepositoryImpl(val databaseComponent: DatabaseImpl) extends DbSeria
     def offerId = column[Option[Long]]("offerId")
     def sessionId = column[Option[Long]]("sessionId")
 
-    def session = foreignKey("sessionFK", sessionId, sessionRepositoryImpl.sessionsTable)(_.id.?)
+    def session = foreignKey("sessionFK", sessionId, sessionRepository.sessionsTable)(_.id.?)
     //causes JdbcSQLException: Constraint "offerFK" already exists
     //def offer = foreignKey("offerFK", offerId, OfferRepositoryRegistry.offerRepositoryImpl.offersTable)(_.offerId.?)
 

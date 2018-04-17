@@ -18,16 +18,11 @@
 
 package protocol
 
-import java.sql.Timestamp
 import java.time.LocalDateTime
-
 import com.typesafe.scalalogging.LazyLogging
 import commons.AppExecutionContextRegistry.context._
 import commons.Helpers.FutureOption
 import protocol.domain.{ Offer, Session => DomainSession }
-import registry.{ OfferRepositoryRegistry }
-import slick.basic.DatabaseConfig
-import slick.jdbc.JdbcProfile
 
 import scala.concurrent.Future
 import scala.util.{ Failure, Success }
@@ -38,7 +33,7 @@ trait SessionRepositoryComponent {
 
 }
 
-class SessionRepositoryImpl(val databaseComponent: DatabaseImpl) extends DbSerializers with LazyLogging {
+class SessionRepositoryImpl(val databaseComponent: DatabaseImpl, val offerRepository: OfferRepositoryImpl) extends DbSerializers with LazyLogging {
 
   import databaseComponent.database.profile.api._
   private lazy val db = databaseComponent.database.db
@@ -51,7 +46,7 @@ class SessionRepositoryImpl(val databaseComponent: DatabaseImpl) extends DbSeria
     def remainingUnits = column[Long]("remainingUnits")
     def offerId = column[Option[Long]]("offerId")
 
-    def offer = foreignKey("offerFK", offerId, OfferRepositoryRegistry.offerRepositoryImpl.offersTable)(_.offerId.?)
+    def offer = foreignKey("offerFK", offerId, offerRepository.offersTable)(_.offerId.?)
 
     override def * = (id, createdAt, clientMac, remainingUnits, offerId) <> (DomainSession.tupled, DomainSession.unapply)
   }
@@ -81,7 +76,7 @@ class SessionRepositoryImpl(val databaseComponent: DatabaseImpl) extends DbSeria
   def byIdWithOffer(id: Long): FutureOption[(DomainSession, Offer)] = db.run {
     sessionsTable
       .filter(_.id === id)
-      .join(OfferRepositoryRegistry.offerRepositoryImpl.offersTable).on((s, o) => s.offerId.map(_ === o.offerId))
+      .join(offerRepository.offersTable).on((s, o) => s.offerId.map(_ === o.offerId))
       .result
       .headOption
   }

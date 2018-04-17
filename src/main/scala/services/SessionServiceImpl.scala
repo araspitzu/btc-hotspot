@@ -74,7 +74,7 @@ class SessionServiceImpl(dependencies: {
   def this() = this(new {
     val sessionRepository: SessionRepositoryImpl = SessionRepositoryRegistry.sessionRepositoryImpl
     val invoiceRepository: InvoiceRepositoryImpl = ???
-    val offerRepository: OfferRepositoryImpl = OfferRepositoryRegistry.offerRepositoryImpl
+    val offerRepository: OfferRepositoryImpl = ???
   })
 
   val sessionIdToStopwatch = new scala.collection.mutable.HashMap[Long, StopWatch]
