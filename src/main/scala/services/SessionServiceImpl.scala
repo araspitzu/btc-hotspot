@@ -77,10 +77,8 @@ class SessionServiceImpl(dependencies: {
     logger.info(s"Enabling session ${session.id} for invoice $invoiceId")
     for {
       invoice <- invoiceRepository.invoiceById(invoiceId) orFailWith s"Invoice $invoiceId not found"
-      _ = logger.info("Getting offer..")
       offer <- offerRepository.byId(invoice.offerId.get) orFailWith s"Offer ${invoice.offerId.get} not found"
       _ = if (!invoice.paid) throw new IllegalStateException(s"Unable to enable session ${session.id}, invoice $invoiceId NOT PAID!")
-      _ = logger.info("Upserting..")
       _ = sessionRepository.upsert(session.copy(offerId = Some(offer.offerId), remainingUnits = offer.qty)).future
       stopWatch = selectStopwatchForOffer(session, offer)
       el <- stopWatch.start(onLimitReach = { disableSession(session) })
