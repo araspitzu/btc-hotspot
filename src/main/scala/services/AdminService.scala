@@ -21,7 +21,7 @@ package services
 import com.typesafe.scalalogging.LazyLogging
 import protocol.SessionRepositoryImpl
 import protocol.domain.Session
-import registry.{ Registry, SessionRepositoryRegistry }
+import registry.{ Registry }
 import wallet.{ WalletServiceInterface, WalletServiceRegistry }
 import commons.AppExecutionContextRegistry.context._
 import protocol.webDto.{ BitcoinTransactionDto, WithdrawTransactionData }
@@ -65,7 +65,7 @@ class AdminServiceImpl(dependencies: {
   private def walletService = dependencies.walletService
 
   def this() = this(new {
-    val sessionRepository: SessionRepositoryImpl = SessionRepositoryRegistry.sessionRepositoryImpl
+    val sessionRepository: SessionRepositoryImpl = ???
     val sessionService: SessionServiceInterface = SessionServiceRegistry.sessionService
     val walletService: WalletServiceInterface = WalletServiceRegistry.walletService
   })

@@ -22,10 +22,9 @@ import com.typesafe.scalalogging.LazyLogging
 import protocol.domain.{ Offer, Session }
 import commons.AppExecutionContextRegistry.context._
 import commons.Helpers.FutureOption
-import protocol.{ InvoiceRepositoryImpl, OfferRepositoryComponent, OfferRepositoryImpl, SessionRepositoryImpl }
+import protocol.{ InvoiceRepositoryImpl, OfferRepositoryImpl, SessionRepositoryImpl }
 import protocol.domain.QtyUnit._
 import registry._
-import wallet.{ WalletServiceInterface, WalletServiceRegistry }
 import watchdog.{ SchedulerImpl, StopWatch, TimebasedStopWatch }
 
 import scala.concurrent.duration._
@@ -72,7 +71,7 @@ class SessionServiceImpl(dependencies: {
   private def invoiceRepository = dependencies.invoiceRepository
 
   def this() = this(new {
-    val sessionRepository: SessionRepositoryImpl = SessionRepositoryRegistry.sessionRepositoryImpl
+    val sessionRepository: SessionRepositoryImpl = ???
     val invoiceRepository: InvoiceRepositoryImpl = ???
     val offerRepository: OfferRepositoryImpl = ???
   })

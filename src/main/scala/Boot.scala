@@ -17,7 +17,7 @@
  */
 
 import com.typesafe.scalalogging.LazyLogging
-import protocol.{ DatabaseImpl, InvoiceRepositoryImpl, OfferRepositoryImpl }
+import protocol.{ DatabaseImpl, InvoiceRepositoryImpl, OfferRepositoryImpl, SessionRepositoryImpl }
 
 object Boot extends App with LazyLogging {
 
@@ -26,8 +26,8 @@ object Boot extends App with LazyLogging {
     val database = new DatabaseImpl
 
     val offerRepository = new OfferRepositoryImpl(database)
-
-    val invoiceRepository = new InvoiceRepositoryImpl(database, ???)
+    val sessionRepository = new SessionRepositoryImpl(database, offerRepository)
+    val invoiceRepository = new InvoiceRepositoryImpl(database, sessionRepository)
 
   } catch {
     case thr: Throwable => logger.error("Initialization error", thr)

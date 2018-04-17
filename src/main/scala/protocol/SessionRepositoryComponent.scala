@@ -27,12 +27,6 @@ import protocol.domain.{ Offer, Session => DomainSession }
 import scala.concurrent.Future
 import scala.util.{ Failure, Success }
 
-trait SessionRepositoryComponent {
-
-  val sessionRepositoryImpl: SessionRepositoryImpl
-
-}
-
 class SessionRepositoryImpl(val databaseComponent: DatabaseImpl, val offerRepository: OfferRepositoryImpl) extends DbSerializers with LazyLogging {
 
   import databaseComponent.database.profile.api._
