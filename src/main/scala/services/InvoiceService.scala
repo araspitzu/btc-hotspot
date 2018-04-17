@@ -2,9 +2,10 @@ package services
 
 import com.typesafe.scalalogging.LazyLogging
 import commons.Helpers.FutureOption
+
 import scala.concurrent.duration._
 import ln.{ EclairClient, EclairClientComponent, EclairClientRegistry }
-import protocol.{ InvoiceRepositoryComponent, OfferRepositoryComponent, webDto }
+import protocol.{ InvoiceRepositoryImpl, OfferRepositoryComponent, webDto }
 import protocol.webDto._
 import protocol.domain.{ Invoice, Offer, Session }
 import registry.{ OfferRepositoryRegistry, Registry }
@@ -36,18 +37,12 @@ trait InvoiceService {
 }
 
 class InvoiceServiceImpl(dependencies: {
-  val invoiceRepositoryComponent: InvoiceRepositoryComponent
+  val invoiceRepositoryComponent: InvoiceRepositoryImpl
   val offerRepositoryComponent: OfferRepositoryComponent
   val eclairClientComponent: EclairClientComponent
 }) extends InvoiceService with LazyLogging {
 
-  //  def this() = this(new {
-  //    val invoiceRepositoryComponent = ???
-  //    val offerRepositoryComponent = OfferRepositoryRegistry
-  //    val eclairClientComponent = EclairClientRegistry
-  //  })
-
-  private def invoiceRepository = dependencies.invoiceRepositoryComponent.invoiceRepositoryImpl
+  private def invoiceRepository = dependencies.invoiceRepositoryComponent
   private def offerRepository = dependencies.offerRepositoryComponent.offerRepositoryImpl
   private def eclairClient = dependencies.eclairClientComponent.eclairClient
 

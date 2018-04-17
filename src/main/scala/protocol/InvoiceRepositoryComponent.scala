@@ -7,12 +7,6 @@ import protocol.domain.Invoice
 import registry.SessionRepositoryRegistry._
 import scala.concurrent.Future
 
-trait InvoiceRepositoryComponent {
-
-  val invoiceRepositoryImpl: InvoiceRepositoryImpl
-
-}
-
 class InvoiceRepositoryImpl(val databaseComponent: DatabaseImpl) extends DbSerializers {
   import databaseComponent.database.profile.api._
 
