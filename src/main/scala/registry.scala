@@ -17,34 +17,17 @@
  */
 
 import akka.http.scaladsl.server.Route
-import commons.Configuration.MiniPortalConfig.{ miniPortalHost, miniPortalPort }
-import commons.TestData
-import protocol._
+import commons.Configuration.MiniPortalConfig._
 import commons.AppExecutionContextRegistry.context._
 import akka.http.scaladsl.Http
 import com.typesafe.scalalogging.LazyLogging
 import iptables.{ IpTablesInterface, IpTablesServiceComponent, IpTablesServiceImpl }
 import resources.miniportal.MiniPortal
-import services.{ InvoiceServiceImpl, InvoiceServiceInterface, SessionServiceImpl, SessionServiceInterface }
+import services.{ InvoiceServiceImpl, InvoiceServiceInterface, SessionServiceInterface }
 import wallet.WalletServiceInterface
 import watchdog.{ SchedulerComponent, SchedulerImpl }
 
 package object registry extends LazyLogging {
-
-  //  def setupDb(db: DatabaseImpl) = {
-  //    import db.database.profile.api._
-  //    db.database.db.run({
-  //      logger.info(s"Setting up schemas and populating tables")
-  //      DBIO.seq(
-  //        (OfferRepositoryRegistry.offerRepositoryImpl.offersTable.schema ++
-  //          SessionRepositoryRegistry.sessionRepositoryImpl.sessionsTable.schema ++
-  //          InvoiceRepositoryRegistry.invoiceRepositoryImpl.invoiceTable.schema).create,
-  //
-  //        //Insert some offers
-  //        OfferRepositoryRegistry.offerRepositoryImpl.offersTable ++= TestData.offers
-  //      )
-  //    })
-  //  }
 
   trait Registry {
     //Dummy call to trigger object initialization thus the registry instantiation

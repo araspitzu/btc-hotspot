@@ -17,7 +17,8 @@
  */
 
 import com.typesafe.scalalogging.LazyLogging
-import ln.EclairClient
+import commons.TestData
+import ln.{ EclairClient, EclairClientImpl }
 import protocol.{ DatabaseImpl, InvoiceRepositoryImpl, OfferRepositoryImpl, SessionRepositoryImpl }
 import registry.MiniPortalService
 import resources.admin.AdminPanelService
@@ -29,13 +30,16 @@ object Boot extends App with LazyLogging {
   // try {
   logger.info(s"Starting btc-hotspot")
 
-  val eclairClient: EclairClient = ???
+  val eclairClient = new EclairClientImpl
 
   val database = new DatabaseImpl
 
   val offerRepository = new OfferRepositoryImpl(database)
   val sessionRepository = new SessionRepositoryImpl(database, offerRepository)
   val invoiceRepository = new InvoiceRepositoryImpl(database, sessionRepository)
+
+  //Setup DB
+  setupDb
 
   val sessionService = new SessionServiceImpl(this)
   val invoiceService = new InvoiceServiceImpl(this)
@@ -50,6 +54,21 @@ object Boot extends App with LazyLogging {
   //  } finally {
   //    logger.info(s"Done booting.")
   //  }
+
+  def setupDb = {
+    import database.database.profile.api._
+    database.database.db.run({
+      logger.info(s"Setting up schemas and populating tables")
+      DBIO.seq(
+        (offerRepository.offersTable.schema ++
+          sessionRepository.sessionsTable.schema ++
+          invoiceRepository.invoiceTable.schema).create,
+
+        //Insert some offers
+        offerRepository.offersTable ++= TestData.offers
+      )
+    })
+  }
 
 }
 
