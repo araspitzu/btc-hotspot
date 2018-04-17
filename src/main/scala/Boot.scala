@@ -30,9 +30,8 @@ object Boot extends App with LazyLogging {
   // try {
   logger.info(s"Starting btc-hotspot")
 
-  val eclairClient = new EclairClientImpl
-
   val database = new DatabaseImpl
+  val eclairClient = new EclairClientImpl
 
   val offerRepository = new OfferRepositoryImpl(database)
   val sessionRepository = new SessionRepositoryImpl(database, offerRepository)

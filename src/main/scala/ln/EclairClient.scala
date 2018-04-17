@@ -17,18 +17,6 @@ import registry.Registry
 import scala.concurrent.{ Await, Future }
 import scala.concurrent.duration._
 
-object EclairClientRegistry extends Registry with EclairClientComponent {
-
-  override val eclairClient: EclairClient = new EclairClientImpl
-
-}
-
-trait EclairClientComponent {
-
-  val eclairClient: EclairClient
-
-}
-
 trait EclairClient {
 
   def connect(uri: String): Future[String]
