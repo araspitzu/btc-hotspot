@@ -22,7 +22,7 @@ import com.typesafe.scalalogging.LazyLogging
 import protocol.SessionRepositoryImpl
 import protocol.domain.Session
 import registry.{ Registry }
-import wallet.{ WalletServiceInterface, WalletServiceRegistry }
+import wallet.{ WalletServiceInterface }
 import commons.AppExecutionContextRegistry.context._
 import protocol.webDto.{ BitcoinTransactionDto, WithdrawTransactionData }
 
@@ -67,7 +67,7 @@ class AdminServiceImpl(dependencies: {
   def this() = this(new {
     val sessionRepository: SessionRepositoryImpl = ???
     val sessionService: SessionServiceInterface = ???
-    val walletService: WalletServiceInterface = WalletServiceRegistry.walletService
+    val walletService: WalletServiceInterface = ???
   })
 
   override def walletBalance(): Long = walletService.getBalance

@@ -25,7 +25,8 @@ import akka.http.scaladsl.Http
 import com.typesafe.scalalogging.LazyLogging
 import iptables.{ IpTablesInterface, IpTablesServiceComponent, IpTablesServiceImpl }
 import resources.miniportal.MiniPortal
-import services.{ InvoiceServiceImpl, SessionServiceImpl }
+import services.{ InvoiceServiceImpl, InvoiceServiceInterface, SessionServiceImpl, SessionServiceInterface }
+import wallet.WalletServiceInterface
 import watchdog.{ SchedulerComponent, SchedulerImpl }
 
 import scala.concurrent.{ Await, Future }
@@ -55,8 +56,9 @@ package object registry extends LazyLogging {
 
   object MiniPortalRegistry extends Registry with MiniPortal {
 
-    val sessionService: SessionServiceImpl = ???
-    val invoiceService: InvoiceServiceImpl = ???
+    val sessionService: SessionServiceInterface = ???
+    val invoiceService: InvoiceServiceInterface = ???
+    val walletService: WalletServiceInterface = ???
 
     bindOrFail(miniportalRoute, miniPortalHost, miniPortalPort, "MiniPortal")
 

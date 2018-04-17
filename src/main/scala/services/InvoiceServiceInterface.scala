@@ -11,7 +11,7 @@ import protocol.domain.{ Invoice, Offer, Session }
 import commons.AppExecutionContextRegistry.context._
 import scala.concurrent.{ Await, Future }
 
-trait InvoiceService {
+trait InvoiceServiceInterface {
 
   def makeNewInvoice(session: Session, offerId: Long): Future[Long]
 
@@ -27,7 +27,7 @@ class InvoiceServiceImpl(dependencies: {
   val invoiceRepository: InvoiceRepositoryImpl
   val offerRepository: OfferRepositoryImpl
   val eclairClient: EclairClient
-}) extends InvoiceService with LazyLogging {
+}) extends InvoiceServiceInterface with LazyLogging {
 
   import dependencies._
 

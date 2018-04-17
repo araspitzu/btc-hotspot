@@ -22,9 +22,11 @@ import akka.http.scaladsl.marshalling.{ GenericMarshallers, Marshaller }
 import akka.http.scaladsl.server.{ Directive1, Directives }
 import akka.util.Timeout
 import protocol.domain.Session
-import services.SessionServiceImpl
+import services.{ SessionServiceImpl, SessionServiceInterface }
+
 import scala.compat.java8.OptionConverters._
 import iptables.ArpService._
+
 import scala.concurrent.duration._
 import com.typesafe.scalalogging.LazyLogging
 import commons.Helpers.FutureOption
@@ -39,7 +41,7 @@ trait CommonResource extends Directives with Json4sSupport with JsonSupport with
 
 trait ExtraDirectives extends Directives with LazyLogging {
 
-  val sessionService: SessionServiceImpl
+  val sessionService: SessionServiceInterface
 
   def extractClientMAC: Directive1[Option[String]] = extractClientIP map { remoteAddress =>
     for {

@@ -28,19 +28,6 @@ import protocol.webDto._
 import scala.concurrent.{ Await, Future, Promise }
 import scala.concurrent.duration._
 import protocol.{ InvoiceRepositoryImpl, OfferRepositoryImpl, domain }
-import registry.{ Registry }
-
-object WalletServiceRegistry extends Registry with WalletServiceComponent {
-
-  override val walletService: WalletServiceInterface = new LightningServiceImpl
-
-}
-
-trait WalletServiceComponent {
-
-  val walletService: WalletServiceInterface
-
-}
 
 trait WalletServiceInterface {
 

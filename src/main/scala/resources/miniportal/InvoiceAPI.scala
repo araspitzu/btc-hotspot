@@ -1,13 +1,14 @@
 package resources.miniportal
 
 import resources.{ CommonResource, ExtraDirectives, ExtraMarshallers }
-import services.{ InvoiceServiceImpl, SessionServiceImpl }
-import wallet.WalletServiceRegistry.walletService
+import services.{ InvoiceServiceInterface, InvoiceServiceImpl, SessionServiceImpl, SessionServiceInterface }
+import wallet.WalletServiceInterface
 
 trait InvoiceAPI extends CommonResource with ExtraDirectives with ExtraMarshallers {
 
-  val sessionService: SessionServiceImpl
-  val invoiceService: InvoiceServiceImpl
+  val sessionService: SessionServiceInterface
+  val invoiceService: InvoiceServiceInterface
+  val walletService: WalletServiceInterface
 
   def invoiceRoute = get {
     pathPrefix("api" / "invoice" / LongNumber) { invoiceId =>
