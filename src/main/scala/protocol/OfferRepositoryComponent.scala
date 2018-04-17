@@ -29,10 +29,10 @@ trait OfferRepositoryComponent {
 
 }
 
-class OfferRepositoryImpl(val databaseComponent: Database) extends DbSerializers {
+class OfferRepositoryImpl(val databaseComponent: DatabaseImpl) extends DbSerializers {
 
   import databaseComponent.database.profile.api._
-  val db = databaseComponent.database.db
+  private lazy val db = databaseComponent.database.db
 
   class OfferTable(tag: Tag) extends Table[Offer](tag, "OFFERS") {
 

@@ -29,7 +29,7 @@ import protocol.webDto._
 import scala.concurrent.{ Await, Future, Promise }
 import scala.concurrent.duration._
 import protocol.{ InvoiceRepositoryImpl, OfferRepositoryImpl, domain }
-import registry.{ InvoiceRepositoryRegistry, OfferRepositoryRegistry, Registry }
+import registry.{ OfferRepositoryRegistry, Registry }
 
 object WalletServiceRegistry extends Registry with WalletServiceComponent {
 
@@ -67,7 +67,7 @@ class LightningServiceImpl(dependencies: {
 
   def this() = this(new {
     val eclairClient = EclairClientRegistry.eclairClient
-    val invoiceRepository = InvoiceRepositoryRegistry.invoiceRepositoryImpl
+    val invoiceRepository = ???
     val offerRepository: OfferRepositoryImpl = OfferRepositoryRegistry.offerRepositoryImpl
   })
 

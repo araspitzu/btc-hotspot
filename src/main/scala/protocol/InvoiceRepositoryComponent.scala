@@ -13,10 +13,10 @@ trait InvoiceRepositoryComponent {
 
 }
 
-class InvoiceRepositoryImpl(val databaseComponent: Database) extends DbSerializers {
+class InvoiceRepositoryImpl(val databaseComponent: DatabaseImpl) extends DbSerializers {
   import databaseComponent.database.profile.api._
 
-  val db: Database = databaseComponent.database.db
+  val db = databaseComponent.database.db
 
   class InvoiceTable(tag: Tag) extends Table[Invoice](tag, "INVOICES") {
 

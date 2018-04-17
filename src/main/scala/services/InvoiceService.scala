@@ -7,14 +7,14 @@ import ln.{ EclairClient, EclairClientComponent, EclairClientRegistry }
 import protocol.{ InvoiceRepositoryComponent, OfferRepositoryComponent, webDto }
 import protocol.webDto._
 import protocol.domain.{ Invoice, Offer, Session }
-import registry.{ InvoiceRepositoryRegistry, OfferRepositoryRegistry, Registry }
+import registry.{ OfferRepositoryRegistry, Registry }
 import commons.AppExecutionContextRegistry.context._
 
 import scala.concurrent.{ Await, Future }
 
 object InvoiceServiceRegistry extends Registry with InvoiceServiceComponent {
 
-  override val invoiceService: InvoiceService = new InvoiceServiceImpl
+  override val invoiceService: InvoiceService = new InvoiceServiceImpl(???)
 
 }
 
@@ -41,11 +41,11 @@ class InvoiceServiceImpl(dependencies: {
   val eclairClientComponent: EclairClientComponent
 }) extends InvoiceService with LazyLogging {
 
-  def this() = this(new {
-    val invoiceRepositoryComponent = InvoiceRepositoryRegistry
-    val offerRepositoryComponent = OfferRepositoryRegistry
-    val eclairClientComponent = EclairClientRegistry
-  })
+  //  def this() = this(new {
+  //    val invoiceRepositoryComponent = ???
+  //    val offerRepositoryComponent = OfferRepositoryRegistry
+  //    val eclairClientComponent = EclairClientRegistry
+  //  })
 
   private def invoiceRepository = dependencies.invoiceRepositoryComponent.invoiceRepositoryImpl
   private def offerRepository = dependencies.offerRepositoryComponent.offerRepositoryImpl

@@ -73,7 +73,7 @@ class SessionServiceImpl(dependencies: {
 
   def this() = this(new {
     val sessionRepository: SessionRepositoryImpl = SessionRepositoryRegistry.sessionRepositoryImpl
-    val invoiceRepository: InvoiceRepositoryImpl = InvoiceRepositoryRegistry.invoiceRepositoryImpl
+    val invoiceRepository: InvoiceRepositoryImpl = ???
     val offerRepository: OfferRepositoryImpl = OfferRepositoryRegistry.offerRepositoryImpl
   })
 

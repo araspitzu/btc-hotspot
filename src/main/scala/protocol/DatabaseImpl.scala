@@ -8,7 +8,7 @@ import slick.jdbc.JdbcProfile
 import scala.concurrent.Await
 import scala.concurrent.duration.Duration
 
-class Database extends LazyLogging {
+class DatabaseImpl extends LazyLogging {
 
   val database: DatabaseConfig[JdbcProfile] = {
     logger.info(s"Opening database for conf '$configPath' @ $jdbcUrl")

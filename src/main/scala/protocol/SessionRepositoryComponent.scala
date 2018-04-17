@@ -38,10 +38,10 @@ trait SessionRepositoryComponent {
 
 }
 
-class SessionRepositoryImpl(val databaseComponent: Database) extends DbSerializers with LazyLogging {
+class SessionRepositoryImpl(val databaseComponent: DatabaseImpl) extends DbSerializers with LazyLogging {
 
   import databaseComponent.database.profile.api._
-  private lazy val db: Database = databaseComponent.database.db
+  private lazy val db = databaseComponent.database.db
 
   protected class SessionTable(tag: Tag) extends Table[DomainSession](tag, "SESSIONS") {
 

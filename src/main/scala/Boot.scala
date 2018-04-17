@@ -17,19 +17,17 @@
  */
 
 import com.typesafe.scalalogging.LazyLogging
-import protocol.{ InvoiceRepositoryImpl, Database }
-import registry.MiniPortalRegistry
-import resources.admin.AdminPanelRegistry
+import protocol.{ InvoiceRepositoryImpl, DatabaseImpl }
 
 object Boot extends App with LazyLogging {
 
   try {
     logger.info(s"Starting btc-hotspot")
-    val database = new Database
+    val database = new DatabaseImpl
     val invoiceRepository = new InvoiceRepositoryImpl(database)
 
-    AdminPanelRegistry.start
-    MiniPortalRegistry.start
+    //AdminPanelRegistry.start
+    //MiniPortalRegistry.start
   } catch {
     case thr: Throwable => logger.error("Initialization error", thr)
   } finally {

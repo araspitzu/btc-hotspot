@@ -8,7 +8,7 @@ import protocol.domain.QtyUnit.QtyUnit
 
 trait DbSerializers {
 
-  val databaseComponent: Database
+  val databaseComponent: DatabaseImpl
 
   import databaseComponent.database.profile.api._
 
