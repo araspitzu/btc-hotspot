@@ -25,6 +25,7 @@ import akka.http.scaladsl.Http
 import com.typesafe.scalalogging.LazyLogging
 import iptables.{ IpTablesInterface, IpTablesServiceComponent, IpTablesServiceImpl }
 import resources.miniportal.MiniPortal
+import services.SessionServiceImpl
 import watchdog.{ SchedulerComponent, SchedulerImpl }
 
 import scala.concurrent.{ Await, Future }
@@ -53,6 +54,8 @@ package object registry extends LazyLogging {
   }
 
   object MiniPortalRegistry extends Registry with MiniPortal {
+
+    val sessionService: SessionServiceImpl = ???
 
     bindOrFail(miniportalRoute, miniPortalHost, miniPortalPort, "MiniPortal")
 

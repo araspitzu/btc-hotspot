@@ -26,9 +26,11 @@ import akka.http.scaladsl.model.Uri.{ Path, Query }
 import akka.http.scaladsl.server.Route
 import commons.AppExecutionContextRegistry.context._
 import commons.Configuration.MiniPortalConfig.{ miniPortalHost, miniPortalPort }
-import services.SessionServiceRegistry
+import services.SessionServiceImpl
 
 trait CaptiveResource extends ExtraDirectives {
+
+  val sessionService: SessionServiceImpl
 
   /**
    * Redirect empty url to index
@@ -53,7 +55,7 @@ trait CaptiveResource extends ExtraDirectives {
     path("prelogin") {
       extractClientMAC { clientMac =>
         complete {
-          SessionServiceRegistry.sessionService.getOrCreate(clientMac.getOrElse("unknown")).map { _ =>
+          sessionService.getOrCreate(clientMac.getOrElse("unknown")).map { _ =>
             HttpEntity(browserRedirectPage).withContentType(`text/html`.toContentType(`UTF-8`))
           }
         }

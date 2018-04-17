@@ -20,7 +20,6 @@ package wallet
 
 import com.typesafe.scalalogging.LazyLogging
 import protocol.domain._
-import services.SessionServiceRegistry
 import commons.AppExecutionContextRegistry.context._
 import commons.Helpers.FutureOption
 import ln.{ EclairClient, EclairClientImpl, EclairClientRegistry }

@@ -26,21 +26,8 @@ import protocol.{ InvoiceRepositoryImpl, OfferRepositoryImpl, SessionRepositoryI
 import protocol.domain.QtyUnit._
 import registry._
 import watchdog.{ SchedulerImpl, StopWatch, TimebasedStopWatch }
-
 import scala.concurrent.duration._
 import scala.concurrent.{ Await, Future }
-
-object SessionServiceRegistry extends SessionServiceComponent {
-
-  val sessionService: SessionServiceInterface = new SessionServiceImpl
-
-}
-
-trait SessionServiceComponent {
-
-  val sessionService: SessionServiceInterface
-
-}
 
 trait SessionServiceInterface {
 
@@ -69,12 +56,6 @@ class SessionServiceImpl(dependencies: {
   private def offerRepository = dependencies.offerRepository
   private def sessionRepository = dependencies.sessionRepository
   private def invoiceRepository = dependencies.invoiceRepository
-
-  def this() = this(new {
-    val sessionRepository: SessionRepositoryImpl = ???
-    val invoiceRepository: InvoiceRepositoryImpl = ???
-    val offerRepository: OfferRepositoryImpl = ???
-  })
 
   val sessionIdToStopwatch = new scala.collection.mutable.HashMap[Long, StopWatch]
 

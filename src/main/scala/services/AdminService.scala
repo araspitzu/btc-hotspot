@@ -66,7 +66,7 @@ class AdminServiceImpl(dependencies: {
 
   def this() = this(new {
     val sessionRepository: SessionRepositoryImpl = ???
-    val sessionService: SessionServiceInterface = SessionServiceRegistry.sessionService
+    val sessionService: SessionServiceInterface = ???
     val walletService: WalletServiceInterface = WalletServiceRegistry.walletService
   })
 
