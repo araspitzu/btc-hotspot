@@ -23,7 +23,7 @@ import commons.Configuration.AdminPanelConfig._
 import commons.Configuration.NetworkConfig
 import commons.{ Configuration, MailService }
 import commons.MailService.Mail
-import registry.{ HttpApi, Registry }
+import registry.{ HttpApi }
 import resources.CaptiveResource
 import services.{ AdminService, SessionServiceImpl }
 

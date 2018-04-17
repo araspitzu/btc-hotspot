@@ -29,11 +29,6 @@ import watchdog.{ SchedulerComponent, SchedulerImpl }
 
 package object registry extends LazyLogging {
 
-  trait Registry {
-    //Dummy call to trigger object initialization thus the registry instantiation
-    val start = ()
-  }
-
   trait HttpApi extends LazyLogging {
     def bindOrFail(handler: Route, iface: String, port: Int, serviceName: String): Unit = {
       Http().bindAndHandle(handler, iface, port) map { binding =>
@@ -58,10 +53,6 @@ package object registry extends LazyLogging {
 
     bindOrFail(miniportalRoute, miniPortalHost, miniPortalPort, "MiniPortal")
 
-  }
-
-  object SchedulerRegistry extends Registry with SchedulerComponent {
-    override val schedulerImpl = new SchedulerImpl
   }
 
 }

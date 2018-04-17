@@ -13,7 +13,6 @@ import com.typesafe.scalalogging.LazyLogging
 import commons.Configuration.EclairConfig._
 import commons.JsonSupport
 import ln.model._
-import registry.Registry
 import scala.concurrent.{ Await, Future }
 import scala.concurrent.duration._
 

@@ -25,6 +25,7 @@ import registry.MiniPortalService
 import resources.admin.AdminPanelService
 import services.{ AdminServiceImpl, InvoiceServiceImpl, SessionServiceImpl }
 import wallet.LightningServiceImpl
+import watchdog.SchedulerImpl
 
 object Boot extends App with LazyLogging {
 
@@ -35,6 +36,7 @@ object Boot extends App with LazyLogging {
   val eclairClient = new EclairClientImpl
 
   val ipTablesService = new IpTablesServiceImpl
+  val schedulerService = new SchedulerImpl
 
   val offerRepository = new OfferRepositoryImpl(database)
   val sessionRepository = new SessionRepositoryImpl(database, offerRepository)

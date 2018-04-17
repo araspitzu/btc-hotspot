@@ -53,7 +53,7 @@ trait StopWatch extends LazyLogging {
 
 class TimebasedStopWatch(val dependencies: {
   val ipTablesService: IpTablesInterface
-  val scheduler: SchedulerImpl
+  val scheduler: Scheduler
 }, val session: Session, val duration: Long) extends StopWatch {
   import dependencies._
 

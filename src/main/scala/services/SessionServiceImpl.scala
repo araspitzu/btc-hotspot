@@ -26,7 +26,7 @@ import iptables.IpTablesInterface
 import protocol.{ InvoiceRepositoryImpl, OfferRepositoryImpl, SessionRepositoryImpl }
 import protocol.domain.QtyUnit._
 import registry._
-import watchdog.{ SchedulerImpl, StopWatch, TimebasedStopWatch }
+import watchdog.{ Scheduler, SchedulerImpl, StopWatch, TimebasedStopWatch }
 
 import scala.concurrent.duration._
 import scala.concurrent.{ Await, Future }
@@ -54,6 +54,7 @@ class SessionServiceImpl(dependencies: {
   val invoiceRepository: InvoiceRepositoryImpl
   val offerRepository: OfferRepositoryImpl
   val ipTablesService: IpTablesInterface
+  val schedulerService: Scheduler
 }) extends SessionServiceInterface with LazyLogging {
 
   import dependencies._
@@ -64,7 +65,7 @@ class SessionServiceImpl(dependencies: {
 
     val stopWatchDependencies = new {
       val ipTablesService = dependencies.ipTablesService
-      val scheduler: SchedulerImpl = SchedulerRegistry.schedulerImpl
+      val scheduler = dependencies.schedulerService
     }
 
     offer.qtyUnit match {

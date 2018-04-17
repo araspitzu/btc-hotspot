@@ -32,7 +32,21 @@ trait SchedulerComponent {
 
 }
 
-class SchedulerImpl extends LazyLogging {
+trait Scheduler {
+
+  def schedule(sessionId: Long, delay: FiniteDuration)(task: => Unit): Unit
+
+  def isScheduled(sessionId: Long): Boolean
+
+  def scheduledAt(sessionId: Long): Option[LocalDateTime]
+
+  def remove(sessionId: Long): Unit
+
+  def cancel(sessionId: Long): Boolean
+
+}
+
+class SchedulerImpl extends Scheduler with LazyLogging {
 
   private case class Schedule(createdAt: LocalDateTime, cancellable: Cancellable)
 
