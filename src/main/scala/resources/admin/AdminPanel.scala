@@ -23,13 +23,19 @@ import commons.Configuration.AdminPanelConfig._
 import commons.Configuration.NetworkConfig
 import commons.{ Configuration, MailService }
 import commons.MailService.Mail
-import registry.{ MiniPortalRegistry, Registry }
+import registry.{ HttpApi, Registry }
 import resources.CaptiveResource
 import services.{ AdminService, SessionServiceImpl }
 
 import scala.collection.JavaConverters._
 
-object AdminPanelRegistry extends Registry with AdminPanel {
+class AdminPanelService(dependencies: {
+  val sessionService: SessionServiceImpl
+  val adminService: AdminService
+}) extends AdminPanel with HttpApi {
+
+  val sessionService: SessionServiceImpl = dependencies.sessionService
+  val adminService: AdminService = dependencies.adminService
 
   //Notify the user of the boot via email
   val hotspotAddress = Configuration.env match {
@@ -38,26 +44,9 @@ object AdminPanelRegistry extends Registry with AdminPanel {
   }
 
   logger.info(s"Using uplink interface \'${NetworkConfig.uplinkInterfaceName}\' @ $hotspotAddress")
-  MiniPortalRegistry.bindOrFail(adminPanelRoute, hotspotAddress, adminPanelPort, "Admin Panel")
+  bindOrFail(adminPanelRoute, hotspotAddress, adminPanelPort, "Admin Panel")
 
-  val sessionService: SessionServiceImpl = ???
-  val adminService: AdminService = ???
-
-  //  val bootupEmail = Mail(
-  //    from = ("hotspot@paypercom.net", "Your paypercom hotspot"),
-  //    to = Seq("a.raspitzu@gmail.com"),
-  //    subject = "New boot",
-  //    message = " ",
-  //    richMessage = Some(
-  //      s"""
-  //        Click <a href="http://$hotspotAddress:$adminPanelPort">here</a> to access your dashboard.
-  //      """.stripMargin)
-  //  )
-
-  //  if (Configuration.env != "local")
-  //    MailService.send(bootupEmail)
-
-  def getUplinkInternalIp(): String = {
+  private def getUplinkInternalIp(): String = {
 
     val ifaceName = NetworkConfig.uplinkInterfaceName
 

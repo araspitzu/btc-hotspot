@@ -29,9 +29,6 @@ import services.{ InvoiceServiceImpl, InvoiceServiceInterface, SessionServiceImp
 import wallet.WalletServiceInterface
 import watchdog.{ SchedulerComponent, SchedulerImpl }
 
-import scala.concurrent.{ Await, Future }
-import scala.concurrent.duration._
-
 package object registry extends LazyLogging {
 
   //  def setupDb(db: DatabaseImpl) = {
@@ -54,14 +51,7 @@ package object registry extends LazyLogging {
     val start = ()
   }
 
-  object MiniPortalRegistry extends Registry with MiniPortal {
-
-    val sessionService: SessionServiceInterface = ???
-    val invoiceService: InvoiceServiceInterface = ???
-    val walletService: WalletServiceInterface = ???
-
-    bindOrFail(miniportalRoute, miniPortalHost, miniPortalPort, "MiniPortal")
-
+  trait HttpApi extends LazyLogging {
     def bindOrFail(handler: Route, iface: String, port: Int, serviceName: String): Unit = {
       Http().bindAndHandle(handler, iface, port) map { binding =>
         logger.info(s"Service $serviceName bound to ${binding.localAddress}")
@@ -71,6 +61,19 @@ package object registry extends LazyLogging {
           throw ex
       }
     }
+  }
+
+  class MiniPortalService(dependencies: {
+    val sessionService: SessionServiceInterface
+    val invoiceService: InvoiceServiceInterface
+    val walletService: WalletServiceInterface
+  }) extends MiniPortal with HttpApi {
+
+    val sessionService: SessionServiceInterface = dependencies.sessionService
+    val invoiceService: InvoiceServiceInterface = dependencies.invoiceService
+    val walletService: WalletServiceInterface = dependencies.walletService
+
+    bindOrFail(miniportalRoute, miniPortalHost, miniPortalPort, "MiniPortal")
 
   }
 
