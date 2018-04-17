@@ -18,14 +18,14 @@
 
 package mocks
 
-import iptables.IpTablesInterface
+import iptables.IpTables
 import protocol.domain.Session
 import watchdog.StopWatch
 
 import scala.concurrent.Future
 
 class MockStopWatch(val dependencies: {
-  val ipTablesService: IpTablesInterface
+  val ipTablesService: IpTables
 }, aSession: Session, aDuration: Long) extends StopWatch {
   override val session: Session = aSession
   override val duration: Long = aDuration

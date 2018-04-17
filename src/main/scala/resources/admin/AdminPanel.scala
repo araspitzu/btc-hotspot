@@ -23,8 +23,7 @@ import commons.Configuration.AdminPanelConfig._
 import commons.Configuration.NetworkConfig
 import commons.{ Configuration, MailService }
 import commons.MailService.Mail
-import registry.{ HttpApi }
-import resources.CaptiveResource
+import resources.{ CaptiveResource, HttpApi }
 import services.{ AdminService, SessionServiceImpl }
 
 import scala.collection.JavaConverters._

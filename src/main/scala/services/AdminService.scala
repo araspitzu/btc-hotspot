@@ -21,7 +21,7 @@ package services
 import com.typesafe.scalalogging.LazyLogging
 import protocol.SessionRepositoryImpl
 import protocol.domain.Session
-import wallet.{ WalletServiceInterface }
+import wallet.{ WalletService }
 import commons.AppExecutionContextRegistry.context._
 import protocol.webDto.{ BitcoinTransactionDto, WithdrawTransactionData }
 import scala.concurrent.Future
@@ -42,8 +42,8 @@ trait AdminService {
 
 class AdminServiceImpl(dependencies: {
   val sessionRepository: SessionRepositoryImpl
-  val sessionService: SessionServiceInterface
-  val walletService: WalletServiceInterface
+  val sessionService: SessionService
+  val walletService: WalletService
 }) extends AdminService with LazyLogging {
 
   import dependencies._

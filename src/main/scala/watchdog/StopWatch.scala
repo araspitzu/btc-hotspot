@@ -23,7 +23,7 @@ import java.time.temporal.ChronoUnit
 
 import com.typesafe.scalalogging.LazyLogging
 import commons.Helpers.FutureOption
-import iptables.IpTablesInterface
+import iptables.IpTables
 import protocol.domain.Session
 
 import scala.concurrent.duration._
@@ -34,7 +34,7 @@ import scala.concurrent.Future
 trait StopWatch extends LazyLogging {
 
   type StopWatchDependency = {
-    val ipTablesService: IpTablesInterface
+    val ipTablesService: IpTables
   }
 
   val dependencies: StopWatchDependency
@@ -52,7 +52,7 @@ trait StopWatch extends LazyLogging {
 }
 
 class TimebasedStopWatch(val dependencies: {
-  val ipTablesService: IpTablesInterface
+  val ipTablesService: IpTables
   val scheduler: Scheduler
 }, val session: Session, val duration: Long) extends StopWatch {
   import dependencies._

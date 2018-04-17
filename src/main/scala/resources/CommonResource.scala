@@ -18,15 +18,15 @@
 
 package resources
 
+import commons.AppExecutionContextRegistry.context._
+import akka.http.scaladsl.Http
 import akka.http.scaladsl.marshalling.{ GenericMarshallers, Marshaller }
-import akka.http.scaladsl.server.{ Directive1, Directives }
+import akka.http.scaladsl.server.{ Directive1, Directives, Route }
 import akka.util.Timeout
 import protocol.domain.Session
-import services.{ SessionServiceImpl, SessionServiceInterface }
-
+import services.{ SessionService }
 import scala.compat.java8.OptionConverters._
 import iptables.ArpService._
-
 import scala.concurrent.duration._
 import com.typesafe.scalalogging.LazyLogging
 import commons.Helpers.FutureOption
@@ -41,7 +41,7 @@ trait CommonResource extends Directives with Json4sSupport with JsonSupport with
 
 trait ExtraDirectives extends Directives with LazyLogging {
 
-  val sessionService: SessionServiceInterface
+  val sessionService: SessionService
 
   def extractClientMAC: Directive1[Option[String]] = extractClientIP map { remoteAddress =>
     for {
@@ -70,4 +70,17 @@ trait ExtraMarshallers extends GenericMarshallers {
     Marshaller(implicit ec => _.future.flatMap(m(_)))
   }
 
+}
+
+trait HttpApi extends LazyLogging {
+
+  def bindOrFail(handler: Route, iface: String, port: Int, serviceName: String): Unit = {
+    Http().bindAndHandle(handler, iface, port) map { binding =>
+      logger.info(s"Service $serviceName bound to ${binding.localAddress}")
+    } recover {
+      case ex =>
+        logger.error(s"Interface could not bind to $iface:$port", ex)
+        throw ex
+    }
+  }
 }

@@ -26,11 +26,11 @@ import akka.http.scaladsl.model.Uri.{ Path, Query }
 import akka.http.scaladsl.server.Route
 import commons.AppExecutionContextRegistry.context._
 import commons.Configuration.MiniPortalConfig.{ miniPortalHost, miniPortalPort }
-import services.{ SessionServiceImpl, SessionServiceInterface }
+import services.{ SessionServiceImpl, SessionService }
 
 trait CaptiveResource extends ExtraDirectives {
 
-  val sessionService: SessionServiceInterface
+  val sessionService: SessionService
 
   /**
    * Redirect empty url to index

@@ -26,7 +26,7 @@ import protocol.webDto._
 import scala.concurrent.{ Await, Future, Promise }
 import protocol.{ InvoiceRepositoryImpl, OfferRepositoryImpl, domain }
 
-trait WalletServiceInterface {
+trait WalletService {
 
   def checkInvoicePaid(invoiceId: Long): Future[InvoicePaid]
 
@@ -42,7 +42,7 @@ class LightningServiceImpl(dependencies: {
   val eclairClient: EclairClient
   val invoiceRepository: InvoiceRepositoryImpl
   val offerRepository: OfferRepositoryImpl
-}) extends WalletServiceInterface with LazyLogging {
+}) extends WalletService with LazyLogging {
 
   import dependencies._
 

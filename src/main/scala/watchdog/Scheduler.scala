@@ -26,12 +26,6 @@ import commons.AppExecutionContextRegistry.context._
 
 import scala.concurrent.duration.FiniteDuration
 
-trait SchedulerComponent {
-
-  val schedulerImpl: SchedulerImpl
-
-}
-
 trait Scheduler {
 
   def schedule(sessionId: Long, delay: FiniteDuration)(task: => Unit): Unit

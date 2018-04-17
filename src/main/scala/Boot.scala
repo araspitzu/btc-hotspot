@@ -19,11 +19,11 @@
 import com.typesafe.scalalogging.LazyLogging
 import commons.TestData
 import iptables.IpTablesServiceImpl
-import ln.{ EclairClient, EclairClientImpl }
-import protocol.{ DatabaseImpl, InvoiceRepositoryImpl, OfferRepositoryImpl, SessionRepositoryImpl }
-import registry.MiniPortalService
+import ln.EclairClientImpl
+import protocol._
+import services._
 import resources.admin.AdminPanelService
-import services.{ AdminServiceImpl, InvoiceServiceImpl, SessionServiceImpl }
+import resources.miniportal.MiniPortalService
 import wallet.LightningServiceImpl
 import watchdog.SchedulerImpl
 

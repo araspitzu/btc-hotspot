@@ -19,7 +19,7 @@
 package service
 
 import commons.TestData
-import iptables.IpTablesInterface
+import iptables.IpTables
 import mocks.{ DatabaseComponentMock, IpTablesServiceMock, MockStopWatch, WalletServiceMock }
 import org.specs2.mock.Mockito
 import org.specs2.mutable._
@@ -29,7 +29,7 @@ import protocol.domain.{ Invoice, Offer, QtyUnit, Session }
 import services._
 import util.CleanRepository.CleanSessionRepository
 import util.Helpers._
-import wallet.WalletServiceInterface
+import wallet.WalletService
 import watchdog.{ StopWatch, TimebasedStopWatch }
 
 import scala.concurrent.Future
@@ -40,7 +40,7 @@ class SessionServiceSpecs extends Specification {
   trait MockSessionServiceScope extends Scope {
 
     val stopWatchDepencencies = new {
-      val ipTablesService: IpTablesInterface = new IpTablesServiceMock {}
+      val ipTablesService: IpTables = new IpTablesServiceMock {}
     }
 
     val offer = TestData.offers.head //InvoiceServiceRegistry.invoiceService.allOffers.futureValue.head

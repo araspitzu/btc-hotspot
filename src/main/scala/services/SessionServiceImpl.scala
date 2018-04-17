@@ -22,16 +22,15 @@ import com.typesafe.scalalogging.LazyLogging
 import protocol.domain.{ Offer, Session }
 import commons.AppExecutionContextRegistry.context._
 import commons.Helpers.FutureOption
-import iptables.IpTablesInterface
+import iptables.IpTables
 import protocol.{ InvoiceRepositoryImpl, OfferRepositoryImpl, SessionRepositoryImpl }
 import protocol.domain.QtyUnit._
-import registry._
-import watchdog.{ Scheduler, SchedulerImpl, StopWatch, TimebasedStopWatch }
+import watchdog.{ Scheduler, StopWatch, TimebasedStopWatch }
 
 import scala.concurrent.duration._
 import scala.concurrent.{ Await, Future }
 
-trait SessionServiceInterface {
+trait SessionService {
 
   def enableSessionForInvoice(session: Session, invoiceId: Long): Future[Long]
 
@@ -53,9 +52,9 @@ class SessionServiceImpl(dependencies: {
   val sessionRepository: SessionRepositoryImpl
   val invoiceRepository: InvoiceRepositoryImpl
   val offerRepository: OfferRepositoryImpl
-  val ipTablesService: IpTablesInterface
+  val ipTablesService: IpTables
   val schedulerService: Scheduler
-}) extends SessionServiceInterface with LazyLogging {
+}) extends SessionService with LazyLogging {
 
   import dependencies._
 

@@ -20,7 +20,7 @@ package stopwatch
 
 import com.typesafe.scalalogging.LazyLogging
 import commons.Helpers.FutureOption
-import iptables.IpTablesInterface
+import iptables.IpTables
 import mocks.IpTablesServiceMock
 import registry.{ SchedulerRegistry, SessionRepositoryRegistry }
 import org.specs2.mutable.Specification
@@ -41,7 +41,7 @@ class StopWatchSpecs extends Specification with LazyLogging {
       var ipTablesEnableClientCalled = false
       var ipTablesDisableClientCalled = false
 
-      val ipTablesService: IpTablesInterface = new IpTablesServiceMock {
+      val ipTablesService: IpTables = new IpTablesServiceMock {
         override def enableClient(mac: String) = { ipTablesEnableClientCalled = true; Future.successful("") }
         override def disableClient(mac: String) = { ipTablesDisableClientCalled = true; Future.successful("") }
       }

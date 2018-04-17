@@ -26,13 +26,7 @@ import commons.AppExecutionContextRegistry.context._
 import iptables.domain.ChainEntry
 import commons.Configuration._
 
-trait IpTablesServiceComponent {
-
-  val ipTablesServiceImpl: IpTablesInterface
-
-}
-
-trait IpTablesInterface {
+trait IpTables {
 
   def enableClient(mac: String): Future[String]
 
@@ -40,7 +34,7 @@ trait IpTablesInterface {
 
 }
 
-class IpTablesServiceImpl extends IpTablesInterface with LazyLogging {
+class IpTablesServiceImpl extends IpTables with LazyLogging {
 
   private def iptables(params: String) = {
     s"sudo /sbin/iptables $params"

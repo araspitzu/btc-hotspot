@@ -21,11 +21,11 @@ package mocks
 import protocol.domain
 import protocol.domain.{ Invoice, Session }
 import protocol.webDto.{ InvoiceDto, InvoicePaid }
-import wallet.WalletServiceInterface
+import wallet.WalletService
 
 import scala.concurrent.Future
 
-class WalletServiceMock extends WalletServiceInterface {
+class WalletServiceMock extends WalletService {
   override def getBalance(): Long = ???
 
   override def allTransactions(): Seq[domain.BitcoinTransaction] = ???
