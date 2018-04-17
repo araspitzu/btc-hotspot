@@ -17,13 +17,17 @@
  */
 
 import com.typesafe.scalalogging.LazyLogging
+import ln.EclairClient
 import protocol.{ DatabaseImpl, InvoiceRepositoryImpl, OfferRepositoryImpl, SessionRepositoryImpl }
-import services.SessionServiceImpl
+import services.{ InvoiceServiceImpl, SessionServiceImpl }
 
 object Boot extends App with LazyLogging {
 
   // try {
   logger.info(s"Starting btc-hotspot")
+
+  val eclairClient: EclairClient = ???
+
   val database = new DatabaseImpl
 
   val offerRepository = new OfferRepositoryImpl(database)
@@ -31,6 +35,7 @@ object Boot extends App with LazyLogging {
   val invoiceRepository = new InvoiceRepositoryImpl(database, sessionRepository)
 
   val sessionService = new SessionServiceImpl(this)
+  val invoiceService = new InvoiceServiceImpl(this)
 
   //  } catch {
   //    case thr: Throwable => logger.error("Initialization error", thr)

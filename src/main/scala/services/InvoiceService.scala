@@ -4,25 +4,12 @@ import com.typesafe.scalalogging.LazyLogging
 import commons.Helpers.FutureOption
 
 import scala.concurrent.duration._
-import ln.{ EclairClient, EclairClientComponent, EclairClientRegistry }
+import ln.{ EclairClient }
 import protocol.{ InvoiceRepositoryImpl, OfferRepositoryImpl, webDto }
 import protocol.webDto._
 import protocol.domain.{ Invoice, Offer, Session }
-import registry.Registry
 import commons.AppExecutionContextRegistry.context._
-
 import scala.concurrent.{ Await, Future }
-
-object InvoiceServiceRegistry extends Registry with InvoiceServiceComponent {
-
-  override val invoiceService: InvoiceService = new InvoiceServiceImpl(???)
-
-}
-
-trait InvoiceServiceComponent {
-
-  val invoiceService: InvoiceService
-}
 
 trait InvoiceService {
 
@@ -37,14 +24,12 @@ trait InvoiceService {
 }
 
 class InvoiceServiceImpl(dependencies: {
-  val invoiceRepositoryComponent: InvoiceRepositoryImpl
-  val offerRepositoryComponent: OfferRepositoryImpl
-  val eclairClientComponent: EclairClientComponent
+  val invoiceRepository: InvoiceRepositoryImpl
+  val offerRepository: OfferRepositoryImpl
+  val eclairClient: EclairClient
 }) extends InvoiceService with LazyLogging {
 
-  private def invoiceRepository = dependencies.invoiceRepositoryComponent
-  private def offerRepository = dependencies.offerRepositoryComponent
-  private def eclairClient = dependencies.eclairClientComponent.eclairClient
+  import dependencies._
 
   override def makeNewInvoice(session: Session, offerId: Long): Future[Long] = {
     logger.info(s"Fetching invoice for session: ${session.id}, offer:$offerId")

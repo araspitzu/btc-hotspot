@@ -23,11 +23,14 @@ import akka.http.scaladsl.model.StatusCodes._
 import akka.http.scaladsl.server.Route
 import com.typesafe.scalalogging.LazyLogging
 import resources.{ CommonResource, ExtraDirectives }
-import services.InvoiceServiceRegistry._
+import services.InvoiceServiceImpl
+
 import scala.concurrent.duration._
 import scala.concurrent.Await
 
 trait OffersAPI extends CommonResource with ExtraDirectives with LazyLogging {
+
+  val invoiceService: InvoiceServiceImpl
 
   def offersRoute: Route = get {
     pathPrefix("api" / "offer" / LongNumber) { offerId =>
