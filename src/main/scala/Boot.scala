@@ -32,53 +32,54 @@ import watchdog.SchedulerImpl
 
 object Boot extends App with LazyLogging {
 
-  // try {
   logger.info(s"Starting btc-hotspot")
+  try {
 
-  implicit val system = ActorSystem(config.getString("akka.actorSystem"))
-  implicit val executionContext = system.dispatcher
-  implicit val fm = ActorMaterializer()
+    implicit val system = ActorSystem(config.getString("akka.actorSystem"))
+    implicit val executionContext = system.dispatcher
+    implicit val fm = ActorMaterializer()
 
-  val database = new DatabaseImpl
-  val eclairClient = new EclairClientImpl
+    object env {
+      val database = new DatabaseImpl
+      import database.database.profile.api._
 
-  val ipTablesService = new IpTablesServiceImpl
-  val schedulerService = new SchedulerImpl
+      val eclairClient = new EclairClientImpl
 
-  val offerRepository = new OfferRepositoryImpl(database)
-  val sessionRepository = new SessionRepositoryImpl(database, offerRepository)
-  val invoiceRepository = new InvoiceRepositoryImpl(database, sessionRepository)
+      val ipTablesService = new IpTablesServiceImpl
+      val schedulerService = new SchedulerImpl
 
-  //Setup DB
-  setupDb
+      val offerRepository = new OfferRepositoryImpl(database)
+      val sessionRepository = new SessionRepositoryImpl(database, offerRepository)
+      val invoiceRepository = new InvoiceRepositoryImpl(database, sessionRepository)
 
-  val sessionService = new SessionServiceImpl(this)
-  val invoiceService = new InvoiceServiceImpl(this)
-  val walletService = new LightningServiceImpl(this)
-  val adminService = new AdminServiceImpl(this)
+      //Setup DB
+      database.database.db.run({
+        logger.info(s"Setting up schemas and populating tables")
+        DBIO.seq(
+          (offerRepository.offersTable.schema ++
+            sessionRepository.sessionsTable.schema ++
+            invoiceRepository.invoiceTable.schema).create,
 
-  val miniPortal = new MiniPortalService(this)
-  val adminPanel = new AdminPanelService(this)
+          //Insert some offers
+          offerRepository.offersTable ++= TestData.offers
+        )
+      })
 
-  //  } catch {
-  //    case thr: Throwable => logger.error("Initialization error", thr)
-  //  } finally {
-  //    logger.info(s"Done booting.")
-  //  }
+      val sessionService = new SessionServiceImpl(this)
+      val invoiceService = new InvoiceServiceImpl(this)
+      val walletService = new LightningServiceImpl(this)
+      val adminService = new AdminServiceImpl(this)
 
-  def setupDb = {
-    import database.database.profile.api._
-    database.database.db.run({
-      logger.info(s"Setting up schemas and populating tables")
-      DBIO.seq(
-        (offerRepository.offersTable.schema ++
-          sessionRepository.sessionsTable.schema ++
-          invoiceRepository.invoiceTable.schema).create,
+      val miniPortal = new MiniPortalService(this)
+      val adminPanel = new AdminPanelService(this)
+    }
 
-        //Insert some offers
-        offerRepository.offersTable ++= TestData.offers
-      )
-    })
+    val start = env
+
+  } catch {
+    case thr: Throwable => logger.error("Initialization error", thr)
+  } finally {
+    logger.info(s"Done booting.")
   }
 
 }

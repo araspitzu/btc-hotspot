@@ -56,7 +56,6 @@ trait ExtraDirectives extends Directives with LazyLogging {
   }
 
   def withSession: Directive1[Option[Session]] = extractClientMAC map { someMac =>
-
     someMac map sessionService.byMacSync flatten //FIXME
   }
 

@@ -13,9 +13,7 @@ class MiniPortalService(dependencies: {
   val sessionService: SessionService
   val invoiceService: InvoiceService
   val walletService: WalletService
-})(implicit actorSystem: ActorSystem, fm: Materializer, executor: ExecutionContext) extends MiniPortal with HttpApi {
-
-  val ec = executor
+})(implicit val actorSystem: ActorSystem, val fm: Materializer, val ec: ExecutionContext) extends MiniPortal with HttpApi {
 
   val sessionService: SessionService = dependencies.sessionService
   val invoiceService: InvoiceService = dependencies.invoiceService
