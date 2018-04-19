@@ -19,20 +19,45 @@
 package repository
 
 import com.typesafe.scalalogging.LazyLogging
+import org.specs2.mock.Mockito
 import org.specs2.mutable.Specification
-import protocol.SessionRepositoryImpl
+import org.specs2.specification.{ BeforeAfterEach, Scope }
+import protocol.{ DatabaseImpl, OfferRepositoryImpl, SessionRepositoryImpl }
 import protocol.domain.Session
-import util.CleanRepository.CleanSessionRepository
 import util.Helpers._
 
-class SessionRepositorySpec extends Specification with CleanSessionRepository with LazyLogging {
+class SessionRepositorySpec extends Specification with LazyLogging with Mockito {
   sequential
+
+  val databaseComponent = new DatabaseImpl
+
+  trait mockedScope extends Scope with BeforeAfterEach {
+
+    val offerRepository = new OfferRepositoryImpl(databaseComponent)
+    val sessionRepositoryImpl = new SessionRepositoryImpl(databaseComponent, offerRepository)
+
+    import databaseComponent.database.profile.api._
+
+    databaseComponent.database.db.run({
+      logger.info(s"Setting up schemas and populating tables")
+      DBIO.seq(
+        (offerRepository.offersTable.schema ++
+          sessionRepositoryImpl.sessionsTable.schema).create
+      )
+    })
+
+    override def after = {
+      sessionRepositoryImpl.sessionsTable.drop(10)
+    }
+
+    override def before = after
+
+  }
 
   "Session repository" should {
 
-    "save and retrieve a session by ID" in {
+    "save and retrieve a session by ID" in new mockedScope {
 
-      val sessionRepositoryImpl = new SessionRepositoryImpl
       sessionRepositoryImpl.allSession.futureValue.length === 0
 
       val session = Session(clientMac = "someMac")
@@ -48,10 +73,9 @@ class SessionRepositorySpec extends Specification with CleanSessionRepository wi
 
     }
 
-    "update or insert a session (UPSERT)" in {
+    "update or insert a session (UPSERT)" in new mockedScope {
 
-      val sessionRepositoryImpl = new SessionRepositoryImpl
-      sessionRepositoryImpl.allSession.futureValue.length === 0
+      //      sessionRepositoryImpl.allSession.futureValue.length === 0
 
       val session = Session(clientMac = "someMacForTest")
       session.id === -1

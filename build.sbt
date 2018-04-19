@@ -27,6 +27,8 @@ lazy val btc_hotspot = (project in file(".")).
       scalaVersion    := "2.12.4",
       version         := buildVersion,
       mainClass in Compile := Some("Boot"),
+      javaOptions in Test += "-Dconfig.file=src/test/resources/application.conf",
+      fork in Test := true,
       ScalariformKeys.preferences := scalariformPref.value
     )),
     name := buildName,

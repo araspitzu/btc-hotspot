@@ -18,17 +18,16 @@
 
 package stopwatch
 
+import akka.actor.ActorSystem
+import akka.testkit.TestKit
 import com.typesafe.scalalogging.LazyLogging
 import commons.Helpers.FutureOption
 import iptables.IpTables
-import mocks.IpTablesServiceMock
-import registry.{ SchedulerRegistry, SessionRepositoryRegistry }
 import org.specs2.mutable.Specification
 import org.specs2.specification.Scope
 import protocol.domain.{ Offer, QtyUnit, Session }
 import util.Helpers._
 import watchdog.{ SchedulerImpl, StopWatch, TimebasedStopWatch }
-
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.{ Await, Future }
 import scala.concurrent.duration._
@@ -36,15 +35,17 @@ import scala.concurrent.duration._
 class StopWatchSpecs extends Specification with LazyLogging {
   sequential
 
+  implicit val system = ActorSystem("test-actor-system")
+
   trait MockStopWatchScope extends Scope {
+
+    //val actorSystem = ???
+
     val stopWatchDep = new {
       var ipTablesEnableClientCalled = false
       var ipTablesDisableClientCalled = false
 
-      val ipTablesService: IpTables = new IpTablesServiceMock {
-        override def enableClient(mac: String) = { ipTablesEnableClientCalled = true; Future.successful("") }
-        override def disableClient(mac: String) = { ipTablesDisableClientCalled = true; Future.successful("") }
-      }
+      val ipTablesService: IpTables = ???
       val scheduler: SchedulerImpl = new SchedulerImpl
     }
   }

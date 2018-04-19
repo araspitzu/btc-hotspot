@@ -20,35 +20,32 @@ package service
 
 import commons.TestData
 import iptables.IpTables
-import mocks.{ DatabaseComponentMock, IpTablesServiceMock, MockStopWatch, WalletServiceMock }
 import org.specs2.mock.Mockito
 import org.specs2.mutable._
 import org.specs2.specification.Scope
 import protocol.{ InvoiceRepositoryImpl, OfferRepositoryImpl, SessionRepositoryImpl }
 import protocol.domain.{ Invoice, Offer, QtyUnit, Session }
-import services._
-import util.CleanRepository.CleanSessionRepository
+import services.SessionServiceImpl
 import util.Helpers._
-import wallet.WalletService
-import watchdog.{ StopWatch, TimebasedStopWatch }
+import watchdog.StopWatch
 
 import scala.concurrent.Future
 
-class SessionServiceSpecs extends Specification {
+class SessionServiceSpecs extends Specification with Mockito {
   sequential
 
   trait MockSessionServiceScope extends Scope {
 
     val stopWatchDepencencies = new {
-      val ipTablesService: IpTables = new IpTablesServiceMock {}
+      val ipTablesService: IpTables = ???
     }
 
     val offer = TestData.offers.head //InvoiceServiceRegistry.invoiceService.allOffers.futureValue.head
 
-    val sessionRepository: SessionRepositoryImpl = new SessionRepositoryImpl(DatabaseComponentMock)
-    val invoiceRepository: InvoiceRepositoryImpl = new InvoiceRepositoryImpl(DatabaseComponentMock)
+    val sessionRepository: SessionRepositoryImpl = ???
+    val invoiceRepository: InvoiceRepositoryImpl = ???
     //val invoiceRepository: InvoiceRepositoryImpl = mock[InvoiceRepositoryImpl]
-    val offerRepository: OfferRepositoryImpl = new OfferRepositoryImpl(DatabaseComponentMock)
+    val offerRepository: OfferRepositoryImpl = ???
 
   }
 
@@ -88,14 +85,7 @@ class SessionServiceSpecs extends Specification {
 
       var stopWatchStarted = false
 
-      val sessionService = new SessionServiceImpl(this) {
-        override def selectStopwatchForOffer(session: Session, offer: Offer): StopWatch = new MockStopWatch(stopWatchDepencencies, session, offer.offerId) {
-          override def start(onLimitReach: => Unit): Future[Unit] = {
-            stopWatchStarted = true
-            Future.successful()
-          }
-        }
-      }
+      val sessionService: SessionServiceImpl = ???
 
       val newSessionId = sessionService.getOrCreate(macAddress).futureValue
       val newInvoice = Invoice(
