@@ -25,11 +25,10 @@ import org.specs2.mock.Mockito
 import org.specs2.mutable._
 import org.specs2.specification.Scope
 import protocol.{ InvoiceRepositoryImpl, OfferRepositoryImpl, SessionRepositoryImpl }
-import protocol.domain.{ Invoice, Offer, QtyUnit, Session }
+import protocol.domain.{ Invoice, Session }
 import services.SessionServiceImpl
 import util.Helpers._
-import watchdog.{ Scheduler, SchedulerImpl, StopWatch }
-
+import watchdog.{ Scheduler, SchedulerImpl }
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 

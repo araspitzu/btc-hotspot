@@ -19,15 +19,12 @@
 package stopwatch
 
 import akka.actor.ActorSystem
-import akka.testkit.TestKit
 import com.typesafe.scalalogging.LazyLogging
-import commons.Helpers.FutureOption
 import iptables.IpTables
 import org.specs2.mock.Mockito
 import org.specs2.mutable.Specification
 import org.specs2.specification.Scope
 import protocol.domain.{ Offer, QtyUnit, Session }
-import util.Helpers._
 import watchdog.{ SchedulerImpl, StopWatch, TimebasedStopWatch }
 
 import scala.concurrent.ExecutionContext.Implicits.global
