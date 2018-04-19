@@ -54,7 +54,6 @@ class SessionServiceImpl(dependencies: {
   val ipTablesService: IpTables
   val schedulerService: Scheduler
 })(implicit ec: ExecutionContext) extends SessionService with LazyLogging {
-
   import dependencies._
 
   val sessionIdToStopwatch = new scala.collection.mutable.HashMap[Long, StopWatch]

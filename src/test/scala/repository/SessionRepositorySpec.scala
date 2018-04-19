@@ -21,7 +21,7 @@ package repository
 import com.typesafe.scalalogging.LazyLogging
 import org.specs2.mock.Mockito
 import org.specs2.mutable.Specification
-import org.specs2.specification.{ BeforeAfterEach, Scope }
+import org.specs2.specification.{ BeforeAfter, BeforeAfterAll, BeforeAfterEach, Scope }
 import protocol.{ DatabaseImpl, OfferRepositoryImpl, SessionRepositoryImpl }
 import protocol.domain.Session
 import util.Helpers._
@@ -30,35 +30,24 @@ class SessionRepositorySpec extends Specification with LazyLogging with Mockito 
   sequential
 
   val databaseComponent = new DatabaseImpl
+  val offerRepository = new OfferRepositoryImpl(databaseComponent)
+  val sessionRepositoryImpl = new SessionRepositoryImpl(databaseComponent, offerRepository)
 
-  trait mockedScope extends Scope with BeforeAfterEach {
+  import databaseComponent.database.profile.api._
 
-    val offerRepository = new OfferRepositoryImpl(databaseComponent)
-    val sessionRepositoryImpl = new SessionRepositoryImpl(databaseComponent, offerRepository)
-
-    import databaseComponent.database.profile.api._
-
-    databaseComponent.database.db.run({
-      logger.info(s"Setting up schemas and populating tables")
-      DBIO.seq(
-        (offerRepository.offersTable.schema ++
-          sessionRepositoryImpl.sessionsTable.schema).create
-      )
-    })
-
-    override def after = {
-      sessionRepositoryImpl.sessionsTable.drop(10)
-    }
-
-    override def before = after
-
-  }
+  databaseComponent.database.db.run({
+    logger.info(s"Setting up schemas and populating tables")
+    DBIO.seq(
+      (offerRepository.offersTable.schema ++
+        sessionRepositoryImpl.sessionsTable.schema).create
+    )
+  }).futureValue
 
   "Session repository" should {
 
-    "save and retrieve a session by ID" in new mockedScope {
+    "save and retrieve a session by ID" in {
 
-      sessionRepositoryImpl.allSession.futureValue.length === 0
+      //sessionRepositoryImpl.allSession.futureValue.length === 0
 
       val session = Session(clientMac = "someMac")
       session.id === -1
@@ -73,9 +62,9 @@ class SessionRepositorySpec extends Specification with LazyLogging with Mockito 
 
     }
 
-    "update or insert a session (UPSERT)" in new mockedScope {
+    "update or insert a session (UPSERT)" in {
 
-      //      sessionRepositoryImpl.allSession.futureValue.length === 0
+      //sessionRepositoryImpl.allSession.futureValue.length === 0
 
       val session = Session(clientMac = "someMacForTest")
       session.id === -1

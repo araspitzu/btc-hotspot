@@ -29,6 +29,7 @@ lazy val btc_hotspot = (project in file(".")).
       mainClass in Compile := Some("Boot"),
       javaOptions in Test += "-Dconfig.file=src/test/resources/application.conf",
       fork in Test := true,
+      parallelExecution in Test := false,
       ScalariformKeys.preferences := scalariformPref.value
     )),
     name := buildName,

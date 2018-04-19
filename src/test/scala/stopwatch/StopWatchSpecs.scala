@@ -23,29 +23,41 @@ import akka.testkit.TestKit
 import com.typesafe.scalalogging.LazyLogging
 import commons.Helpers.FutureOption
 import iptables.IpTables
+import org.specs2.mock.Mockito
 import org.specs2.mutable.Specification
 import org.specs2.specification.Scope
 import protocol.domain.{ Offer, QtyUnit, Session }
 import util.Helpers._
 import watchdog.{ SchedulerImpl, StopWatch, TimebasedStopWatch }
+
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.{ Await, Future }
 import scala.concurrent.duration._
 
-class StopWatchSpecs extends Specification with LazyLogging {
+class StopWatchSpecs extends Specification with LazyLogging with Mockito {
   sequential
 
   implicit val system = ActorSystem("test-actor-system")
 
   trait MockStopWatchScope extends Scope {
 
-    //val actorSystem = ???
+    val macAddress = "thisIsMyMac"
 
     val stopWatchDep = new {
       var ipTablesEnableClientCalled = false
       var ipTablesDisableClientCalled = false
 
-      val ipTablesService: IpTables = ???
+      val ipTablesService: IpTables = mock[IpTables]
+      ipTablesService.enableClient(macAddress) returns Future {
+        ipTablesEnableClientCalled = true
+        ""
+      }
+
+      ipTablesService.disableClient(macAddress) returns Future {
+        ipTablesDisableClientCalled = true
+        ""
+      }
+
       val scheduler: SchedulerImpl = new SchedulerImpl
     }
   }
@@ -63,7 +75,7 @@ class StopWatchSpecs extends Specification with LazyLogging {
 
       val approximation = 700L //TODO review 0.7s approximation during test
 
-      val session = Session(clientMac = "thisIsMyMac")
+      val session = Session(clientMac = macAddress)
       val offer = Offer(
         qty = 2000,
         qtyUnit = QtyUnit.millis,
@@ -96,7 +108,7 @@ class StopWatchSpecs extends Specification with LazyLogging {
 
     "isPending should return true if the stopwatch is still running, false otherwise" in new MockStopWatchScope {
 
-      val session = Session(clientMac = "thisIsMyMac")
+      val session = Session(clientMac = macAddress)
 
       val offer = Offer(
         qty = 2000,
