@@ -25,10 +25,11 @@ import org.specs2.mock.Mockito
 import org.specs2.mutable._
 import org.specs2.specification.Scope
 import protocol.{ InvoiceRepositoryImpl, OfferRepositoryImpl, SessionRepositoryImpl }
-import protocol.domain.{ Invoice, Session }
+import protocol.domain.{ Invoice, Offer, QtyUnit, Session }
 import services.SessionServiceImpl
 import util.Helpers._
-import watchdog.{ Scheduler, SchedulerImpl }
+import watchdog.{ Scheduler, SchedulerImpl, TimebasedStopWatch }
+
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
@@ -52,33 +53,23 @@ class SessionServiceSpecs extends Specification with Mockito {
 
     val macAddress = "ab:12:cd:34:ef:56"
 
-    //    "save and load session to db" in new MockSessionServiceScope {
-    //      val sessionService = new SessionServiceImpl(this)
-    //
-    //      val sessionId = sessionService.getOrCreate(macAddress).futureValue
-    //      val Some(session) = sessionService.byId(sessionId).futureValue
-    //
-    //      session.id === sessionId
-    //      session.clientMac === macAddress
-    //    }
-    //
-    //    "select the correct stopwatch for an offer" in new MockSessionServiceScope {
-    //      val sessionService = new SessionServiceImpl(this)
-    //
-    //      val session = Session(clientMac = macAddress)
-    //
-    //      val timeBasedOffer = Offer(
-    //        qty = 25,
-    //        qtyUnit = QtyUnit.millis,
-    //        price = 1234,
-    //        description = "Some offer"
-    //      )
-    //
-    //      val timeBasedStopwatch = sessionService.selectStopwatchForOffer(session, timeBasedOffer)
-    //
-    //      timeBasedStopwatch must haveClass[TimebasedStopWatch]
-    //
-    //    }
+    "select the correct stopwatch for an offer" in new MockSessionServiceScope {
+      val sessionService = new SessionServiceImpl(this)
+
+      val session = Session(clientMac = macAddress)
+
+      val timeBasedOffer = Offer(
+        qty = 25,
+        qtyUnit = QtyUnit.millis,
+        price = 1234,
+        description = "Some offer"
+      )
+
+      val timeBasedStopwatch = sessionService.selectStopwatchForOffer(session, timeBasedOffer)
+
+      timeBasedStopwatch must haveClass[TimebasedStopWatch]
+
+    }
 
     "enable session" in new MockSessionServiceScope {
 
