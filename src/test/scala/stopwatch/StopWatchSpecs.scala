@@ -40,29 +40,27 @@ class StopWatchSpecs extends Specification with LazyLogging with Mockito {
   implicit val system = ActorSystem("test-actor-system")
 
   trait MockStopWatchScope extends Scope {
+    val offer = Offer(
+      qty = 2000,
+      qtyUnit = QtyUnit.millis,
+      price = 950000,
+      description = "1 second"
+    )
 
-    val macAddress = "thisIsMyMac"
+    val session = Session(clientMac = "thisIsMyMac")
 
     val stopWatchDep = new {
-      var ipTablesEnableClientCalled = false
-      var ipTablesDisableClientCalled = false
 
       val ipTablesService: IpTables = mock[IpTables]
-      ipTablesService.enableClient(macAddress) returns Future {
-        ipTablesEnableClientCalled = true
-        ""
-      }
 
-      ipTablesService.disableClient(macAddress) returns Future {
-        ipTablesDisableClientCalled = true
-        ""
-      }
+      ipTablesService.enableClient(session.clientMac) returns Future.successful("")
+      ipTablesService.disableClient(session.clientMac) returns Future.successful("")
 
       val scheduler: SchedulerImpl = new SchedulerImpl
     }
   }
 
-  def waitForOfferMillis(waitDuration: Long) = {
+  def waitForMillis(waitDuration: Long) = {
     val nop = Future {
       Thread.sleep(waitDuration + 500L)
     }
@@ -73,17 +71,7 @@ class StopWatchSpecs extends Specification with LazyLogging with Mockito {
 
     "wait the correct time before calling onLimitReach" in new MockStopWatchScope {
 
-      val approximation = 700L //TODO review 0.7s approximation during test
-
-      val session = Session(clientMac = macAddress)
-      val offer = Offer(
-        qty = 2000,
-        qtyUnit = QtyUnit.millis,
-        price = 950000,
-        description = "1 second"
-      )
-
-      stopWatchDep.ipTablesEnableClientCalled must beFalse
+      val approximation = 500L //TODO review 0.5s approximation during test
 
       val timeStopWatch = new TimebasedStopWatch(stopWatchDep, session, offer.qty)
 
@@ -97,9 +85,7 @@ class StopWatchSpecs extends Specification with LazyLogging with Mockito {
         onReachCalled = true
       })
 
-      stopWatchDep.ipTablesEnableClientCalled must beTrue
-
-      waitForOfferMillis(offer.qty)
+      waitForMillis(offer.qty)
 
       onReachCalled must beTrue
       t2 !== -1L
@@ -107,15 +93,6 @@ class StopWatchSpecs extends Specification with LazyLogging with Mockito {
     }
 
     "isPending should return true if the stopwatch is still running, false otherwise" in new MockStopWatchScope {
-
-      val session = Session(clientMac = macAddress)
-
-      val offer = Offer(
-        qty = 2000,
-        qtyUnit = QtyUnit.millis,
-        price = 950000,
-        description = "1 second"
-      )
 
       val timeStopWatch = new TimebasedStopWatch(stopWatchDep, session, offer.qty)
 
@@ -125,7 +102,7 @@ class StopWatchSpecs extends Specification with LazyLogging with Mockito {
 
       timeStopWatch.isPending must beTrue
 
-      waitForOfferMillis(offer.qty)
+      waitForMillis(offer.qty)
 
       timeStopWatch.isPending must beFalse
     }
