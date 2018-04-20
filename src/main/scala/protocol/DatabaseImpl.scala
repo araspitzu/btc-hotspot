@@ -21,11 +21,9 @@ class DatabaseImpl extends LazyLogging {
     DatabaseConfig.forConfig[JdbcProfile](configPath)
   }
 
-  def db = database.db
-
   Helpers.addShutDownHook {
     logger.info("Shutting down db")
-    Await.result(db.shutdown, Duration(2, "seconds"))
+    Await.result(database.db.shutdown, Duration(2, "seconds"))
   }
 
 }
