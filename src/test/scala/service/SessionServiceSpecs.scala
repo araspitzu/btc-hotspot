@@ -38,9 +38,10 @@ class SessionServiceSpecs extends Specification with Mockito {
 
   implicit val system = ActorSystem("test-actor-system")
 
-  trait MockSessionServiceScope extends Scope {
+  trait baseMockScope extends Scope {
 
     val offer = TestData.offers.head.copy(qty = 1000000)
+    val macAddress = "ab:12:cd:34:ef:56"
 
     val sessionRepository: SessionRepositoryImpl = mock[SessionRepositoryImpl]
     val offerRepository: OfferRepositoryImpl = mock[OfferRepositoryImpl]
@@ -49,11 +50,34 @@ class SessionServiceSpecs extends Specification with Mockito {
     val ipTablesService: IpTables = mock[IpTables]
   }
 
+  trait fullBlownMockScope extends baseMockScope {
+    val newInvoice = Invoice(id = 1, paid = true, lnInvoice = "ln-invoice-here", sessionId = Some(1L), offerId = Some(offer.offerId))
+
+    val newInvoiceId = newInvoice.id
+    val newSessionId = 1L
+
+    ipTablesService.enableClient(macAddress) returns Future.successful("")
+
+    sessionRepository.byMacAddress(macAddress) returns Future.successful(Some(
+      Session(id = 1L, clientMac = macAddress)
+    ))
+
+    sessionRepository.insert(any[Session]) returns Future.successful(1L)
+    sessionRepository.upsert(any[Session]) returns Future.successful(Some(1L))
+    sessionRepository.bySessionId(1L) returns Future.successful(Some(
+      Session(id = 1L, clientMac = macAddress)
+    ))
+
+    invoiceRepository.insert(any[Invoice]) returns Future.successful(1L)
+    invoiceRepository.invoiceById(1l) returns Future.successful(Some(newInvoice))
+
+    offerRepository.byId(anyLong) returns Future.successful(Some(offer))
+
+  }
+
   "SessionService" should {
 
-    val macAddress = "ab:12:cd:34:ef:56"
-
-    "select the correct stopwatch for an offer" in new MockSessionServiceScope {
+    "select the correct stopwatch for an offer" in new baseMockScope {
       val sessionService = new SessionServiceImpl(this)
 
       val session = Session(clientMac = macAddress)
@@ -71,32 +95,10 @@ class SessionServiceSpecs extends Specification with Mockito {
 
     }
 
-    "enable session" in new MockSessionServiceScope {
-
-      val newInvoice = Invoice(paid = true, lnInvoice = "ln-invoice-here", sessionId = Some(1L), offerId = Some(offer.offerId))
-
-      ipTablesService.enableClient(macAddress) returns Future.successful("")
-
-      sessionRepository.byMacAddress(macAddress) returns Future.successful(Some(
-        Session(id = 1L, clientMac = macAddress)
-      ))
-
-      sessionRepository.insert(any[Session]) returns Future.successful(1L)
-      sessionRepository.upsert(any[Session]) returns Future.successful(Some(1L))
-      sessionRepository.bySessionId(1L) returns Future.successful(Some(
-        Session(id = 1L, clientMac = macAddress)
-      ))
-
-      invoiceRepository.insert(any[Invoice]) returns Future.successful(1L)
-      invoiceRepository.invoiceById(1l) returns Future.successful(Some(newInvoice))
-
-      offerRepository.byId(anyLong) returns Future.successful(Some(offer))
+    "enable session" in new fullBlownMockScope {
 
       // Start
-      val sessionService: SessionServiceImpl = new SessionServiceImpl(this)
-
-      val newSessionId = 1L
-      val newInvoiceId = invoiceRepository.insert(newInvoice).futureValue
+      val sessionService = new SessionServiceImpl(this)
 
       val Some(newSession) = sessionRepository.bySessionId(newSessionId).futureValue
 
@@ -108,38 +110,23 @@ class SessionServiceSpecs extends Specification with Mockito {
       //enabledSession.offerId === Some(offer.offerId)
     }
 
-    //    "disable session" in new MockSessionServiceScope {
-    //
-    //      var stopWatchStarted = false
-    //      var stopWatchStopped = false
-    //
-    //      val sessionService = new SessionServiceImpl(this) {
-    //        override def selectStopwatchForOffer(session: Session, offer: Offer): StopWatch = new MockStopWatch(stopWatchDepencencies, session, offer.offerId) {
-    //          override def start(onLimitReach: => Unit) = {
-    //            stopWatchStarted = true
-    //            Future.successful()
-    //          }
-    //          override def stop() = {
-    //            stopWatchStopped = true
-    //            Future.successful()
-    //          }
-    //        }
-    //      }
-    //
-    //      val newSessionId = sessionService.getOrCreate(macAddress).futureValue
-    //
-    //      val Some(newSession) = sessionRepository.bySessionId(newSessionId).futureValue
-    //
-    //      newSession.id === 1
-    //      stopWatchStarted must beFalse
-    //      stopWatchStopped must beFalse
-    //      sessionService.enableSessionForInvoice(newSession, offer.offerId).futureValue
-    //      stopWatchStarted must beTrue
-    //      stopWatchStopped must beFalse
-    //
-    //      sessionService.disableSession(newSession).futureValue
-    //      stopWatchStopped must beTrue
-    //    }
+    "disable session" in new fullBlownMockScope {
+
+      ipTablesService.disableClient(macAddress) returns Future.successful("")
+
+      val sessionService = new SessionServiceImpl(this)
+
+      val Some(newSession) = sessionRepository.bySessionId(newSessionId).futureValue
+
+      sessionService.enableSessionForInvoice(newSession, newInvoiceId).futureValue
+      there was one(ipTablesService).enableClient(macAddress)
+      sessionService.sessionIdToStopwatch.get(newSessionId) must beSome
+
+      sessionService.disableSession(newSession).futureValue
+      there was one(ipTablesService).disableClient(macAddress)
+      sessionService.sessionIdToStopwatch.get(newSessionId) must beNone
+
+    }
 
   }
 
