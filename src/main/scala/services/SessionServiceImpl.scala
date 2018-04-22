@@ -41,8 +41,6 @@ trait SessionService {
 
   def byMac(mac: String): FutureOption[Session]
 
-  def byMacSync(mac: String): Option[Session]
-
   def activeSessionIds(): Seq[Long]
 
 }
@@ -103,11 +101,6 @@ class SessionServiceImpl(dependencies: {
   def byId(id: Long): FutureOption[Session] = sessionRepository.bySessionId(id)
 
   def byMac(mac: String): FutureOption[Session] = sessionRepository.byMacAddress(mac)
-
-  //TODO fucking remove!
-  def byMacSync(mac: String): Option[Session] = {
-    Await.result(byMac(mac).future, 10 seconds)
-  }
 
   /*
     Returns the id of the existing session for this mac, create a new one if

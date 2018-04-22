@@ -19,6 +19,7 @@
 package resources
 
 import akka.actor.ActorSystem
+import akka.http.javadsl.server.Rejections._
 import akka.http.scaladsl.Http
 import akka.http.scaladsl.marshalling.{ GenericMarshallers, Marshaller }
 import akka.http.scaladsl.server.{ Directive1, Directives, Route }
@@ -36,7 +37,8 @@ import commons.Helpers.FutureOption
 import de.heikoseeberger.akkahttpjson4s.Json4sSupport
 import commons.JsonSupport
 
-import scala.concurrent.ExecutionContext
+import scala.concurrent.{ ExecutionContext, Future }
+import scala.util.{ Failure, Success }
 
 trait CommonResource extends Directives with Json4sSupport with JsonSupport with ExtraMarshallers {
 
@@ -55,15 +57,14 @@ trait ExtraDirectives extends Directives with LazyLogging {
     } yield macAddr
   }
 
-  def withSession: Directive1[Option[Session]] = extractClientMAC map { someMac =>
-    someMac map sessionService.byMacSync flatten //FIXME
+  def withOptSession: Directive1[Option[Session]] = extractClientMAC tflatMap {
+    case Tuple1(Some(mac)) => onSuccess(sessionService.byMac(mac).future)
+    case Tuple1(None)      => provide(None)
   }
 
-  def sessionOrReject: Directive1[Session] = withSession map {
-    _ match {
-      case None          => throw new IllegalArgumentException("Session not found") //FIXME
-      case Some(session) => session
-    }
+  def sessionOrReject: Directive1[Session] = withOptSession tflatMap {
+    case Tuple1(None)          => reject(validationRejection("Session not found"))
+    case Tuple1(Some(session)) => provide(session)
   }
 
 }
