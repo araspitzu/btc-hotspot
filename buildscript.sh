@@ -103,7 +103,7 @@ sudo $IPTABLES -t nat -A PREROUTING -m mark --mark 99 -p tcp --dport 443 -j DNAT
 sudo $IPTABLES -t filter -A FORWARD -m mark --mark 99 -j DROP
 
 # Enable ssh for ott0disk
-sudo $IPTABLES -I internet_outgoing 1 -t mangle -p tcp --dport 22 -m mac --mac-source c4:8e:8f:f8:e4:37 -j RETURN
+#sudo $IPTABLES -I internet_outgoing 1 -t mangle -p tcp --dport 22 -m mac --mac-source c4:8e:8f:f8:e4:37 -j RETURN
 
 # Persist iptables
 echo iptables-persistent iptables-persistent/autosave_v4 boolean true | sudo debconf-set-selections
