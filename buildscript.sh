@@ -97,7 +97,6 @@ sudo $IPTABLES -t mangle -A POSTROUTING -o wlan0 -j internet_incoming
 
 # redirect non authorized http/https requests
 sudo $IPTABLES -t nat -A PREROUTING -m mark --mark 99 -p tcp --dport 80 -j DNAT --to-destination $SUBNET:8081
-sudo $IPTABLES -t nat -A PREROUTING -m mark --mark 99 -p tcp --dport 443 -j DNAT --to-destination $SUBNET:8081
 
 # drop all the unauthorized packets
 sudo $IPTABLES -t filter -A FORWARD -m mark --mark 99 -j DROP
