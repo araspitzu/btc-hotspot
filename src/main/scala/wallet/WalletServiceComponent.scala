@@ -18,21 +18,25 @@
 
 package wallet
 
+import java.time.LocalDateTime
+import java.util.Date
+
 import com.typesafe.scalalogging.LazyLogging
 import protocol.domain._
 import ln.EclairClient
 import protocol.webDto._
 
-import scala.concurrent.{ Await, ExecutionContext, Future, Promise }
-import protocol.{ InvoiceRepositoryImpl, OfferRepositoryImpl, domain }
+import scala.concurrent.{Await, ExecutionContext, Future, Promise}
+import protocol.{InvoiceRepositoryImpl, OfferRepositoryImpl, domain}
 
 trait WalletService {
 
   def checkInvoicePaid(invoiceId: Long): Future[InvoicePaid]
 
-  def getBalance(): Long //satoshis
+  @deprecated
+  def getBalance(): Future[Long]
 
-  def allTransactions(): Seq[BitcoinTransaction]
+  def allTransactions(): Future[Seq[LightningInvoice]]
 
   def spendTo(address: String, value: Long): Future[String]
 
@@ -57,9 +61,17 @@ class LightningServiceImpl(dependencies: {
     } yield InvoicePaid(invoiceId, isPaid)
   }
 
-  override def getBalance(): Long = 666
+  override def getBalance(): Future[Long] = allTransactions.map { txs =>
+    txs.map(_.value_msat / 1000).sum
+  }
 
-  override def allTransactions(): Seq[domain.BitcoinTransaction] = Seq.empty
+  override def allTransactions(): Future[Seq[LightningInvoice]] = {
+    invoiceRepository.allPaidInvoices.map { paidInvoices =>
+      paidInvoices.map { invoice =>
+       LightningInvoice("payment_hash", 950 * 1000, "signature_here", invoice.createdAt)
+      }
+    }
+  }
 
   override def spendTo(lnInvoice: String, value: Long): Future[String] = {
     logger.info(s"Sending $value to $lnInvoice")

@@ -53,4 +53,10 @@ class InvoiceRepositoryImpl(val databaseComponent: DatabaseImpl, val sessionRepo
       .result
   }
 
+  def allPaidInvoices(): Future[Seq[Invoice]] = db.run {
+    invoiceTable
+      .filter(_.paid === true)
+      .result
+  }
+
 }

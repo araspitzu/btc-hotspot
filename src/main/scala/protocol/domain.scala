@@ -71,4 +71,11 @@ package object domain {
     creationDate: Option[Date] = None
   )
 
+  case class LightningInvoice(
+    hash: String,
+    value_msat: Long,
+    sig: String,
+    date: LocalDateTime
+  )
+
 }
