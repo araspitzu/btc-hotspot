@@ -110,10 +110,14 @@ echo iptables-persistent iptables-persistent/autosave_v6 boolean true | sudo deb
 sudo apt-get install -y iptables-persistent
 
 
-echo -e "########  DOWNLOAD ECLAIR   #########"
+echo -e "########  DOWNLOAD eclair   #########"
 wget https://github.com/ACINQ/eclair/releases/download/v0.2-beta2/eclair-node-0.2-beta2-7598615.jar
 
-echo -e "########  DOWNLOAD btc-hotspot RELEASE   #########"
+## TODO: add systemd entry for eclair
+
+## TODO: add eclair conf
+
+echo -e "########  DOWNLOAD btc-hotspot   #########"
 wget https://github.com/araspitzu/btc-hotspot/releases/download/v0.0.3-alpha/btc-hotspot_0.0.3-alpha_all.deb
 sudo dpkg -i btc-hotspot_0.0.3-alpha_all.deb
 
