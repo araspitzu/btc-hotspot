@@ -43,7 +43,7 @@ class InvoiceServiceImpl(dependencies: {
     for {
       offer <- offerRepository.byId(offerId) orFailWith s"Offer $offerId not found"
       invoiceMsg = s"Please pay ${offer.price} satoshis for ${offer.description}, MAC:${session.clientMac}"
-      eclairResponse <- eclairClient.getInvoice(offer.price, invoiceMsg)
+      eclairResponse <- eclairClient.getInvoice(offer.price * 1000, invoiceMsg) //FIXME converting to msat
       invoice = Invoice(paid = false, lnInvoice = eclairResponse, sessionId = Some(session.id), offerId = Some(offerId))
       invoiceId <- invoiceRepository.insert(invoice)
     } yield {

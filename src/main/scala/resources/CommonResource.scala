@@ -63,8 +63,8 @@ trait ExtraDirectives extends Directives with LazyLogging {
   }
 
   def sessionOrReject: Directive1[Session] = withOptSession tflatMap {
-    case Tuple1(None)          => reject(validationRejection("Session not found"))
     case Tuple1(Some(session)) => provide(session)
+    case Tuple1(None)          => reject(validationRejection("Session not found"))
   }
 
 }
