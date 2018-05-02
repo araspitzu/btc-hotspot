@@ -18,15 +18,17 @@
 
 package wallet
 
-import java.sql.{ Time, Timestamp }
+import java.sql.{Time, Timestamp}
+
 import com.typesafe.scalalogging.LazyLogging
+import commons.PaymentRequest
 import fr.acinq.bitcoin._
 import protocol.domain._
 import ln.EclairClient
 import protocol.webDto._
 
-import scala.concurrent.{ Await, ExecutionContext, Future, Promise }
-import protocol.{ InvoiceRepositoryImpl, OfferRepositoryImpl, domain }
+import scala.concurrent.{Await, ExecutionContext, Future, Promise}
+import protocol.{InvoiceRepositoryImpl, OfferRepositoryImpl, domain}
 
 trait WalletService {
 
@@ -65,9 +67,7 @@ class LightningServiceImpl(dependencies: {
 
   override def allTransactions(): Future[Seq[LightningInvoice]] = {
     invoiceRepository.allPaidInvoices.map { paidInvoices =>
-      paidInvoices.map { invoice =>
-        LightningInvoice("payment_hash", Satoshi(950 * 1000), invoice.createdAt, true)
-      }
+      paidInvoices.map(invoice => lnInvoiceToLightningInvoice(invoice.lnInvoice))
     }
   }
 
@@ -78,7 +78,7 @@ class LightningServiceImpl(dependencies: {
 
   def lnInvoiceToLightningInvoice(lnInvoice: String): LightningInvoice = {
 
-    val paymentRequest = commons.PaymentRequest.read(lnInvoice)
+    val paymentRequest = PaymentRequest.read(lnInvoice)
 
     if (paymentRequest.amount.isEmpty)
       throw new IllegalArgumentException(s"Lightning invoice does not have an amount '$lnInvoice'")
