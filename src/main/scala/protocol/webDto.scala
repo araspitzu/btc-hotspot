@@ -65,22 +65,15 @@ package object webDto {
     description: String
   )
 
-  case class BitcoinTransactionDto(
+  case class TransactionDto(
     hash: String,
     value: Long,
-    creationDate: Option[Date] = None,
-    explorerUrl: String
+    creationDate: Option[LocalDateTime] = None
   )
 
-  object BitcoinTransactionDto {
-    def apply(hash: String, value: Long, creationDate: Option[Date]): BitcoinTransactionDto = BitcoinTransactionDto(
-      hash,
-      value,
-      creationDate = creationDate,
-      explorerUrl = s"https://testnet.blockexplorer.com/tx/$hash"
-    )
+  object TransactionDto {
 
-    def apply(btx: BitcoinTransaction): BitcoinTransactionDto = apply(btx.hash, btx.value, btx.creationDate)
+    def apply(lnInvoice: LightningInvoice): TransactionDto = apply(lnInvoice.hash, lnInvoice.value.toLong, Some(lnInvoice.date))
 
   }
 

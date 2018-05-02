@@ -18,16 +18,15 @@
 
 package wallet
 
-import java.time.LocalDateTime
-import java.util.Date
-
+import java.sql.{ Time, Timestamp }
 import com.typesafe.scalalogging.LazyLogging
+import fr.acinq.bitcoin._
 import protocol.domain._
 import ln.EclairClient
 import protocol.webDto._
 
-import scala.concurrent.{Await, ExecutionContext, Future, Promise}
-import protocol.{InvoiceRepositoryImpl, OfferRepositoryImpl, domain}
+import scala.concurrent.{ Await, ExecutionContext, Future, Promise }
+import protocol.{ InvoiceRepositoryImpl, OfferRepositoryImpl, domain }
 
 trait WalletService {
 
@@ -45,7 +44,6 @@ trait WalletService {
 class LightningServiceImpl(dependencies: {
   val eclairClient: EclairClient
   val invoiceRepository: InvoiceRepositoryImpl
-  val offerRepository: OfferRepositoryImpl
 })(implicit ec: ExecutionContext) extends WalletService with LazyLogging {
 
   import dependencies._
@@ -62,13 +60,13 @@ class LightningServiceImpl(dependencies: {
   }
 
   override def getBalance(): Future[Long] = allTransactions.map { txs =>
-    txs.map(_.value_msat / 1000).sum
+    txs.map(_.value.amount).sum
   }
 
   override def allTransactions(): Future[Seq[LightningInvoice]] = {
     invoiceRepository.allPaidInvoices.map { paidInvoices =>
       paidInvoices.map { invoice =>
-       LightningInvoice("payment_hash", 950 * 1000, "signature_here", invoice.createdAt)
+        LightningInvoice("payment_hash", Satoshi(950 * 1000), invoice.createdAt, true)
       }
     }
   }
@@ -76,6 +74,22 @@ class LightningServiceImpl(dependencies: {
   override def spendTo(lnInvoice: String, value: Long): Future[String] = {
     logger.info(s"Sending $value to $lnInvoice")
     eclairClient.payInvoice(lnInvoice).map(_.paymentHash)
+  }
+
+  def lnInvoiceToLightningInvoice(lnInvoice: String): LightningInvoice = {
+
+    val paymentRequest = commons.PaymentRequest.read(lnInvoice)
+
+    if (paymentRequest.amount.isEmpty)
+      throw new IllegalArgumentException(s"Lightning invoice does not have an amount '$lnInvoice'")
+
+    LightningInvoice(
+      paymentRequest.hash.toString,
+      millisatoshi2satoshi(paymentRequest.amount.get),
+      new Timestamp(paymentRequest.timestamp * 1000L).toLocalDateTime,
+      paymentRequest.prefix == "lntb"
+    )
+
   }
 
 }

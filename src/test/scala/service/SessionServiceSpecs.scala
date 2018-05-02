@@ -29,7 +29,6 @@ import protocol.domain.{ Invoice, Offer, QtyUnit, Session }
 import services.SessionServiceImpl
 import util.Helpers._
 import watchdog.{ Scheduler, SchedulerImpl, TimebasedStopWatch }
-
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 

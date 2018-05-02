@@ -34,6 +34,7 @@ lazy val btc_hotspot = (project in file(".")).
     )),
     name := buildName,
     debianPackageInfo in Debian := debianSettings,
+    resolvers += "Local Maven Repository" at "file://"+Path.userHome.absolutePath+"/.m2/repository",
     libraryDependencies ++= Seq(
       //AKKA
       "com.typesafe.akka" %% "akka-actor" % akkaVersion,
@@ -60,7 +61,8 @@ lazy val btc_hotspot = (project in file(".")).
       "org.specs2" %% "specs2-matcher-extra" % "3.8.6" % "test",
 
       //MISC
-      "org.apache.commons" % "commons-email" % "1.4"
+      "org.apache.commons" % "commons-email" % "1.4",
+      "fr.acinq" %% "bitcoin-lib" % "0.9.17-SNAPSHOT"
     )
   ).settings(universalPluginSettings)
 
@@ -76,7 +78,7 @@ lazy val debianSettings = PackageInfo(
         name = buildName,
         version = buildVersion,
         maintainer = "Andrea Raspitzu",
-        summary = "Hotspot enabled app",
+        summary = "btc-hotspot",
         description = "Enable your home connection to be sold for bitcoin"
 )
 

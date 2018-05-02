@@ -22,19 +22,19 @@ import com.typesafe.scalalogging.LazyLogging
 import protocol.SessionRepositoryImpl
 import protocol.domain.Session
 import wallet.WalletService
-import protocol.webDto.{ BitcoinTransactionDto, WithdrawTransactionData }
+import protocol.webDto.{ TransactionDto, WithdrawTransactionData }
 
 import scala.concurrent.{ ExecutionContext, Future }
 
 trait AdminService {
 
-  def walletBalance(): Long
+  def walletBalance(): Future[Long]
 
   def activeSessions(): Future[Seq[Session]]
 
   def allSessions(): Future[Seq[Session]]
 
-  def transactions(): Seq[BitcoinTransactionDto]
+  def transactions(): Future[Seq[TransactionDto]]
 
   def withdraw(wtd: WithdrawTransactionData): Future[String]
 
@@ -48,7 +48,7 @@ class AdminServiceImpl(dependencies: {
 
   import dependencies._
 
-  override def walletBalance(): Long = walletService.getBalance
+  override def walletBalance(): Future[Long] = walletService.getBalance
 
   override def activeSessions(): Future[Seq[Session]] = {
     val activeSessionIds = sessionService.activeSessionIds
@@ -59,8 +59,8 @@ class AdminServiceImpl(dependencies: {
 
   override def allSessions(): Future[Seq[Session]] = sessionRepository.allSession
 
-  override def transactions(): Seq[BitcoinTransactionDto] = {
-    walletService.allTransactions.map(BitcoinTransactionDto(_))
+  override def transactions(): Future[Seq[TransactionDto]] = {
+    walletService.allTransactions.map(txs => txs.map(TransactionDto(_)))
   }
 
   override def withdraw(wtd: WithdrawTransactionData): Future[String] = {

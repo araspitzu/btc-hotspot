@@ -21,6 +21,7 @@ package protocol
 import java.time.LocalDateTime
 import java.util.Date
 
+import fr.acinq.bitcoin.{ MilliSatoshi, Satoshi }
 import protocol.domain.QtyUnit.QtyUnit
 
 package object domain {
@@ -73,9 +74,18 @@ package object domain {
 
   case class LightningInvoice(
     hash: String,
-    value_msat: Long,
-    sig: String,
-    date: LocalDateTime
+    value: Satoshi,
+    date: LocalDateTime,
+    testnet: Boolean
   )
+
+  case object LightningInvoiceMultiplier extends Enumeration {
+    type LightningInvoiceMultiplier = Value
+
+    val milli = Value("m")
+    val micro = Value("u")
+    val nano = Value("n")
+    val pico = Value("p")
+  }
 
 }

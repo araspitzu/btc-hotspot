@@ -46,10 +46,10 @@ class InvoiceRepositoryImpl(val databaseComponent: DatabaseImpl, val sessionRepo
       .headOption
   }
 
+  //FIXME add filter for expiration
   def activeInvoicesBySessionId(sessionId: Long): Future[Seq[Invoice]] = db.run {
     invoiceTable
       .filter(_.sessionId === sessionId)
-      //.join(offerRepositoryImpl.offersTable).on((s,o) => s.offerId.map(_ === o.offerId))
       .result
   }
 

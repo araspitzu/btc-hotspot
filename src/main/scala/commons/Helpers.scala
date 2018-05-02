@@ -28,6 +28,10 @@ import scala.util.Failure
 
 package object Helpers extends LazyLogging {
 
+  def bytes2hex(bytes: Seq[Byte]): String = bytes.map("%02x".format(_)).mkString
+
+  def hex2bytes(hex: String): Array[Byte] = hex.sliding(2, 2).map(Integer.parseInt(_, 16).toByte).toArray
+
   def addShutDownHook(hook: => Unit) = {
     Runtime.getRuntime.addShutdownHook(new Thread {
       override def run: Unit = hook
@@ -52,22 +56,6 @@ package object Helpers extends LazyLogging {
       case Some(t) => t
       case None    => throw new NoSuchElementException(error)
     }
-
-    //    def orElse[U >: T](other: U): FutureOption[U] = future map {
-    //      case Some(t) => Some(t)
-    //      case None    => Some(other)
-    //    }
-    //
-    //    def colleziona[U](pf: PartialFunction[T, U])(implicit executor: ExecutionContext): FutureOption[U] = future.map {
-    //      case Some(t) => ???
-    //      case None => ???
-    //    }
-    //
-    //    def recoverWith[U >: T](other: FutureOption[U]): FutureOption[U] = future.recoverWith {
-    //      case t: Throwable =>
-    //        logger.warn(s"Future failed: ${t.getMessage}", t)
-    //        other.future
-    //    }
 
   }
 
