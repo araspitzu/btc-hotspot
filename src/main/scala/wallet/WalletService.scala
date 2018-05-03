@@ -18,7 +18,7 @@
 
 package wallet
 
-import java.sql.{Time, Timestamp}
+import java.sql.{ Time, Timestamp }
 
 import com.typesafe.scalalogging.LazyLogging
 import commons.PaymentRequest
@@ -26,9 +26,8 @@ import fr.acinq.bitcoin._
 import protocol.domain._
 import ln.EclairClient
 import protocol.webDto._
-
-import scala.concurrent.{Await, ExecutionContext, Future, Promise}
-import protocol.{InvoiceRepositoryImpl, OfferRepositoryImpl, domain}
+import scala.concurrent.{ Await, ExecutionContext, Future }
+import protocol.InvoiceRepositoryImpl
 
 trait WalletService {
 

@@ -79,13 +79,4 @@ package object domain {
     testnet: Boolean
   )
 
-  case object LightningInvoiceMultiplier extends Enumeration {
-    type LightningInvoiceMultiplier = Value
-
-    val milli = Value("m")
-    val micro = Value("u")
-    val nano = Value("n")
-    val pico = Value("p")
-  }
-
 }

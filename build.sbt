@@ -106,9 +106,7 @@ lazy val universalPluginSettings = Seq(
       confFileMapping.value,
       logbackConfMapping.value
     )
-  },
-  walletDirectory,
-  walletDirSymlink
+  }
 )
 
 
@@ -126,22 +124,6 @@ lazy val confFileMapping = Def.setting {
     case _ => (resourceDirectory in Compile).value / "application.conf"
   }
   conf -> "conf/application.conf"
-}
-
-/**
-  *
-  */
-lazy val walletDirectory = {
-  linuxPackageMappings += packageTemplateMapping(
-    s"/opt/$buildName/bitcoin"
-  )().withUser((daemonUser in Linux).value)
-    .withGroup((daemonGroup in Linux).value)
-    .withPerms("755")
-}
-
-
-lazy val walletDirSymlink = linuxPackageSymlinks += {
-    LinuxSymlink(s"$targetDirectory/bitcoin", s"/opt/$buildName/bitcoin")
 }
 
 
