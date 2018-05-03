@@ -16,9 +16,9 @@ val env = sys.props.getOrElse("env", default = "local")
 val buildVersion = sys.props.getOrElse("version", default = "0.0.1")
 val buildName = "btc-hotspot"
 
-val akkaVersion = "2.5.11"
+val akkaVersion = "2.4.20"
 val akkaHttpVersion = "10.+"
-val json4sVersion = "3.6.0-M3"
+val json4sVersion = "3.+"
 
 lazy val btc_hotspot = (project in file(".")).
   settings(
@@ -34,6 +34,7 @@ lazy val btc_hotspot = (project in file(".")).
     )),
     name := buildName,
     debianPackageInfo in Debian := debianSettings,
+    resolvers += "Local Maven Repository" at "file://"+Path.userHome.absolutePath+"/.m2/repository",
     libraryDependencies ++= Seq(
       //AKKA
       "com.typesafe.akka" %% "akka-actor" % akkaVersion,
@@ -43,7 +44,7 @@ lazy val btc_hotspot = (project in file(".")).
       //JSON4S
       "org.json4s" %% "json4s-native" % json4sVersion,
       "org.json4s" %% "json4s-ext" % json4sVersion,
-      "de.heikoseeberger" %% "akka-http-json4s" % "1.20.1",
+      "de.heikoseeberger" %% "akka-http-json4s" % "1.+",
 
       //LOGGING
       "ch.qos.logback" % "logback-classic" % "1.2.3",
@@ -61,7 +62,7 @@ lazy val btc_hotspot = (project in file(".")).
 
       //MISC
       "org.apache.commons" % "commons-email" % "1.4",
-      "fr.acinq" %% "bitcoin-lib" % "0.9.17-SNAPSHOT" from "file://lib/bitcoin-lib_2.12-0.9.17-SNAPSHOT.jar"
+      "fr.acinq" %% "bitcoin-lib" % "0.9.17-SNAPSHOT"
     )
   ).settings(universalPluginSettings)
 
