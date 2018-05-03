@@ -16,8 +16,7 @@
 
 package commons
 
-import org.spongycastle.util.encoders.Hex
-
+import Helpers._
 import scala.annotation.tailrec
 
 /**
@@ -166,7 +165,7 @@ case class BitStream(bytes: Vector[Byte], offstart: Int, offend: Int) {
 
   def toBinString: String = "0b"+(for (i <- 0 until bitCount) yield if (isSet(i)) '1' else '0').mkString
 
-  def toHexString: String = "0x"+Hex.toHexString(bytes.toArray).toLowerCase
+  def toHexString: String = "0x"+bytes2hex(bytes).toLowerCase
 }
 
 object BitStream {
