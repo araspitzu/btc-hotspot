@@ -87,12 +87,17 @@ class SessionServiceImpl(dependencies: {
 
   def disableSession(session: Session): FutureOption[Unit] = {
     logger.info(s"Disabling session ${session}")
+    val stopWatch = sessionIdToStopwatch.get(session.id).getOrElse {
+      throw new IllegalArgumentException(s"session ${session.id} has no stopwatch attached")
+    }
+
     for {
-      _ <- sessionRepository.upsert(session.copy(offerId = None))
-      stopWatch <- FutureOption(Future.successful(sessionIdToStopwatch.get(session.id)))
+      stopped <- stopWatch.stop()
+      upserted <- sessionRepository.upsert(session.copy(offerId = None)) orFailWith s"Error upserting session ${session.id}"
     } yield {
-      stopWatch.stop()
+
       sessionIdToStopwatch.remove(session.id)
+      Some(())
     }
   }
 

@@ -16,7 +16,7 @@ val env = sys.props.getOrElse("env", default = "local")
 val buildVersion = sys.props.getOrElse("version", default = "0.0.1")
 val buildName = "btc-hotspot"
 
-val akkaVersion = "2.4.20"
+val akkaVersion = "2.5.11"
 val akkaHttpVersion = "10.+"
 val json4sVersion = "3.+"
 
@@ -44,7 +44,7 @@ lazy val btc_hotspot = (project in file(".")).
       //JSON4S
       "org.json4s" %% "json4s-native" % json4sVersion,
       "org.json4s" %% "json4s-ext" % json4sVersion,
-      "de.heikoseeberger" %% "akka-http-json4s" % "1.+",
+      "de.heikoseeberger" %% "akka-http-json4s" % "1.20.1",
 
       //LOGGING
       "ch.qos.logback" % "logback-classic" % "1.2.3",
@@ -106,7 +106,9 @@ lazy val universalPluginSettings = Seq(
       confFileMapping.value,
       logbackConfMapping.value
     )
-  }
+  },
+  databaseDirectory,
+  databaseDirSymlink
 )
 
 
@@ -126,6 +128,18 @@ lazy val confFileMapping = Def.setting {
   conf -> "conf/application.conf"
 }
 
+lazy val databaseDirectory = {
+  linuxPackageMappings += packageTemplateMapping(
+    s"/opt/$buildName/database"
+  )().withUser((daemonUser in Linux).value)
+    .withGroup((daemonGroup in Linux).value)
+    .withPerms("755")
+}
+
+
+lazy val databaseDirSymlink = linuxPackageSymlinks += {
+  LinuxSymlink(s"$targetDirectory/database", s"/opt/$buildName/database")
+}
 
 lazy val scalariformPref = Def.setting {
   ScalariformKeys.preferences.value

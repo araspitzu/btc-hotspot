@@ -66,6 +66,7 @@ class TimebasedStopWatch(val dependencies: {
   }
 
   override def stop(): Future[Unit] = {
+    logger.info(s"stopwatch for session ${session.id} is stopping")
     ipTablesService.disableClient(session.clientMac) map { ipTablesOut =>
       // abort scheduled task
       if (isPending) {
