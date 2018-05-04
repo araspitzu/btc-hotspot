@@ -118,8 +118,8 @@ wget https://github.com/ACINQ/eclair/releases/download/v0.2-beta2/eclair-node-0.
 ## TODO: add eclair conf
 
 echo -e "########  DOWNLOAD btc-hotspot   #########"
-wget https://github.com/araspitzu/btc-hotspot/releases/download/v0.0.3-alpha/btc-hotspot_0.0.3-alpha_all.deb
-sudo dpkg -i btc-hotspot_0.0.3-alpha_all.deb
+wget https://github.com/araspitzu/btc-hotspot/releases/download/v0.0.4-alpha/btc-hotspot_0.0.4-alpha_all.deb
+sudo dpkg -i btc-hotspot_0.0.4-alpha_all.deb
 
 echo -e "########  ENABLE SUDOERS FOR btc-hotspot   ########"
 # btc user append to /etc/sudoers
