@@ -99,7 +99,7 @@ sudo $IPTABLES -t mangle -A POSTROUTING -o wlan0 -j internet_incoming
 sudo $IPTABLES -t nat -A PREROUTING -m mark --mark 99 -p tcp --dport 80 -j DNAT --to-destination $SUBNET:8081
 
 # drop all the unauthorized packets
-sudo $IPTABLES -t filter -A FORWARD -m mark --mark 99 -j DROP
+sudo $IPTABLES -t mangle -A POSTROUTING  -m mark --mark 99 -j DROP
 
 # Enable ssh for ott0disk
 #sudo $IPTABLES -I internet_outgoing 1 -t mangle -p tcp --dport 22 -m mac --mac-source c4:8e:8f:f8:e4:37 -j RETURN
