@@ -36,10 +36,9 @@ Clone and enter the project folder with:
 
 To compile and run type:
 
-```sbt reStart```
+```sbt run```
 
-protip: to avoid killing sbt and restarting it you can launch `sbt` and then issue 
-the commands from the interactive shell.
+protip: to avoid killing sbt and restarting it you can launch `sbt` and then `reStart` from the interactive shell.
 
 To run the test type: 
 
