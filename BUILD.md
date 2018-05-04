@@ -12,6 +12,10 @@ to start developing `btc-hotspot` you  need the following tools:
 server (eclair) to test the payment process, if in doubt feel free to contact the repo owner for help or 
 to use the project's test instance. :warning:
 
+:warning: To build the project you will need bitcoin-lib_2.12, since the official version from ACINQ [https://github.com/ACINQ/bitcoin-lib] does not yet
+support scala 2.12 you will need to clone and build my fork at [https://github.com/araspitzu/bitcoin-lib], to install the library in your local system
+run `mvn install` in the bitcoin-lib directory. :warning:
+
 ## Overview
 This is captive portal system accepting bitcoin payments over the lightning network protocol and it's designed to run on a 
 home server like the raspberry-pi. The app is written in Scala and uses eclair as payment gateway, clients connected to the hotspot

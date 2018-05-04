@@ -7,6 +7,7 @@
 #! /bin/sh
 
 IPTABLES="/sbin/iptables"
+#INTERNAL_IP_ADDR=hostname -I | awk '{print $(NF-1)}'
 
 ESSID="swagger"	       # Hotspot ap name
 IFACE_WAN="eth0"       # Toward the internet
