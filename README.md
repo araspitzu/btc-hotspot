@@ -1,5 +1,6 @@
 # btc-hotspot :zap: :zap:
 
+[![Join the chat at https://gitter.im/btc-hotspot/Lobby](https://badges.gitter.im/btc-hotspot/Lobby.svg)](https://gitter.im/btc-hotspot/Lobby)
 ## Overview
 
 The application is a hotspot paywall where clients can pay the owner via bitcoin over the lightning network, it's designed
